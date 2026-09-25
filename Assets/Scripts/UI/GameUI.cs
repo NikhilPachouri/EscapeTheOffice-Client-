@@ -141,15 +141,9 @@ namespace EscapeOffice.UI
                 y += 50;
             }
 
-            // Extras, as quiet chips.
-            float cw = (iw - 16) / 3f;
-            if (GUI.Button(new Rect(x, y, cw, 40), "Tutorial", ghost)) gm.StartTutorial();
-            if (GUI.Button(new Rect(x + cw + 8, y, cw, 40), "Offline test", ghost)) gm.StartOffline();
-            if (GUI.Button(new Rect(x + 2 * (cw + 8), y, cw, 40), "Level editor", ghost))
-            {
-                gm.StartOffline();
-                gm.GetComponent<LevelEditor>().OpenWhenReady();
-            }
+            // Extra, as a quiet chip. (Offline test and the level editor are dev-only: see
+            // GameManager.StartOffline and LevelEditor.Enabled.)
+            if (GUI.Button(new Rect(x, y, iw, 40), "Tutorial", ghost)) gm.StartTutorial();
             y += 54;
 
             if (hasStatus)
