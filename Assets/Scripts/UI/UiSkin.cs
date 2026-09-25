@@ -26,21 +26,13 @@ namespace EscapeOffice.UI
             small.normal.textColor = TextDim;
             title.fontStyle = digits.fontStyle = FontStyle.Normal; // the fonts carry the weight
 
-            box.normal.background = Panel(new Color(0.07f, 0.08f, 0.1f, 0.86f), new Color(1f, 1f, 1f, 0.08f));
-            box.border = new RectOffset(3, 3, 3, 3);
+            // Rounded glass from the start screen, so every screen shares one look.
+            MenuArt.SkinBox(box);
             box.normal.textColor = Text;
-
-            button.normal.background = Panel(new Color(0.14f, 0.15f, 0.18f, 0.92f), new Color(1f, 1f, 1f, 0.1f));
-            button.hover.background = Panel(new Color(0.2f, 0.21f, 0.25f, 0.95f), new Color(1f, 1f, 1f, 0.22f));
-            button.active.background = Panel(new Color(0.09f, 0.1f, 0.12f, 0.95f), new Color(1f, 1f, 1f, 0.3f));
-            button.border = new RectOffset(3, 3, 3, 3);
+            MenuArt.SkinButton(button);
             button.normal.textColor = button.hover.textColor = button.active.textColor = Text;
             button.onNormal = button.normal; button.onHover = button.hover; button.onActive = button.active;
-
-            field.normal.background = Panel(new Color(0.04f, 0.05f, 0.06f, 0.9f), new Color(1f, 1f, 1f, 0.12f));
-            field.focused.background = Panel(new Color(0.05f, 0.06f, 0.08f, 0.95f), new Color(1f, 1f, 1f, 0.35f));
-            field.border = new RectOffset(3, 3, 3, 3);
-            field.padding = new RectOffset(10, 10, 4, 4);
+            MenuArt.SkinField(field);
             field.normal.textColor = field.focused.textColor = Text;
         }
 

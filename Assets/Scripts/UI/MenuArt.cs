@@ -86,6 +86,18 @@ namespace EscapeOffice.UI
             return ghost;
         }
 
+        // In-game button: the same glass as Ghost but solid enough to read over the level.
+        public static GUIStyle Hud(Font font)
+        {
+            if (hud != null) return hud;
+            hud = Button(font, 16,
+                Rounded(128, 40, 12, new Color(0.04f, 0.05f, 0.11f, 0.86f), new Color(1, 1, 1, 0.18f), null),
+                Rounded(128, 40, 12, new Color(0.07f, 0.09f, 0.18f, 0.92f), Cool, null),
+                Rounded(128, 40, 12, new Color(0.16f, 0.09f, 0.05f, 0.95f), Warm, null));
+            return hud;
+        }
+        static GUIStyle hud;
+
         public static GUIStyle Field(Font font)
         {
             if (field != null) return field;
@@ -98,6 +110,64 @@ namespace EscapeOffice.UI
                 hover = { background = Rounded(128, 48, 14, new Color(0.03f, 0.04f, 0.09f, 0.9f), new Color(1, 1, 1, 0.3f), null), textColor = Ink },
             };
             return field;
+        }
+
+        // Small rounded glass for HUD elements; `edge` tints the outline (e.g. the side colour).
+        public static void Glass(Rect r, Color? edge = null, float alpha = 0.72f)
+        {
+            var key = (edge ?? new Color(1, 1, 1, 0.12f), alpha);
+            if (!chips.TryGetValue(key, out var tex))
+                chips[key] = tex = Rounded(48, 48, 12, new Color(0.04f, 0.05f, 0.11f, alpha), key.Item1, null);
+            GUI.Box(r, "", new GUIStyle { normal = { background = tex }, border = new RectOffset(14, 14, 14, 14) });
+        }
+        static readonly System.Collections.Generic.Dictionary<(Color, float), Texture2D> chips =
+            new System.Collections.Generic.Dictionary<(Color, float), Texture2D>();
+
+        // Navy wash behind a modal.
+        public static void DimScreen(Rect screen) => Fill(screen, new Color(0.02f, 0.03f, 0.08f, 0.6f));
+
+        // Key on the keypad: glass with a cool edge that warms on press.
+        public static GUIStyle Keycap(Font font)
+        {
+            if (keycap != null) return keycap;
+            keycap = Button(font, 26,
+                Rounded(96, 64, 14, new Color(0.07f, 0.08f, 0.15f, 0.92f), new Color(Cool.r, Cool.g, Cool.b, 0.45f), null),
+                Rounded(96, 64, 14, new Color(0.1f, 0.12f, 0.22f, 0.95f), Cool, null),
+                Rounded(96, 64, 14, new Color(0.18f, 0.1f, 0.06f, 0.95f), Warm, null));
+            return keycap;
+        }
+        static GUIStyle keycap;
+
+        // On/off switch track: the two-tone gradient when on, dim glass when off.
+        public static Texture2D SwitchOn => switchOn ??= Rounded(128, 48, 23, null, new Color(1, 1, 1, 0.3f), new[] { Cool, Warm });
+        public static Texture2D SwitchOff => switchOff ??= Rounded(128, 48, 23, new Color(1, 1, 1, 0.1f), new Color(1, 1, 1, 0.2f), null);
+        public static Texture2D Knob => knob ??= Rounded(48, 48, 23, Ink, new Color(1, 1, 1, 0f), null);
+        static Texture2D switchOn, switchOff, knob;
+
+        // Standard IMGUI buttons/boxes/fields in the same language (used by UiSkin for every screen).
+        public static void SkinButton(GUIStyle b)
+        {
+            b.normal.background = Rounded(128, 48, 12, new Color(0.07f, 0.08f, 0.15f, 0.88f), new Color(1, 1, 1, 0.16f), null);
+            b.hover.background = Rounded(128, 48, 12, new Color(0.1f, 0.12f, 0.22f, 0.92f), new Color(Cool.r, Cool.g, Cool.b, 0.8f), null);
+            b.active.background = Rounded(128, 48, 12, new Color(0.18f, 0.1f, 0.06f, 0.95f), Warm, null);
+            b.border = new RectOffset(14, 14, 14, 14);
+            b.padding = new RectOffset(12, 12, 4, 4);
+            b.onNormal = b.normal; b.onHover = b.hover; b.onActive = b.active;
+        }
+
+        public static void SkinBox(GUIStyle box)
+        {
+            box.normal.background = Rounded(48, 48, 12, new Color(0.04f, 0.05f, 0.11f, 0.8f), new Color(1, 1, 1, 0.12f), null);
+            box.border = new RectOffset(14, 14, 14, 14);
+        }
+
+        public static void SkinField(GUIStyle f)
+        {
+            f.normal.background = Rounded(128, 48, 12, new Color(0.02f, 0.03f, 0.07f, 0.9f), new Color(1, 1, 1, 0.18f), null);
+            f.hover.background = Rounded(128, 48, 12, new Color(0.03f, 0.04f, 0.09f, 0.9f), new Color(1, 1, 1, 0.3f), null);
+            f.focused.background = Rounded(128, 48, 12, new Color(0.03f, 0.04f, 0.09f, 0.95f), Cool, null);
+            f.border = new RectOffset(14, 14, 14, 14);
+            f.padding = new RectOffset(12, 12, 4, 4);
         }
 
         public static void Icon(Rect r, string sprite)
@@ -117,7 +187,7 @@ namespace EscapeOffice.UI
             active = { background = active, textColor = Color.white },
         };
 
-        static void Fill(Rect r, Color c)
+        public static void Fill(Rect r, Color c)
         {
             var old = GUI.color;
             GUI.color = c;

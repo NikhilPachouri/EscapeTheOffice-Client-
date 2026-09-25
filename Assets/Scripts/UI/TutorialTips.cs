@@ -28,7 +28,7 @@ namespace EscapeOffice.UI
         readonly List<Rect> placed = new List<Rect>();
 
         GUIStyle title, body, button;
-        static readonly Color Panel = new Color32(0x14, 0x18, 0x1d, 0xeb);
+        static readonly Color Panel = new Color(0.04f, 0.05f, 0.11f, 0.9f); // start-screen navy glass
         static readonly Color Ink = new Color32(0xe8, 0xee, 0xf2, 0xff);
         static readonly Color WaterTip = new Color(0.35f, 0.62f, 1f);
 
