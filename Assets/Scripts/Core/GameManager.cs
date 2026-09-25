@@ -175,7 +175,7 @@ namespace EscapeOffice
                         PlayerPrefs.SetString(PrefLastCode, RoomCode);
                         PlayerPrefs.SetString(PrefLastToken, a.Token);
                         PlayerPrefs.Save();
-                        Voice.Begin(serverUrl, RoomCode, a.Token); // no-op if already on this slot
+                        Voice.Begin(serverUrl, RoomCode, a.Token, a.Voice); // no-op if already on this slot
                     }
                     if (Current != Phase.Playing) Current = Phase.Waiting;
                     break;

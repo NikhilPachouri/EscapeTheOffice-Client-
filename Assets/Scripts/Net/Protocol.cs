@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -63,6 +64,8 @@ namespace EscapeOffice.Net
         [JsonProperty("code")] public string Code;
         [JsonProperty("side")] public string Side;
         [JsonProperty("token")] public string Token;
+        // Optional: URL of a separate voice relay (wss://host/voice). Absent when voice runs on the game server.
+        [JsonProperty("voice")] public string Voice;
     }
 
     public class FxData
@@ -102,6 +105,30 @@ namespace EscapeOffice.Net
         // Glow colour per object id, derived by the server from the keys its rules write:
         // "A", "B" or "both". Objects not listed get no side colour.
         [JsonProperty("colors")] public Dictionary<string, string> Colors = new Dictionary<string, string>();
+
+        // The server sends each room as { id, rects: [[x,y,w,h], ...] }. Everything client-side reads a
+        // single x/y/w/h, so expand to one RoomDef per rect sharing the id (World merges them by id).
+        // This matches what WorldFile does for the offline path.
+        [OnDeserialized]
+        void ExpandRects(StreamingContext _)
+        {
+            if (Rooms == null) return;
+            var flat = new List<RoomDef>(Rooms.Count);
+            foreach (var r in Rooms)
+            {
+                if (r?.Rects == null || r.Rects.Count == 0) { flat.Add(r); continue; }
+                foreach (var rc in r.Rects)
+                {
+                    if (rc == null || rc.Length < 4) continue;
+                    flat.Add(new RoomDef
+                    {
+                        Id = r.Id, X = rc[0], Y = rc[1], W = rc[2], H = rc[3],
+                        Lights = r.Lights, Water = r.Water, Flooded = r.Flooded, Theme = r.Theme,
+                    });
+                }
+            }
+            Rooms = flat;
+        }
     }
 
     public class ObjectDef
@@ -138,6 +165,8 @@ namespace EscapeOffice.Net
         [JsonProperty("y")] public int Y;
         [JsonProperty("w")] public int W;
         [JsonProperty("h")] public int H;
+        // Server form: one or more [x, y, w, h] rects. Expanded into separate RoomDefs on load.
+        [JsonProperty("rects")] public List<int[]> Rects;
         // State keys this room reads. lights: true = on. water/flooded: true = impassable.
         [JsonProperty("lights")] public string Lights;
         [JsonProperty("water")] public string Water;

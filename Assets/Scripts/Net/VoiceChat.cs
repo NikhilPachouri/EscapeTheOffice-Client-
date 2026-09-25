@@ -20,8 +20,9 @@ namespace EscapeOffice.Net
         const int Rate = 48000;
         const int Frame = 960;                  // 20 ms mono
         const int MaxPayload = 480;
-        const int StartSamples = Frame * 3;     // start playback with 60 ms buffered
-        const int MaxSamples = Rate / 5;        // past 200 ms, drop the oldest
+        const int StartSamples = Frame * 5;     // start playback with 100 ms buffered (internet jitter)
+        const int MaxSamples = Rate * 3 / 10;   // past 300 ms, drop the oldest
+        const int RebufferAfter = Rate / 5;     // 200 ms of continuous dry output before rebuffering
         const int MaxConcealed = 5;             // PLC frames for one gap, at most
         static readonly long SpeakingWindow = TimeSpan.FromMilliseconds(200).Ticks;
 
@@ -40,6 +41,10 @@ namespace EscapeOffice.Net
 
         // Diagnostics for the debug overlay and tests.
         public int FramesSent, FramesReceived;
+        public int FramesLost;      // gaps seen in incoming sequence numbers (concealed by Opus)
+        public int FramesDropped;   // outgoing frames discarded because the socket fell behind
+        public int Underruns;       // playback ran dry long enough to rebuffer
+        public int MicRate;         // what the device actually captures at
 
         string code, token;
         Uri uri;
@@ -54,7 +59,9 @@ namespace EscapeOffice.Net
         AudioClip mic;
         int micPos;
         float[] micRead = new float[0];
-        readonly List<float> pending = new List<float>();
+        readonly List<float> pending = new List<float>();   // 48 kHz mono, waiting to be framed
+        readonly List<float> micQueue = new List<float>();  // mono at the mic's own rate, not yet resampled
+        double resamplePos;                                  // fractional read position into micQueue
         readonly short[] pcmOut = new short[Frame];
         readonly byte[] packet = new byte[MaxPayload];
         ushort seq;
@@ -62,11 +69,14 @@ namespace EscapeOffice.Net
         // Playback: decoded samples, written by the receive task, read by the audio thread.
         readonly float[] ring = new float[Rate];
         int ringStart, ringCount;
+        int drySamples;
         bool playing;
         readonly object ringLock = new object();
         AudioSource source;
 
-        public void Begin(string gameUrl, string roomCode, string roomToken)
+        // voiceUrl: the server's separate relay (wss://host/voice) when it runs one; otherwise
+        // /voice on the game server.
+        public void Begin(string gameUrl, string roomCode, string roomToken, string voiceUrl = null)
         {
             if (Active && roomCode == code && roomToken == token) return; // same slot, already running
             Stop();
@@ -74,12 +84,17 @@ namespace EscapeOffice.Net
             code = roomCode;
             token = roomToken;
 
-            // wss://host/ws -> wss://host/voice?code=..&token=..
-            var game = new Uri(gameUrl);
-            uri = new UriBuilder(game.Scheme, game.Host, game.IsDefaultPort ? -1 : game.Port, "/voice")
+            var query = $"code={Uri.EscapeDataString(code)}&token={Uri.EscapeDataString(token)}";
+            if (!string.IsNullOrEmpty(voiceUrl))
             {
-                Query = $"code={Uri.EscapeDataString(code)}&token={Uri.EscapeDataString(token)}"
-            }.Uri;
+                uri = new UriBuilder(voiceUrl) { Query = query }.Uri;
+            }
+            else
+            {
+                // wss://host/ws -> wss://host/voice?code=..&token=..
+                var game = new Uri(gameUrl);
+                uri = new UriBuilder(game.Scheme, game.Host, game.IsDefaultPort ? -1 : game.Port, "/voice") { Query = query }.Uri;
+            }
 
             encoder = new OpusEncoder(Rate, 1, OpusApplication.OPUS_APPLICATION_VOIP)
             {
@@ -106,7 +121,10 @@ namespace EscapeOffice.Net
             mic = null;
             if (source != null) source.Stop();
             while (outbox.TryDequeue(out _)) { }
-            lock (ringLock) { ringCount = 0; playing = false; }
+            pending.Clear();
+            micQueue.Clear();
+            resamplePos = 0;
+            lock (ringLock) { ringCount = 0; drySamples = 0; playing = false; }
             Status = "";
         }
 
@@ -159,17 +177,15 @@ namespace EscapeOffice.Net
             }
         }
 
+        // Frames go out as soon as they exist. The mic produces 50/s and the server allows 100/s
+        // sustained with a burst of 20, so no pacing is needed; pacing with Task.Delay only fell
+        // behind (timer slop) and forced the outbox to drop frames, which the partner heard as crackle.
         async Task Send(ClientWebSocket socket, CancellationToken ct)
         {
-            var last = DateTime.UtcNow.AddSeconds(-1);
             while (!ct.IsCancellationRequested && socket.State == WebSocketState.Open)
             {
-                if (!outbox.TryDequeue(out var frame)) { await Task.Delay(5, ct); continue; }
-                // Never more than one frame per 20 ms (server closes at >100/s sustained).
-                var wait = TimeSpan.FromMilliseconds(20) - (DateTime.UtcNow - last);
-                if (wait > TimeSpan.Zero) await Task.Delay(wait, ct);
+                if (!outbox.TryDequeue(out var frame)) { await Task.Delay(4, ct); continue; }
                 await socket.SendAsync(new ArraySegment<byte>(frame), WebSocketMessageType.Binary, true, ct);
-                last = DateTime.UtcNow;
                 Interlocked.Increment(ref FramesSent);
             }
         }
@@ -197,6 +213,7 @@ namespace EscapeOffice.Net
                 {
                     int gap = (s - expected + 65536) % 65536;
                     if (gap >= 32768) continue; // late or duplicate: drop
+                    if (gap > 0) Interlocked.Add(ref FramesLost, gap);
                     for (int i = 0; i < Math.Min(gap, MaxConcealed); i++) // lost frames: let Opus conceal them
                         Push(pcm, decoder.Decode(null, 0, 0, pcm, 0, Frame, false));
                 }
@@ -246,17 +263,24 @@ namespace EscapeOffice.Net
         }
 
         // Audio thread. Never blocks for long; outputs silence when dry.
+        // A momentary shortfall (one late packet) is padded with silence and playback carries on;
+        // only a long dry spell drops back to rebuffering, otherwise every jitter spike cost a
+        // 60 ms hole and speech came out chopped.
         void OnAudioRead(float[] data)
         {
             lock (ringLock)
             {
-                if (!playing && ringCount >= StartSamples) playing = true;
+                if (!playing && ringCount >= StartSamples) { playing = true; drySamples = 0; }
                 int n = playing ? Math.Min(ringCount, data.Length) : 0;
                 for (int i = 0; i < n; i++) data[i] = MuteIncoming ? 0f : ring[(ringStart + i) % ring.Length];
                 for (int i = n; i < data.Length; i++) data[i] = 0f;
                 ringStart = (ringStart + n) % ring.Length;
                 ringCount -= n;
-                if (ringCount == 0) playing = false; // rebuffer after an underrun
+                if (playing)
+                {
+                    drySamples = n < data.Length ? drySamples + (data.Length - n) : 0;
+                    if (drySamples > RebufferAfter) { playing = false; drySamples = 0; Underruns++; }
+                }
             }
         }
 
@@ -306,17 +330,41 @@ namespace EscapeOffice.Net
             mic.GetData(micRead, micPos); // wraps around the looping clip
             micPos = pos;
 
-            if (!Talking) { pending.Clear(); return; } // silence costs nothing
+            if (!Talking) { pending.Clear(); micQueue.Clear(); resamplePos = 0; return; } // silence costs nothing
+            MicRate = mic.frequency;
 
-            // Downmix, and resample to 48 kHz if the device picked another rate.
-            float step = (float)mic.frequency / Rate;
-            int outCount = Mathf.FloorToInt(available / step);
-            for (int i = 0; i < outCount; i++)
+            // Downmix to mono at the mic's rate.
+            for (int i = 0; i < available; i++)
             {
-                int src = Mathf.Min(available - 1, Mathf.FloorToInt(i * step));
                 float sum = 0f;
-                for (int c = 0; c < channels; c++) sum += micRead[src * channels + c];
-                pending.Add(sum / channels);
+                for (int c = 0; c < channels; c++) sum += micRead[i * channels + c];
+                micQueue.Add(sum / channels);
+            }
+
+            // Resample to 48 kHz. The fractional read position carries across Update calls and
+            // samples are interpolated; truncating per call dropped a sample or two every frame
+            // on 44.1 kHz mics, an audible tick under the voice.
+            if (mic.frequency == Rate)
+            {
+                pending.AddRange(micQueue);
+                micQueue.Clear();
+            }
+            else
+            {
+                double step = (double)mic.frequency / Rate;
+                while (resamplePos + 1 < micQueue.Count)
+                {
+                    int i0 = (int)resamplePos;
+                    float frac = (float)(resamplePos - i0);
+                    pending.Add(micQueue[i0] + (micQueue[i0 + 1] - micQueue[i0]) * frac);
+                    resamplePos += step;
+                }
+                int consumed = (int)resamplePos;
+                if (consumed > 0)
+                {
+                    micQueue.RemoveRange(0, consumed);
+                    resamplePos -= consumed;
+                }
             }
 
             while (pending.Count >= Frame)
@@ -332,7 +380,7 @@ namespace EscapeOffice.Net
                 Buffer.BlockCopy(packet, 0, frame, 3, len);
                 seq++;
                 outbox.Enqueue(frame);
-                while (outbox.Count > 10) outbox.TryDequeue(out _); // stalled network: keep it fresh
+                while (outbox.Count > 10) { outbox.TryDequeue(out _); FramesDropped++; } // stalled network: keep it fresh
             }
         }
     }
