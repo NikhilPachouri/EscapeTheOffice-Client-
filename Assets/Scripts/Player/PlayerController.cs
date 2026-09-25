@@ -209,19 +209,19 @@ namespace EscapeOffice
             lastStep = step;
         }
 
-        // The worker animates its own joints (TosCharacter): pick the motion and pace it to the
-        // ground speed, lean into the run, dust at each footfall.
+        // The worker walks on its own joints (TosCharacter): the stride follows the ground speed
+        // so the feet don't skate, and the body turns to face where it's actually going. No
+        // whole-model lean or squash (that tipped the robot from its feet); the spine leans instead.
         void AnimateWorker(bool moving)
         {
-            float v = rb.linearVelocity.magnitude;
-            bool run = v > RunSpeed;
-            character.SetMotion(!moving ? TosCharacter.Motion.Idle : run ? TosCharacter.Motion.Run : TosCharacter.Motion.Walk);
-            character.speed = moving ? Mathf.Clamp(v / (run ? speed : speed * 0.55f), 0.6f, 1.3f) : 1f;
+            var vel = rb.linearVelocity;
+            float v = vel.magnitude;
+            character.Locomote(moving ? v : 0f, v > RunSpeed);
+            if (moving) yaw = Mathf.LerpAngle(yaw, Art.YawFor(vel), Art.Smooth(12f));
 
             model.localPosition = Vector3.zero;
-            model.localRotation = Art.Rotation(yaw) * Quaternion.Euler(lean * 0.5f, 0f, 0f);
-            float wobble = Debuffed ? Mathf.Sin(Time.time * 8f) * 0.04f : 0f; // sluggish
-            model.localScale = new Vector3(1f + wobble, 1f - wobble, 1f + wobble);
+            model.localRotation = Art.Rotation(yaw);
+            model.localScale = Vector3.one;
 
             int step = Mathf.FloorToInt(character.Phase / Mathf.PI);
             if (moving && step != lastStep)

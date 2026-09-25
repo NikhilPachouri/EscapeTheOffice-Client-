@@ -223,9 +223,7 @@ namespace EscapeOffice.Objects
             var v = rb.linearVelocity;
             if (v.sqrMagnitude > 0.01f) yaw = Mathf.LerpAngle(yaw, Art.YawFor(v), Art.Smooth(8f));
             model.transform.localRotation = Art.Rotation(yaw);
-            if (supervisor != null)
-                supervisor.SetMotion(v.sqrMagnitude < 0.04f ? TosCharacter.Motion.Idle
-                    : chasing ? TosCharacter.Motion.Run : TosCharacter.Motion.Walk);
+            if (supervisor != null) supervisor.Locomote(v.magnitude, chasing); // strides follow the ground speed
             haloAngle += (chasing ? 6f : 2f) * Mathf.Rad2Deg * Time.deltaTime;
             if (halo != null) halo.localRotation = Quaternion.Euler(0f, haloAngle, 0f);
             if (hover != null) hover.localPosition = new Vector3(0f, 0.75f + Mathf.Sin(Time.time * 2f) * 0.08f, 0f);
