@@ -278,25 +278,40 @@ namespace EscapeOffice.Net
         // asks for one DSP buffer at a time at the device rate, and we resample from the 48 kHz ring
         // ourselves. Streaming clips (PCMReaderCallback) glitched at their loop point and asked for
         // unpredictable chunk sizes, which chopped the voice at fixed intervals.
+        //
+        // The source lives on its own child GameObject: Unity binds OnAudioFilterRead to every
+        // AudioSource on the object that holds the script, and GameManager also carries the music
+        // and SFX sources, so each of them drained the ring and most of the voice was thrown away
+        // (with a red "multiple AudioSources" error per frame).
         void StartPlayback()
         {
             if (source == null)
             {
-                source = gameObject.AddComponent<AudioSource>();
+                var go = new GameObject("VoicePlayback");
+                go.transform.SetParent(transform, false);
+                source = go.AddComponent<AudioSource>();
                 source.playOnAwake = false;
                 source.spatialBlend = 0f;
                 source.loop = true;
                 source.clip = AudioClip.Create("voice-carrier", Rate / 10, 1, Rate, false); // 100 ms of silence
+                go.AddComponent<VoiceSink>().owner = this;
             }
             OutputRate = AudioSettings.outputSampleRate;
             if (OutputRate <= 0) OutputRate = Rate;
             source.Play();
         }
 
+        // Sits next to the playback AudioSource and forwards the audio-thread callback.
+        class VoiceSink : MonoBehaviour
+        {
+            public VoiceChat owner;
+            void OnAudioFilterRead(float[] data, int channels) => owner?.Fill(data, channels);
+        }
+
         // Audio thread. Never blocks for long; outputs silence when dry.
         // A momentary shortfall (one late packet) is padded with silence and playback carries on;
         // only a long fully-dry spell drops back to rebuffering.
-        void OnAudioFilterRead(float[] data, int channels)
+        internal void Fill(float[] data, int channels)
         {
             if (channels <= 0) return;
             int frames = data.Length / channels;
