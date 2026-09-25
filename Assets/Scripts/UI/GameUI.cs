@@ -10,7 +10,7 @@ namespace EscapeOffice.UI
     {
         const float RefHeight = 720f;
 
-        public bool IsModal => keypad != null || codePanel != null;
+        public bool IsModal => keypad != null || codePanel != null || SettingsMenu.IsOpen;
 
         string url;
         string code = "";
@@ -169,7 +169,7 @@ namespace EscapeOffice.UI
             var voice = gm.Voice;
             if (voice != null && voice.Active)
             {
-                var vr = new Rect(w - 232, 44, 220, 44);
+                var vr = new Rect(w - 232, 72, 220, 44); // below the settings gear
                 Fill(vr, new Color(0, 0, 0, 0.55f));
                 bool speaking = voice.PartnerSpeaking && !voice.MuteIncoming;
                 var dot = new Rect(vr.x + 12, vr.y + 16, 12, 12);
@@ -183,7 +183,7 @@ namespace EscapeOffice.UI
                 GUI.Label(new Rect(12, 126, 300, 24), $"Sluggish… {player.DebuffRemaining:0}s", new GUIStyle(label) { normal = { textColor = new Color(1f, 0.5f, 0.4f) } });
 
             if (!string.IsNullOrEmpty(gm.Status) && !gm.Offline)
-                GUI.Label(new Rect(w - 412, 12, 400, 26), gm.Status, new GUIStyle(small) { alignment = TextAnchor.UpperRight, normal = { textColor = new Color(1f, 0.7f, 0.4f) } });
+                GUI.Label(new Rect(w - 480, 12, 400, 26), gm.Status, new GUIStyle(small) { alignment = TextAnchor.UpperRight, normal = { textColor = new Color(1f, 0.7f, 0.4f) } });
 
             if (toast != null && Time.time < toastUntil)
             {

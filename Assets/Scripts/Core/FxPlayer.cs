@@ -67,7 +67,7 @@ namespace EscapeOffice
                 src.panStereo = 0f;
                 src.volume = 1f;
             }
-            src.Play();
+            if (UI.SettingsMenu.SfxOn) src.Play();
         }
 
         Vector2? Resolve(JToken at)
