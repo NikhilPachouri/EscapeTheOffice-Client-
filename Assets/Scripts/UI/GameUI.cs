@@ -95,17 +95,20 @@ namespace EscapeOffice.UI
             GUI.Label(new Rect(cx - 200, y, 400, 26), "Server", label);
             url = GUI.TextField(new Rect(cx - 200, y + 26, 400, 36), url, field);
             y += 80;
-            GUI.Label(new Rect(cx - 200, y, 400, 26), "Room code", label);
-            GUI.SetNextControlName("code");
-            code = GUI.TextField(new Rect(cx - 200, y + 26, 400, 36), code, 12, field).ToUpperInvariant();
-            y += 80;
+            if (GUI.Button(new Rect(cx - 200, y, 400, 44), "Create a room", button)) gm.Create(url);
+            GUI.Label(new Rect(cx - 200, y + 46, 400, 22), "You get a code to read out to your partner.", new GUIStyle(label) { alignment = TextAnchor.MiddleCenter });
+            y += 90;
 
-            bool enter = Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return;
+            GUI.Label(new Rect(cx - 200, y, 400, 26), "Have a code? Join a room", label);
+            GUI.SetNextControlName("code");
+            code = GUI.TextField(new Rect(cx - 200, y + 26, 250, 36), code, 12, field).ToUpperInvariant();
+            bool enter = Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return
+                         && GUI.GetNameOfFocusedControl() == "code";
             GUI.enabled = code.Trim().Length > 0;
-            if (GUI.Button(new Rect(cx - 200, y, 400, 44), "Join", button) || (enter && GUI.enabled))
+            if (GUI.Button(new Rect(cx + 58, y + 22, 142, 44), "Join room", button) || (enter && GUI.enabled))
                 gm.Join(url, code);
             GUI.enabled = true;
-            y += 54;
+            y += 80;
 
             var lastCode = PlayerPrefs.GetString(GameManager.PrefLastCode, "");
             var lastToken = PlayerPrefs.GetString(GameManager.PrefLastToken, "");
@@ -131,9 +134,9 @@ namespace EscapeOffice.UI
         {
             Fill(new Rect(0, 0, w, h), new Color(0.05f, 0.05f, 0.07f, 1f));
             float cx = w / 2f;
-            GUI.Label(new Rect(cx - 300, h * 0.3f, 600, 50), $"Room {gm.RoomCode}", title);
+            GUI.Label(new Rect(cx - 300, h * 0.3f, 600, 50), gm.RoomCode.Length > 0 ? $"Room {gm.RoomCode}" : "Creating room…", title);
             string msg = gm.Current == GameManager.Phase.Waiting
-                ? "Waiting for your partner to join…"
+                ? $"Tell your partner the code: {gm.RoomCode}"
                 : string.IsNullOrEmpty(gm.Status) ? "Connecting…" : gm.Status;
             GUI.Label(new Rect(cx - 300, h * 0.3f + 70, 600, 40), msg, big);
             if (gm.Current == GameManager.Phase.Waiting)
