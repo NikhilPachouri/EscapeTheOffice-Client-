@@ -88,47 +88,72 @@ namespace EscapeOffice.UI
 
         void JoinScreen(GameManager gm, float w, float h)
         {
-            Fill(new Rect(0, 0, w, h), new Color(0.05f, 0.05f, 0.07f, 1f));
-            float cx = w / 2f, y = h * 0.18f;
-            GUI.Label(new Rect(cx - 300, y, 600, 60), "The Other Side", title);
-            GUI.Label(new Rect(cx - 300, y + 60, 600, 30), "Two sides. One building. Talk to each other.", new GUIStyle(label) { alignment = TextAnchor.MiddleCenter });
-
-            y += 130;
-            if (GUI.Button(new Rect(cx - 200, y, 400, 44), "Create a room", button)) gm.Create(url);
-            GUI.Label(new Rect(cx - 200, y + 46, 400, 22), "You get a code to read out to your partner.", new GUIStyle(label) { alignment = TextAnchor.MiddleCenter });
-            y += 90;
-
-            GUI.Label(new Rect(cx - 200, y, 400, 26), "Have a code? Join a room", label);
-            GUI.SetNextControlName("code");
-            code = GUI.TextField(new Rect(cx - 200, y + 26, 250, 36), code, 12, field).ToUpperInvariant();
-            bool enter = Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return
-                         && GUI.GetNameOfFocusedControl() == "code";
-            GUI.enabled = code.Trim().Length > 0;
-            if (GUI.Button(new Rect(cx + 58, y + 22, 142, 44), "Join room", button) || (enter && GUI.enabled))
-                gm.Join(url, code);
-            GUI.enabled = true;
-            y += 80;
+            // Key art full-screen; the menu sits on glass in the dark left half so the tower and
+            // the two players stay visible.
+            MenuArt.DrawBackdrop(new Rect(0, 0, w, h));
+            var headFont = Art.Catalog != null ? Art.Catalog.titleFont : null;
+            var bodyFont = Art.Catalog != null ? Art.Catalog.uiFont : null;
+            var primary = MenuArt.Primary(headFont);
+            var secondary = MenuArt.Secondary(headFont);
+            var ghost = MenuArt.Ghost(headFont);
+            var codeField = MenuArt.Field(Art.Catalog != null ? Art.Catalog.codeFont : null);
+            var hint = new GUIStyle(small) { font = bodyFont, fontSize = 15, alignment = TextAnchor.MiddleLeft, normal = { textColor = MenuArt.Dim } };
 
             var lastCode = PlayerPrefs.GetString(GameManager.PrefLastCode, "");
             var lastToken = PlayerPrefs.GetString(GameManager.PrefLastToken, "");
-            if (lastCode.Length > 0 && lastToken.Length > 0)
+            bool canRejoin = lastCode.Length > 0 && lastToken.Length > 0;
+
+            bool hasStatus = !string.IsNullOrEmpty(gm.Status);
+            float pw = 420, ph = 434 + (canRejoin ? 50 : 0) + (hasStatus ? 44 : 0);
+            var panel = new Rect(Mathf.Max(24, w * 0.05f), (h - ph) / 2, pw, ph);
+            MenuArt.Panel(panel);
+            float x = panel.x + 32, iw = pw - 64, y = panel.y + 28;
+
+            MenuArt.Title(new Rect(x, y, iw, 56), headFont, 44);
+            GUI.Label(new Rect(x, y + 54, iw, 24), "Two sides. One building. Talk to each other.", hint);
+            y += 104;
+
+            // Create: the main action.
+            var create = new Rect(x, y, iw, 58);
+            if (GUI.Button(create, "      Create a room", primary)) gm.Create(url);
+            MenuArt.Icon(new Rect(create.x + 18, create.y + 13, 32, 32), "UI_Icon_Both_256");
+            GUI.Label(new Rect(x, y + 62, iw, 22), "You get a code to read out to your partner.", hint);
+            y += 104;
+
+            MenuArt.Divider(new Rect(x, y, iw, 20), "HAVE A CODE?", new GUIStyle(small) { font = headFont, fontSize = 13 });
+            y += 32;
+            GUI.SetNextControlName("code");
+            code = GUI.TextField(new Rect(x, y, iw - 150, 56), code, 12, codeField).ToUpperInvariant();
+            bool enter = Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return
+                         && GUI.GetNameOfFocusedControl() == "code";
+            GUI.enabled = code.Trim().Length > 0;
+            if (GUI.Button(new Rect(x + iw - 138, y, 138, 56), "Join", secondary) || (enter && GUI.enabled))
+                gm.Join(url, code);
+            GUI.enabled = true;
+            if (code.Length == 0)
+                GUI.Label(new Rect(x, y, iw - 150, 56), "ROOM CODE", new GUIStyle { font = codeField.font, fontSize = codeField.fontSize, alignment = TextAnchor.MiddleCenter, normal = { textColor = new Color(1, 1, 1, 0.25f) } });
+            y += 76;
+
+            if (canRejoin)
             {
-                if (GUI.Button(new Rect(cx - 200, y, 400, 36), $"Rejoin {lastCode} as my previous side", button))
+                if (GUI.Button(new Rect(x, y, iw, 40), $"Rejoin {lastCode} as my previous side", ghost))
                     gm.Join(url, lastCode, lastToken);
-                y += 46;
+                y += 50;
             }
-            if (GUI.Button(new Rect(cx - 200, y, 196, 36), "Offline test", button)) gm.StartOffline();
-            if (GUI.Button(new Rect(cx + 4, y, 196, 36), "Level editor", button))
+
+            // Extras, as quiet chips.
+            float cw = (iw - 16) / 3f;
+            if (GUI.Button(new Rect(x, y, cw, 40), "Tutorial", ghost)) gm.StartTutorial();
+            if (GUI.Button(new Rect(x + cw + 8, y, cw, 40), "Offline test", ghost)) gm.StartOffline();
+            if (GUI.Button(new Rect(x + 2 * (cw + 8), y, cw, 40), "Level editor", ghost))
             {
                 gm.StartOffline();
                 gm.GetComponent<LevelEditor>().OpenWhenReady();
             }
-            y += 46;
-            if (GUI.Button(new Rect(cx - 200, y, 400, 36), "Tutorial", button)) gm.StartTutorial();
-            y += 50;
+            y += 54;
 
-            if (!string.IsNullOrEmpty(gm.Status))
-                GUI.Label(new Rect(cx - 300, y, 600, 60), gm.Status, new GUIStyle(label) { alignment = TextAnchor.UpperCenter, normal = { textColor = new Color(1f, 0.6f, 0.5f) } });
+            if (hasStatus)
+                GUI.Label(new Rect(x, y - 6, iw, 44), gm.Status, new GUIStyle(hint) { wordWrap = true, alignment = TextAnchor.UpperLeft, normal = { textColor = new Color(1f, 0.62f, 0.5f) } });
         }
 
         void WaitingScreen(GameManager gm, float w, float h)
