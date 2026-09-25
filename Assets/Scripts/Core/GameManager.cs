@@ -41,7 +41,8 @@ namespace EscapeOffice
         string lastRoomSent;
         int worldSession = -1;
 
-        public const string PrefUrl = "eto.url";
+        // Deployed Go server. The join screen still lets you type another (e.g. a local server for the demo).
+        public const string DefaultServerUrl = "wss://phoenix-zv1i.onrender.com/ws";
         public const string PrefLastCode = "eto.lastCode";
         public const string PrefLastToken = "eto.lastToken";
 
@@ -83,8 +84,6 @@ namespace EscapeOffice
         {
             Leave();
             RoomCode = code.Trim().ToUpperInvariant();
-            PlayerPrefs.SetString(PrefUrl, url);
-            PlayerPrefs.Save();
 
             connection = gameObject.AddComponent<GameConnection>();
             Attach(connection);

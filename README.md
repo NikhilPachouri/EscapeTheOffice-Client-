@@ -8,7 +8,8 @@ objects from `patch` messages. It bundles no map data. Movement is never synced.
 ## Run
 
 1. Open `Assets/Scenes/Main.unity` and press Play (any scene works; `GameManager` bootstraps itself).
-2. Enter the server URL (default `ws://localhost:8080/ws`) and a room code, then **Join**.
+2. Enter a room code and **Join**. The server defaults to `wss://phoenix-zv1i.onrender.com/ws`;
+   the field on the join screen can point at a local server instead (e.g. `ws://localhost:8080/ws`).
 3. **Offline test** loads `Assets/Resources/FakeWorld.json` and runs a tiny fake server
    (rules / inventory / codes / `exit_open`) so the client can be tested without Go.
 

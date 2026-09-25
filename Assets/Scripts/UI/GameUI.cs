@@ -27,7 +27,7 @@ namespace EscapeOffice.UI
 
         void Awake()
         {
-            url = PlayerPrefs.GetString(GameManager.PrefUrl, "ws://localhost:8080/ws");
+            url = GameManager.DefaultServerUrl;
             white = Texture2D.whiteTexture;
         }
 
