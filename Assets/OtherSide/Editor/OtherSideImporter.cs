@@ -78,6 +78,7 @@ public class OtherSideImporter : AssetPostprocessor
         RemapModelMaterials(mats);
         BuildFxMaterials();
         int prefabs = BuildPrefabs((JArray)manifest["assets"]);
+        prefabs += TosProps.BuildAll(); // the procedural props from tos-assets.js
         BuildCatalog((JArray)manifest["assets"]);
 
         AssetDatabase.SaveAssets();
@@ -180,7 +181,7 @@ public class OtherSideImporter : AssetPostprocessor
         SetStandardFade(m, transparent);
     }
 
-    static void SetStandardFade(Material m, bool fade)
+    internal static void SetStandardFade(Material m, bool fade)
     {
         m.SetFloat("_Mode", fade ? 2 : 0);
         m.SetInt("_SrcBlend", (int)(fade ? UnityEngine.Rendering.BlendMode.SrcAlpha : UnityEngine.Rendering.BlendMode.One));
@@ -406,7 +407,7 @@ public class OtherSideImporter : AssetPostprocessor
 
     static Color Hex(string hex) => ColorUtility.TryParseHtmlString(hex, out var c) ? c : Color.magenta;
 
-    static void EnsureFolder(string path)
+    internal static void EnsureFolder(string path)
     {
         if (AssetDatabase.IsValidFolder(path)) return;
         var parent = Path.GetDirectoryName(path).Replace('\\', '/');

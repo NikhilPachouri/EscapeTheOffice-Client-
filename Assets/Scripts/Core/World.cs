@@ -191,6 +191,9 @@ namespace EscapeOffice
                 Art.Spawn("Floor_Grout", tiles.transform, floor);
             }
 
+            // Anything that moves (hero parts, racks, machines) lives outside the static batch.
+            moving = new GameObject("MovingProps").transform;
+            moving.SetParent(root, false);
             BuildDecor(data, tiles.transform);
             StaticBatchingUtility.Combine(tiles);
 
@@ -210,6 +213,8 @@ namespace EscapeOffice
 
             BuildLightPools(data);
         }
+
+        Transform moving;
 
         // A soft pool of the room's own light on its floor (additive), off while the room is dark.
         // Cheap stand-in for many real lights on a level that is built at runtime.
@@ -298,7 +303,7 @@ namespace EscapeOffice
                 var props = look.props.Count > 0 ? look.props : Art.Catalog.DecorFor(room.Theme);
 
                 if (look.hero != null && def.W >= 5 && def.H >= 4 && ArtDirection.Current.heroes.TryGetValue(look.hero, out var hero))
-                    PlaceHero(hero, def, parent, Claim);
+                    PlaceHero(hero, def, moving, Claim);
                 if (props == null || props.Count == 0) continue;
 
                 // Corners first (they never split a room), then along the walls by density.
@@ -321,7 +326,9 @@ namespace EscapeOffice
                     if (prefab == "Decor_CafeTable") continue; // free-standing, never against a wall
                     if (!Claim(new List<Vector2Int> { c })) continue;
                     var p = TileCenter(c.x, c.y);
-                    if (Art.Spawn(prefab, parent, p, Art.WallYaw(this, c.x, c.y)) == null) continue;
+                    var prop = Art.Spawn(prefab, parent, p, Art.WallYaw(this, c.x, c.y));
+                    if (prop == null) continue;
+                    if (prop.GetComponentInChildren<TosPropAnimator>() != null) prop.transform.SetParent(moving, true);
                     Block(p, Vector2.one * 0.9f, $"DecorBlock {c.x},{c.y}");
                 }
             }

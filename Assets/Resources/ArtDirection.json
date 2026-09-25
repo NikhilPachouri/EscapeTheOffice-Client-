@@ -87,20 +87,21 @@
       "light": "#ffe0b8",
       "pool": 0.36,
       "props": [
-        "Decor_Desk",
+        "TOS_Workstation_A",
+        "TOS_Workstation_B",
         "Decor_Cabinet",
-        "Decor_Desk",
         "Decor_Plant"
       ],
-      "density": 0.2,
+      "density": 0.22,
       "hero": "office"
     },
     "archive": {
       "light": "#ffd08a",
       "pool": 0.38,
       "props": [
-        "Decor_Bookshelf",
-        "Decor_Bookshelf",
+        "TOS_Bookshelf_A",
+        "TOS_Bookshelf_B",
+        "TOS_Bookshelf_C",
         "Decor_Cabinet"
       ],
       "density": 0.32,
@@ -142,7 +143,8 @@
       "light": "#8fc4ff",
       "pool": 0.38,
       "props": [
-        "Decor_ServerRack"
+        "TOS_ServerRack_A",
+        "TOS_ServerRack_B"
       ],
       "density": 0.34,
       "hero": "server"
@@ -277,7 +279,7 @@
           ]
         },
         {
-          "prefab": "Decor_ServerRack",
+          "prefab": "TOS_ServerRack_A",
           "pos": [
             -0.78,
             0,
@@ -290,7 +292,7 @@
           ]
         },
         {
-          "prefab": "Decor_ServerRack",
+          "prefab": "TOS_ServerRack_B",
           "pos": [
             0.78,
             0,
@@ -457,7 +459,7 @@
       "name": "Archive stacks",
       "parts": [
         {
-          "prefab": "Decor_Bookshelf",
+          "prefab": "TOS_Bookshelf_A",
           "pos": [
             -0.5,
             0,
@@ -470,7 +472,7 @@
           ]
         },
         {
-          "prefab": "Decor_Bookshelf",
+          "prefab": "TOS_Bookshelf_B",
           "pos": [
             0.5,
             0,
@@ -483,7 +485,7 @@
           ]
         },
         {
-          "prefab": "Decor_Bookshelf",
+          "prefab": "TOS_Bookshelf_C",
           "pos": [
             -0.8,
             0,
@@ -611,109 +613,27 @@
       ]
     },
     "lab": {
-      "name": "Containment tube",
+      "name": "Reactor machine",
       "parts": [
         {
-          "shape": "cylinder",
-          "material": "M_MetalTrim",
+          "prefab": "TOS_Machine_Lab",
           "pos": [
             0,
-            0.1,
-            -0.2
+            0,
+            -0.15
           ],
           "scale": [
-            1.25,
-            0.1,
-            1.25
-          ]
-        },
-        {
-          "shape": "sphere",
-          "material": "M_LED_Green",
-          "pos": [
-            0,
-            0.95,
-            -0.2
-          ],
-          "scale": [
-            0.42,
-            0.42,
-            0.42
-          ]
-        },
-        {
-          "shape": "cylinder",
-          "material": "M_Steam",
-          "pos": [
-            0,
-            0.95,
-            -0.2
-          ],
-          "scale": [
-            0.85,
-            0.75,
-            0.85
-          ]
-        },
-        {
-          "shape": "cylinder",
-          "material": "M_MetalTrim",
-          "pos": [
-            0,
-            1.78,
-            -0.2
-          ],
-          "scale": [
-            1.0,
-            0.08,
-            1.0
-          ]
-        },
-        {
-          "shape": "empty",
-          "pos": [
-            0,
-            0.95,
-            -0.2
-          ],
-          "spin": 40,
-          "children": [
-            {
-              "shape": "cube",
-              "material": "M_MetalGrey",
-              "pos": [
-                0.55,
-                0,
-                0
-              ],
-              "scale": [
-                0.08,
-                0.5,
-                0.08
-              ]
-            },
-            {
-              "shape": "cube",
-              "material": "M_MetalGrey",
-              "pos": [
-                -0.55,
-                0,
-                0
-              ],
-              "scale": [
-                0.08,
-                0.5,
-                0.08
-              ]
-            }
+            1.5,
+            1.5,
+            1.5
           ]
         },
         {
           "prefab": "Decor_LabBench",
           "pos": [
-            0.75,
+            0.8,
             0,
-            0.45
+            0.55
           ],
           "rot": [
             0,
@@ -721,9 +641,9 @@
             0
           ],
           "scale": [
-            0.8,
+            0.7,
             1,
-            0.8
+            0.7
           ]
         }
       ]
@@ -885,6 +805,19 @@
                 0.42
               ]
             }
+          ]
+        },
+        {
+          "prefab": "TOS_OfficeChair",
+          "pos": [
+            0.1,
+            0,
+            0.35
+          ],
+          "rot": [
+            0,
+            195,
+            0
           ]
         }
       ]
@@ -1428,84 +1361,26 @@
       "name": "Cooperation engine",
       "parts": [
         {
-          "shape": "cylinder",
-          "material": "M_MetalDark",
+          "prefab": "TOS_Machine_Final",
           "pos": [
             0,
-            0.35,
-            -0.2
-          ],
-          "scale": [
-            1.0,
-            0.35,
-            1.0
-          ]
-        },
-        {
-          "shape": "cylinder",
-          "material": "M_MetalTrim",
-          "pos": [
             0,
-            0.72,
-            -0.2
+            -0.15
           ],
           "scale": [
-            0.8,
-            0.03,
-            0.8
-          ]
-        },
-        {
-          "shape": "sphere",
-          "material": "M_Glow_Both",
-          "pos": [
-            0,
-            1.35,
-            -0.2
-          ],
-          "scale": [
-            0.32,
-            0.32,
-            0.32
+            1.55,
+            1.55,
+            1.55
           ]
         },
         {
           "shape": "empty",
           "pos": [
             0,
-            1.35,
-            -0.2
+            0.95,
+            -0.15
           ],
-          "spin": 35,
-          "children": [
-            {
-              "prefab": "GlowRing_A",
-              "rot": [
-                90,
-                0,
-                0
-              ],
-              "scale": [
-                0.75,
-                0.75,
-                0.75
-              ]
-            }
-          ]
-        },
-        {
-          "shape": "empty",
-          "pos": [
-            0,
-            1.35,
-            -0.2
-          ],
-          "rot": [
-            0,
-            90,
-            0
-          ],
-          "spin": -35,
+          "spin": -30,
           "children": [
             {
               "prefab": "GlowRing_B",
@@ -1515,15 +1390,14 @@
                 0
               ],
               "scale": [
-                0.75,
-                0.75,
-                0.75
+                1.6,
+                1.6,
+                1.6
               ]
             }
           ]
         }
-      ],
-      "scale": 1.4
+      ]
     }
   }
 }
