@@ -18,6 +18,7 @@ namespace EscapeOffice
         public int Width { get; private set; }
         public int Height { get; private set; }
         public CameraSettings Camera { get; private set; } = new CameraSettings();
+        public DebuffSettings Debuff { get; private set; } = new DebuffSettings();
         public Vector2 Spawn { get; private set; }
 
         public readonly Dictionary<string, WorldObject> Objects = new Dictionary<string, WorldObject>();
@@ -62,6 +63,7 @@ namespace EscapeOffice
             root = new GameObject("World").transform;
             root.SetParent(transform, false);
             Camera = data.Camera ?? new CameraSettings();
+            Debuff = data.Debuff ?? new DebuffSettings();
 
             BuildTiles(ParseRows(data.Tiles));
 

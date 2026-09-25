@@ -77,7 +77,8 @@ namespace EscapeOffice
             var settings = world.Camera;
             var room = player.GetComponent<RoomTracker>().Current;
             bool dark = room != null && room.IsDark;
-            float target = (dark ? settings.DarkRadius : settings.Radius) * player.RadiusFactor;
+            float target = dark ? settings.DarkRadius : settings.Radius;
+            if (player.Debuffed) target = Mathf.Min(target, world.Debuff.Radius);
             radius = Mathf.Lerp(radius, target, 1f - Mathf.Exp(-radiusLerp * Time.deltaTime));
 
             var p = (Vector3)player.Position;

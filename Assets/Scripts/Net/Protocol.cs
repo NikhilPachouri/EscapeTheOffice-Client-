@@ -76,6 +76,13 @@ namespace EscapeOffice.Net
         [JsonProperty("darkRadius")] public float DarkRadius = 2f;
     }
 
+    public class DebuffSettings
+    {
+        [JsonProperty("seconds")] public float Seconds = 15f;
+        [JsonProperty("speed")] public float Speed = 0.55f;
+        [JsonProperty("radius")] public float Radius = 3.2f;
+    }
+
     public class WorldData
     {
         // ASCII rows (string[]) or one newline-separated string. '#' wall, '.' floor.
@@ -89,6 +96,7 @@ namespace EscapeOffice.Net
         [JsonProperty("side")] public string Side;
         [JsonProperty("tileSize")] public int TileSize = 32;
         [JsonProperty("camera")] public CameraSettings Camera = new CameraSettings();
+        [JsonProperty("debuff")] public DebuffSettings Debuff = new DebuffSettings();
         // Glow colour per object id, derived by the server from the keys its rules write:
         // "A", "B" or "both". Objects not listed get no side colour.
         [JsonProperty("colors")] public Dictionary<string, string> Colors = new Dictionary<string, string>();

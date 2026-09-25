@@ -10,8 +10,6 @@ namespace EscapeOffice
     {
         public float speed = 5f;
         public float interactRange = 0.9f;
-        public float debuffSpeedFactor = 0.55f;
-        public float debuffRadiusFactor = 0.6f;
         public const float Radius = 0.35f;
 
         public Vector2 Position => rb != null ? rb.position : (Vector2)transform.position;
@@ -19,7 +17,6 @@ namespace EscapeOffice
         public WorldObject Focus { get; private set; }
         public float DebuffRemaining => Mathf.Max(0f, debuffUntil - Time.time);
         public bool Debuffed => DebuffRemaining > 0f;
-        public float RadiusFactor => Debuffed ? debuffRadiusFactor : 1f;
 
         Rigidbody2D rb;
         Vector2 input;
@@ -137,11 +134,11 @@ namespace EscapeOffice
 
         void FixedUpdate()
         {
-            float s = speed * (Debuffed ? debuffSpeedFactor : 1f);
+            var world = GameManager.Instance.World;
+            float s = speed * (Debuffed && world != null ? world.Debuff.Speed : 1f);
             rb.linearVelocity = input * s;
 
             // Remember the last spot that was clear of every blocker, open or not.
-            var world = GameManager.Instance.World;
             bool clear = true;
             if (world != null)
                 foreach (var b in world.Blockers)
