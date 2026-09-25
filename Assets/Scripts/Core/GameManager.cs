@@ -22,6 +22,8 @@ namespace EscapeOffice
         public string Side { get; private set; } = "A";
         public string Status { get; private set; } = "";
         public string RoomCode { get; private set; } = "";
+        // Title of the world this room plays, from `assigned`; empty offline or before it arrives.
+        public string WorldTitle { get; private set; } = "";
         public bool Offline => link is FakeServer;
 
         public WorldState State { get; } = new WorldState();
@@ -102,12 +104,13 @@ namespace EscapeOffice
 
         // ---------------------------------------------------------------- connecting
 
-        // Open a new room; the server picks the code and it arrives in `assigned`.
-        public void Create(string url) => Open(url, null, null);
+        // Open a new room on world (an id from GET /worlds; null for a random one). The server picks
+        // the code and it arrives in `assigned`.
+        public void Create(string url, string world = null) => Open(url, null, null, world);
 
-        public void Join(string url, string code, string token = null) => Open(url, code.Trim().ToUpperInvariant(), token);
+        public void Join(string url, string code, string token = null) => Open(url, code.Trim().ToUpperInvariant(), token, null);
 
-        void Open(string url, string code, string token)
+        void Open(string url, string code, string token, string world)
         {
             Leave();
             RoomCode = code ?? "";
@@ -116,7 +119,7 @@ namespace EscapeOffice
             connection = gameObject.AddComponent<GameConnection>();
             Attach(connection);
             Current = Phase.Connecting;
-            connection.Connect(url, code, token);
+            connection.Connect(url, code, token, world);
         }
 
         public void StartOffline() => StartOffline(null);
@@ -168,6 +171,7 @@ namespace EscapeOffice
             ClearWorld();
             Current = Phase.Join;
             Status = "";
+            WorldTitle = "";
         }
 
         static void ForgetRejoin()
@@ -210,6 +214,7 @@ namespace EscapeOffice
                     var a = data.ToObject<AssignedData>();
                     if (!string.IsNullOrEmpty(a.Code)) RoomCode = a.Code;
                     Side = string.IsNullOrEmpty(a.Side) ? Side : a.Side;
+                    if (!string.IsNullOrEmpty(a.World?.Title)) WorldTitle = a.World.Title;
                     if (!Offline && !string.IsNullOrEmpty(a.Token))
                     {
                         PlayerPrefs.SetString(PrefLastCode, RoomCode);

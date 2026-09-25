@@ -30,6 +30,8 @@ namespace EscapeOffice.Net
         public bool Connected => ws != null && ws.State == WebSocketState.Open;
         public bool Talking { get; private set; }
         public bool MuteIncoming { get; set; }
+        /// <summary>Linear gain on the partner's voice. 1 = as encoded. Peaks are clamped, not wrapped.</summary>
+        public float PlaybackGain = 1.15f;
         public bool PartnerSpeaking => DateTime.UtcNow.Ticks - Interlocked.Read(ref lastReceived) < SpeakingWindow;
         public string Status { get; private set; } = "";
 
@@ -329,7 +331,7 @@ namespace EscapeOffice.Net
                         float frac = (float)(readPos - i0);
                         float a = ring[(ringStart + i0) % ring.Length];
                         float b = ring[(ringStart + i0 + 1) % ring.Length];
-                        float v = MuteIncoming ? 0f : a + (b - a) * frac;
+                        float v = MuteIncoming ? 0f : Mathf.Clamp((a + (b - a) * frac) * PlaybackGain, -1f, 1f);
                         for (int c = 0; c < channels; c++) data[produced * channels + c] = v;
                         produced++;
                         readPos += step;

@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Linq;
+using EscapeOffice.Net;
 using EscapeOffice.Objects;
 using UnityEngine;
 
@@ -15,6 +17,14 @@ namespace EscapeOffice.UI
 
         string url;
         string code = "";
+
+        // World picker on the join screen, shown only when the server offers two or more worlds.
+        // Choice 0 is Random; choice i is worlds.Items[i - 1]. Remembered by id across launches.
+        const string PrefLastWorld = "eto.lastWorld";
+        readonly WorldList worlds = new WorldList();
+        int worldChoice;
+        List<WorldInfo> choiceFor; // the list worldChoice indexes; a new fetch restores the saved pick
+        GameManager.Phase? shownPhase;
         KeypadObject keypad;
         string typed = "";
         CodePanelObject codePanel;
@@ -74,6 +84,13 @@ namespace EscapeOffice.UI
             float w = Screen.width / scale, h = RefHeight;
 
             var gm = GameManager.Instance;
+            // Refetch the world list each time the join screen comes up, so a server-side reload
+            // (or an "unknown world" error, which lands here) is picked up.
+            if (Event.current.type == EventType.Layout && gm.Current != shownPhase)
+            {
+                shownPhase = gm.Current;
+                if (gm.Current == GameManager.Phase.Join) StartCoroutine(worlds.Refresh(url));
+            }
             switch (gm.Current)
             {
                 case GameManager.Phase.Join: JoinScreen(gm, w, h); break;
@@ -104,7 +121,9 @@ namespace EscapeOffice.UI
             bool canRejoin = lastCode.Length > 0 && lastToken.Length > 0;
 
             bool hasStatus = !string.IsNullOrEmpty(gm.Status);
-            float pw = 420, ph = 434 + (canRejoin ? 50 : 0) + (hasStatus ? 44 : 0);
+            var offered = worlds.Items;
+            bool picker = offered.Count >= 2;
+            float pw = 420, ph = 434 + (canRejoin ? 50 : 0) + (hasStatus ? 44 : 0) + (picker ? 56 : 0);
             var panel = new Rect(Mathf.Max(24, w * 0.05f), (h - ph) / 2, pw, ph);
             MenuArt.Panel(panel);
             float x = panel.x + 32, iw = pw - 64, y = panel.y + 28;
@@ -113,11 +132,25 @@ namespace EscapeOffice.UI
             GUI.Label(new Rect(x, y + 54, iw, 24), "Two sides. One building. Talk to each other.", hint);
             y += 104;
 
+            // World picker: only when there is a choice to make.
+            WorldInfo pickedWorld = null;
+            if (picker)
+            {
+                pickedWorld = WorldPicker(new Rect(x, y, iw, 44), offered, ghost, headFont);
+                y += 56;
+            }
+
             // Create: the main action.
             var create = new Rect(x, y, iw, 58);
-            if (GUI.Button(create, "      Create a room", primary)) gm.Create(url);
+            if (GUI.Button(create, "      Create a room", primary))
+            {
+                PlayerPrefs.SetString(PrefLastWorld, pickedWorld?.Id ?? "");
+                PlayerPrefs.Save();
+                gm.Create(url, pickedWorld?.Id);
+            }
             MenuArt.Icon(new Rect(create.x + 18, create.y + 13, 32, 32), "UI_Icon_Both_256");
-            GUI.Label(new Rect(x, y + 62, iw, 22), "You get a code to read out to your partner.", hint);
+            GUI.Label(new Rect(x, y + 62, iw, 22),
+                string.IsNullOrEmpty(pickedWorld?.Description) ? "You get a code to read out to your partner." : pickedWorld.Description, hint);
             y += 104;
 
             MenuArt.Divider(new Rect(x, y, iw, 20), "HAVE A CODE?", new GUIStyle(small) { font = headFont, fontSize = 13 });
@@ -156,6 +189,27 @@ namespace EscapeOffice.UI
                 GUI.Label(new Rect(x, y - 6, iw, 44), gm.Status, new GUIStyle(hint) { wordWrap = true, alignment = TextAnchor.UpperLeft, normal = { textColor = new Color(1f, 0.62f, 0.5f) } });
         }
 
+        // ‹ title › cycler over Random + the offered worlds. Returns the chosen world, or null for Random.
+        WorldInfo WorldPicker(Rect r, List<WorldInfo> offered, GUIStyle style, Font headFont)
+        {
+            int count = offered.Count + 1;
+            if (choiceFor != offered)
+            {
+                // Fresh list: restore the last pick; a world that is gone falls back to Random.
+                choiceFor = offered;
+                var last = PlayerPrefs.GetString(PrefLastWorld, "");
+                worldChoice = offered.FindIndex(o => o.Id == last) + 1;
+            }
+
+            const float arrow = 52;
+            if (GUI.Button(new Rect(r.x, r.y, arrow, r.height), "‹", style)) worldChoice = (worldChoice + count - 1) % count;
+            if (GUI.Button(new Rect(r.xMax - arrow, r.y, arrow, r.height), "›", style)) worldChoice = (worldChoice + 1) % count;
+            var mid = new Rect(r.x + arrow + 8, r.y, r.width - 2 * (arrow + 8), r.height);
+            string title = worldChoice == 0 ? "Random world" : offered[worldChoice - 1].Title;
+            if (GUI.Button(mid, title, new GUIStyle(style) { font = headFont, fontSize = 17 })) worldChoice = (worldChoice + 1) % count;
+            return worldChoice == 0 ? null : offered[worldChoice - 1];
+        }
+
         void WaitingScreen(GameManager gm, float w, float h)
         {
             MenuArt.DrawBackdrop(new Rect(0, 0, w, h));
@@ -172,6 +226,8 @@ namespace EscapeOffice.UI
             MenuArt.Title(new Rect(x, y, iw, 44), headFont, 34);
             y += 60;
             GUI.Label(new Rect(x, y, iw, 22), gm.RoomCode.Length > 0 ? "ROOM CODE" : "CREATING ROOM", new GUIStyle(hint) { font = headFont, fontSize = 14 });
+            if (gm.WorldTitle.Length > 0)
+                GUI.Label(new Rect(x, y, iw, 22), gm.WorldTitle.ToUpperInvariant(), new GUIStyle(hint) { font = headFont, fontSize = 14, alignment = TextAnchor.MiddleRight, normal = { textColor = MenuArt.Warm } });
             y += 26;
 
             // The code, big: it is what the player reads out to their partner.

@@ -10,7 +10,7 @@ namespace EscapeOffice.Net
     public static class MsgType
     {
         // Client -> server
-        public const string Create = "create"; // { } — server makes the room, code comes back in `assigned`
+        public const string Create = "create"; // { world? } — server makes the room (random world if none), code comes back in `assigned`
         public const string Join = "join";
         public const string Interact = "interact";
         public const string Enter = "enter";
@@ -36,6 +36,12 @@ namespace EscapeOffice.Net
     }
 
     // ---- Client -> server ----
+
+    public class CreateData
+    {
+        // A world id from GET /worlds. The server answers `error "unknown world"` if it has none by that id.
+        [JsonProperty("world")] public string World;
+    }
 
     public class JoinData
     {
@@ -69,6 +75,16 @@ namespace EscapeOffice.Net
         [JsonProperty("token")] public string Token;
         // Optional: URL of a separate voice relay (wss://host/voice). Absent when voice runs on the game server.
         [JsonProperty("voice")] public string Voice;
+        // The world the room's creator picked (or the server picked at random).
+        [JsonProperty("world")] public WorldInfo World;
+    }
+
+    // One entry of GET /worlds, and the `world` in `assigned` (which has no description).
+    public class WorldInfo
+    {
+        [JsonProperty("id")] public string Id;
+        [JsonProperty("title")] public string Title;
+        [JsonProperty("description")] public string Description;
     }
 
     public class FxData

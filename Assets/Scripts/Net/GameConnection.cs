@@ -30,15 +30,18 @@ namespace EscapeOffice.Net
 
         WebSocket ws;
         string url;
+        string createWorld; // world id sent with `create`; null lets the server pick
         bool wantConnected;
         bool connecting;
         float retryAt = -1f;
         float lostAt = -1f;
 
-        // code == null: create a new room. Otherwise join (or, with a token, rejoin) that room.
-        public void Connect(string serverUrl, string code, string token = null)
+        // code == null: create a new room on world (null for a random one). Otherwise join (or,
+        // with a token, rejoin) that room.
+        public void Connect(string serverUrl, string code, string token = null, string world = null)
         {
             url = serverUrl;
+            createWorld = string.IsNullOrEmpty(world) ? null : world;
             Code = string.IsNullOrEmpty(code) ? null : code;
             Token = string.IsNullOrEmpty(token) ? null : token;
             wantConnected = true;
@@ -62,7 +65,7 @@ namespace EscapeOffice.Net
                 lostAt = -1f;
                 Session++;
                 StatusChanged?.Invoke("Connected");
-                if (Code == null) Send(MsgType.Create, null);
+                if (Code == null) Send(MsgType.Create, createWorld == null ? null : new CreateData { World = createWorld });
                 else Send(MsgType.Join, new JoinData { Code = Code, Token = Token });
             };
             socket.OnMessage += bytes => Receive(Encoding.UTF8.GetString(bytes));
