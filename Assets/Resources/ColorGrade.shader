@@ -1,5 +1,6 @@
-// Camera post effect for the 3D view (EscapeOffice.ColorGrading): bloom so emissive things
-// glow, then saturation, contrast, warm highlights / cool shadows and a vignette.
+// Camera post effect for the 3D view (EscapeOffice.ColorGrading): tilt-shift blur toward the
+// top and bottom (the miniature-diorama look), bloom so emissive things glow, then saturation,
+// contrast, warm highlights / cool shadows and a vignette.
 // Lives in Resources so builds include it and Shader.Find sees it.
 Shader "EscapeOffice/ColorGrade"
 {
@@ -14,6 +15,8 @@ Shader "EscapeOffice/ColorGrade"
     sampler2D _MainTex;
     float4 _MainTex_TexelSize;
     sampler2D _BloomTex;
+    sampler2D _BlurTex;
+    float4 _Tilt;        // x: strength, y: half-height of the sharp band (0..1)
 
     float4 _Threshold;   // x: threshold, y: soft knee, z: bloom intensity
     float4 _Grade;       // x: saturation, y: contrast, z: exposure, w: split-tone strength
@@ -57,6 +60,8 @@ Shader "EscapeOffice/ColorGrade"
     half4 fragGrade (v2f i) : SV_Target
     {
         half3 c = tex2D(_MainTex, i.uv).rgb;
+        half band = abs(i.uv.y - 0.5) * 2;
+        c = lerp(c, tex2D(_BlurTex, i.uv).rgb, _Tilt.x * smoothstep(_Tilt.y, 1.0, band));
         c += tex2D(_BloomTex, i.uv).rgb * _Threshold.z;
         c *= _Grade.z;
 

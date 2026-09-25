@@ -22,6 +22,10 @@ namespace EscapeOffice
         public Color highlights = new Color(1f, 0.93f, 0.82f);
         public Color shadows = new Color(0.78f, 0.86f, 1f);
 
+        [Header("Tilt-shift")]
+        [Range(0f, 1f)] public float tiltShift = 0.75f;
+        [Range(0f, 1f)] public float tiltFocus = 0.28f;
+
         [Header("Vignette")]
         [Range(0f, 1f)] public float vignette = 0.38f;
         [Range(0f, 1f)] public float vignetteStart = 0.45f;
@@ -35,6 +39,19 @@ namespace EscapeOffice
         static readonly int CoolId = Shader.PropertyToID("_Cool");
         static readonly int VignetteId = Shader.PropertyToID("_Vignette");
         static readonly int BloomTexId = Shader.PropertyToID("_BloomTex");
+        static readonly int BlurTexId = Shader.PropertyToID("_BlurTex");
+        static readonly int TiltId = Shader.PropertyToID("_Tilt");
+
+        // Values from Resources/ArtDirection.json ("grading").
+        public void Apply(ArtDirection.GradeLook g)
+        {
+            threshold = g.bloomThreshold; softKnee = g.bloomKnee; bloom = g.bloom;
+            saturation = g.saturation; contrast = g.contrast; exposure = g.exposure; splitTone = g.splitTone;
+            highlights = ArtDirection.Hex(g.highlights, highlights);
+            shadows = ArtDirection.Hex(g.shadows, shadows);
+            vignette = g.vignette; vignetteStart = g.vignetteStart;
+            tiltShift = g.tiltShift; tiltFocus = g.tiltFocus;
+        }
 
         void OnEnable()
         {
@@ -62,6 +79,18 @@ namespace EscapeOffice
             mat.SetColor(WarmId, highlights);
             mat.SetColor(CoolId, shadows);
             mat.SetVector(VignetteId, new Vector4(vignette, vignetteStart, 0f, 0f));
+            mat.SetVector(TiltId, new Vector4(tiltShift, tiltFocus, 0f, 0f));
+
+            // Tilt-shift source: the frame at 1/8 size, smoothed back up to 1/4.
+            var half = RenderTexture.GetTemporary(src.width / 2, src.height / 2, 0, src.format);
+            var quarter = RenderTexture.GetTemporary(src.width / 4, src.height / 4, 0, src.format);
+            var eighth = RenderTexture.GetTemporary(src.width / 8, src.height / 8, 0, src.format);
+            var blur = RenderTexture.GetTemporary(src.width / 4, src.height / 4, 0, src.format);
+            Graphics.Blit(src, half, mat, 1);
+            Graphics.Blit(half, quarter, mat, 1);
+            Graphics.Blit(quarter, eighth, mat, 1);
+            Graphics.Blit(eighth, blur, mat, 1);
+            mat.SetTexture(BlurTexId, blur);
 
             // Bloom: bright parts at half size, blurred down a mip chain and back up.
             int w = src.width / 2, h = src.height / 2, levels = 0;
@@ -84,6 +113,10 @@ namespace EscapeOffice
                 RenderTexture.ReleaseTemporary(chain[i]);
                 chain[i] = null;
             }
+            RenderTexture.ReleaseTemporary(half);
+            RenderTexture.ReleaseTemporary(quarter);
+            RenderTexture.ReleaseTemporary(eighth);
+            RenderTexture.ReleaseTemporary(blur);
         }
     }
 }

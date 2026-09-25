@@ -111,7 +111,8 @@ namespace EscapeOffice.Objects
                     cooldownUntil = Time.time + CatchCooldown;
                     player.ApplyDebuff(debuffSeconds);
                     GameManager.Instance.PlayLocal("caught", pos);
-                    Fx3D.Burst(new Vector3(target.x, target.y, -0.6f), new Color(1f, 0.25f, 0.2f), count: 26, speed: 3f, size: 0.18f, life: 0.6f);
+                    Fx3D.Ring(new Vector3(target.x, target.y, -0.02f), new Color(1f, 0.2f, 0.2f, 0.85f), 0.4f, 3.2f, 0.5f);
+                    Fx3D.Arc(new Vector3(pos.x, pos.y, -0.75f), new Vector3(target.x, target.y, -0.6f), new Color(1f, 0.3f, 0.3f), 0.35f, 0.06f);
                     GameManager.Instance.CameraRig.Shake(0.25f, 0.45f);
                     GameManager.Instance.Toast("The boss caught you! You feel sluggish…");
                 }

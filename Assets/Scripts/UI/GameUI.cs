@@ -62,6 +62,7 @@ namespace EscapeOffice.UI
             button = new GUIStyle(GUI.skin.button) { fontSize = 20 };
             field = new GUIStyle(GUI.skin.textField) { fontSize = 22, alignment = TextAnchor.MiddleLeft };
             digits = new GUIStyle(GUI.skin.label) { fontSize = 64, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+            UiSkin.Apply(title, big, label, small, box, button, field, digits);
         }
 
         void OnGUI()

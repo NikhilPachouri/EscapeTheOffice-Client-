@@ -84,7 +84,7 @@ namespace EscapeOffice.Objects
         protected override void Update()
         {
             base.Update();
-            if (text != null && text.text != Code) text.text = Code;
+            if (text != null && GameManager.Instance != null && text.text != Code) text.text = Code;
         }
     }
 }

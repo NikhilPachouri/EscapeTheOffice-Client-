@@ -7,164 +7,164 @@
  },
  "materials": {
   "M_Wall": {
-   "baseColor": "#857f8c",
-   "metallic": 0.05,
+   "baseColor": "#5d5c66",
+   "metallic": 0,
    "roughness": 0.95,
    "shader": "Lit"
   },
   "M_WallCap": {
-   "baseColor": "#d3ccc1",
-   "metallic": 0.05,
-   "roughness": 0.6,
+   "baseColor": "#2a2b31",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_WallVoid": {
-   "baseColor": "#14171c",
+   "baseColor": "#0b0d11",
    "metallic": 0.05,
    "roughness": 0.95,
    "shader": "Lit",
    "note": "Wall cells not touching floor (drawn low, 0.2 m)"
   },
   "M_FloorGrout": {
-   "baseColor": "#101318",
+   "baseColor": "#26282e",
    "metallic": 0.05,
    "roughness": 0.8,
    "shader": "Lit"
   },
   "M_Floor_Lobby_A": {
-   "baseColor": "#9a6a4b",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#6f6155",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Lobby_B": {
-   "baseColor": "#8c5f43",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#6b5d52",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Office_A": {
-   "baseColor": "#3f6a8a",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#4a5663",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Office_B": {
-   "baseColor": "#3a6180",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#47535f",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Archive_A": {
-   "baseColor": "#7a6a45",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#5f5549",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Archive_B": {
-   "baseColor": "#6f603e",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#5b5246",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Workshop_A": {
-   "baseColor": "#4f6b6b",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#4c5a58",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Workshop_B": {
-   "baseColor": "#486262",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#495755",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Vault_A": {
-   "baseColor": "#4d4868",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#4f4b5c",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Vault_B": {
-   "baseColor": "#46415f",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#4c4859",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Lab_A": {
-   "baseColor": "#b8d3cd",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#6f7c78",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Lab_B": {
-   "baseColor": "#a8c5bf",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#6b7874",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Server_A": {
-   "baseColor": "#24344f",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#2f3642",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Server_B": {
-   "baseColor": "#2b3d5c",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#2d3440",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Boiler_A": {
-   "baseColor": "#7a4630",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#5e4a40",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Boiler_B": {
-   "baseColor": "#6e3f2b",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#5a473d",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Cafe_A": {
-   "baseColor": "#d8c3a0",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#76695a",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Cafe_B": {
-   "baseColor": "#a2553f",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#716457",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Hallway_A": {
-   "baseColor": "#5b5a66",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#45464d",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Hallway_B": {
-   "baseColor": "#54535e",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#43444b",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Final_A": {
-   "baseColor": "#2f6b4f",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#3f4f4a",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Floor_Final_B": {
-   "baseColor": "#2a6047",
-   "metallic": 0.05,
-   "roughness": 0.85,
+   "baseColor": "#3c4c47",
+   "metallic": 0,
+   "roughness": 0.95,
    "shader": "Lit"
   },
   "M_Water": {
-   "baseColor": "#2f8fd0",
+   "baseColor": "#2e6f8e",
    "metallic": 0.1,
    "roughness": 0.15,
    "opacity": 0.78,
@@ -172,181 +172,181 @@
    "note": "Animate: UV scroll / vertex bob ±0.03 m. Room is impassable while flooded."
   },
   "M_Wood": {
-   "baseColor": "#9b7a5c",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#8b7d6f",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_MetalDark": {
-   "baseColor": "#3a3f47",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#3f4247",
+   "metallic": 0.6,
+   "roughness": 0.42,
    "shader": "Lit"
   },
   "M_MonitorBody": {
-   "baseColor": "#1d2228",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#1f2124",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_MonitorScreen": {
-   "baseColor": "#6fb7ff",
+   "baseColor": "#5f86a8",
    "metallic": 0.05,
    "roughness": 0.8,
-   "emission": "#3c8ad8",
+   "emission": "#2c4a66",
    "emissionIntensity": 0.9,
    "shader": "Lit"
   },
   "M_Chair": {
-   "baseColor": "#2b3038",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#2d2f32",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_Terracotta": {
-   "baseColor": "#b86b45",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#a68372",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_Leaf": {
-   "baseColor": "#3f8a4a",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#5a7c5f",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_LeafLight": {
-   "baseColor": "#4fa35a",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#6d9372",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_MetalGrey": {
-   "baseColor": "#6b7580",
-   "metallic": 0.4,
-   "roughness": 0.5,
+   "baseColor": "#737980",
+   "metallic": 0.6,
+   "roughness": 0.42,
    "shader": "Lit"
   },
   "M_MetalTrim": {
-   "baseColor": "#9aa4ae",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#a2a8ae",
+   "metallic": 0.6,
+   "roughness": 0.42,
    "shader": "Lit"
   },
   "M_LED_Green": {
-   "baseColor": "#4dff9a",
+   "baseColor": "#6fc79a",
    "metallic": 0.05,
    "roughness": 0.8,
-   "emission": "#4dff9a",
+   "emission": "#3f9a6c",
    "emissionIntensity": 1.2,
    "shader": "Lit"
   },
   "M_LED_Blue": {
-   "baseColor": "#4dc3ff",
+   "baseColor": "#6fa9c7",
    "metallic": 0.05,
    "roughness": 0.8,
-   "emission": "#4dc3ff",
+   "emission": "#3f7c9a",
    "emissionIntensity": 1.2,
    "shader": "Lit"
   },
   "M_LED_Amber": {
-   "baseColor": "#ffb84d",
+   "baseColor": "#c7a46f",
    "metallic": 0.05,
    "roughness": 0.8,
-   "emission": "#ffb84d",
+   "emission": "#9a7a3f",
    "emissionIntensity": 1.2,
    "shader": "Lit"
   },
   "M_RackBody": {
-   "baseColor": "#1b2129",
-   "metallic": 0.5,
-   "roughness": 0.4,
+   "baseColor": "#212429",
+   "metallic": 0.6,
+   "roughness": 0.42,
    "shader": "Lit"
   },
   "M_Copper": {
-   "baseColor": "#8a5a3c",
-   "metallic": 0.6,
+   "baseColor": "#7d5a45",
+   "metallic": 0.7,
    "roughness": 0.4,
    "shader": "Lit"
   },
   "M_Brass": {
-   "baseColor": "#d9c28a",
-   "metallic": 0.7,
-   "roughness": 0.8,
-   "shader": "Lit"
-  },
-  "M_Pipe": {
-   "baseColor": "#7c8a91",
-   "metallic": 0.7,
+   "baseColor": "#b59d6a",
+   "metallic": 0.75,
    "roughness": 0.35,
    "shader": "Lit"
   },
+  "M_Pipe": {
+   "baseColor": "#848d91",
+   "metallic": 0.6,
+   "roughness": 0.42,
+   "shader": "Lit"
+  },
   "M_PaintRed": {
-   "baseColor": "#c4413a",
-   "metallic": 0.4,
-   "roughness": 0.8,
+   "baseColor": "#6e5a50",
+   "metallic": 0.3,
+   "roughness": 0.6,
    "shader": "Lit"
   },
   "M_VendingBody": {
-   "baseColor": "#c4413a",
-   "metallic": 0.05,
-   "roughness": 0.4,
+   "baseColor": "#5d6a70",
+   "metallic": 0.3,
+   "roughness": 0.5,
    "shader": "Lit"
   },
   "M_VendingGlass": {
-   "baseColor": "#fff0c2",
+   "baseColor": "#d9cfae",
    "metallic": 0.05,
    "roughness": 0.8,
-   "emission": "#ffd27a",
+   "emission": "#8a7646",
    "emissionIntensity": 0.8,
    "shader": "Lit"
   },
   "M_Book_1": {
-   "baseColor": "#9b3d3d",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#6b5550",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_Book_2": {
-   "baseColor": "#3d6a9b",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#61758b",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_Book_3": {
-   "baseColor": "#c9a44a",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#b5a47c",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_Book_4": {
-   "baseColor": "#4f7a4a",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#5a6e58",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_Book_5": {
-   "baseColor": "#7b5a8f",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#786981",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_WoodDark": {
-   "baseColor": "#6e4f36",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#63554a",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_LabTop": {
-   "baseColor": "#eef2f5",
-   "metallic": 0.05,
-   "roughness": 0.3,
+   "baseColor": "#d9dbdc",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_LabBase": {
-   "baseColor": "#8a96a2",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#878c92",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_FlaskGreen": {
@@ -368,39 +368,39 @@
    "shader": "Lit / Transparent"
   },
   "M_Fabric": {
-   "baseColor": "#3f6f8a",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#5a707c",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_FabricDark": {
-   "baseColor": "#355e76",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#4d5f6a",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_CrateWood": {
-   "baseColor": "#a07a4a",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#907f69",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_TableTop": {
-   "baseColor": "#e9e1d3",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#d2cec8",
+   "metallic": 0,
+   "roughness": 0.9,
    "shader": "Lit"
   },
   "M_MetalGrey2": {
-   "baseColor": "#5a5f66",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#5f6266",
+   "metallic": 0.6,
+   "roughness": 0.42,
    "shader": "Lit"
   },
   "M_Stool": {
-   "baseColor": "#d9503f",
-   "metallic": 0.05,
-   "roughness": 0.8,
+   "baseColor": "#7a6a58",
+   "metallic": 0,
+   "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Lamp_Red": {
@@ -422,7 +422,7 @@
   "M_DoorButton_Panel": {
    "baseColor": "#6c7a89",
    "metallic": 0.5,
-   "roughness": 0.35,
+   "roughness": 0.3,
    "shader": "Lit"
   },
   "M_DoorButton_Trim": {
@@ -436,7 +436,7 @@
   "M_DoorCode_Panel": {
    "baseColor": "#5a6f7c",
    "metallic": 0.5,
-   "roughness": 0.35,
+   "roughness": 0.3,
    "shader": "Lit"
   },
   "M_DoorCode_Trim": {
@@ -450,7 +450,7 @@
   "M_DoorKey_Panel": {
    "baseColor": "#8a6d2f",
    "metallic": 0.5,
-   "roughness": 0.35,
+   "roughness": 0.3,
    "shader": "Lit"
   },
   "M_DoorKey_Trim": {
@@ -464,7 +464,7 @@
   "M_DoorExit_Panel": {
    "baseColor": "#2f6b4a",
    "metallic": 0.5,
-   "roughness": 0.35,
+   "roughness": 0.3,
    "shader": "Lit"
   },
   "M_DoorExit_Trim": {
@@ -483,9 +483,9 @@
    "texture": "Textures/ExitSign.png"
   },
   "M_LaserPost": {
-   "baseColor": "#2b2f36",
+   "baseColor": "#2f3236",
    "metallic": 0.6,
-   "roughness": 0.8,
+   "roughness": 0.42,
    "shader": "Lit"
   },
   "M_LaserBeam": {
@@ -540,14 +540,14 @@
   "M_ButtonBase": {
    "baseColor": "#3a414b",
    "metallic": 0.5,
-   "roughness": 0.8,
+   "roughness": 0.35,
    "shader": "Lit"
   },
   "M_ButtonCap_Neutral": {
    "baseColor": "#ffffff",
    "metallic": 0.05,
    "roughness": 0.3,
-   "emission": "#ffffff",
+   "emission": "#4a4a4a",
    "emissionIntensity": 0.6,
    "shader": "Lit",
    "note": "Tint at runtime with the object's glow colour (A/B/both)"
@@ -555,7 +555,7 @@
   "M_Gold": {
    "baseColor": "#ffd166",
    "metallic": 0.8,
-   "roughness": 0.25,
+   "roughness": 0.2,
    "shader": "Lit"
   },
   "M_ButtonCap_Pressed": {
@@ -567,14 +567,14 @@
   "M_PanelDark": {
    "baseColor": "#2d333b",
    "metallic": 0.5,
-   "roughness": 0.8,
+   "roughness": 0.4,
    "shader": "Lit"
   },
   "M_Lever_Neutral": {
    "baseColor": "#ffffff",
    "metallic": 0.05,
    "roughness": 0.8,
-   "emission": "#ffffff",
+   "emission": "#4a4a4a",
    "emissionIntensity": 0.35,
    "shader": "Lit",
    "note": "Tint with glow colour"
@@ -592,9 +592,9 @@
    "shader": "Lit"
   },
   "M_ValveWheel": {
-   "baseColor": "#d9433a",
-   "metallic": 0.5,
-   "roughness": 0.35,
+   "baseColor": "#d6a23a",
+   "metallic": 0.6,
+   "roughness": 0.3,
    "shader": "Lit"
   },
   "M_Keypad_Locked": {
@@ -649,7 +649,7 @@
   "M_KeyGold": {
    "baseColor": "#ffcf5a",
    "metallic": 0.9,
-   "roughness": 0.2,
+   "roughness": 0.15,
    "shader": "Lit"
   },
   "M_CrackedWall": {
@@ -668,13 +668,13 @@
   "M_PlayerA_Suit": {
    "baseColor": "#ff9f43",
    "metallic": 0.05,
-   "roughness": 0.45,
+   "roughness": 0.35,
    "shader": "Lit"
   },
   "M_Skin": {
-   "baseColor": "#f4ead8",
+   "baseColor": "#d9ccb6",
    "metallic": 0.05,
-   "roughness": 0.4,
+   "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Visor": {
@@ -693,7 +693,7 @@
   "M_PlayerB_Suit": {
    "baseColor": "#3ecfd8",
    "metallic": 0.05,
-   "roughness": 0.45,
+   "roughness": 0.35,
    "shader": "Lit"
   },
   "M_PlayerRing_B": {
@@ -710,9 +710,9 @@
    "shader": "Lit"
   },
   "M_MetalLight": {
-   "baseColor": "#8a96a2",
-   "metallic": 0.7,
-   "roughness": 0.8,
+   "baseColor": "#949ba2",
+   "metallic": 0.6,
+   "roughness": 0.42,
    "shader": "Lit"
   },
   "M_DroneEye": {
@@ -724,10 +724,10 @@
    "shader": "Lit"
   },
   "M_DroneHalo": {
-   "baseColor": "#ffd166",
+   "baseColor": "#7a2626",
    "metallic": 0.05,
    "roughness": 0.8,
-   "emission": "#ffb020",
+   "emission": "#c42a2a",
    "emissionIntensity": 1.2,
    "shader": "Lit"
   },

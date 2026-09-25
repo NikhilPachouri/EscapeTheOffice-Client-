@@ -21,7 +21,9 @@ namespace EscapeOffice
         public List<Sprite> sprites = new List<Sprite>();
         public List<AudioClip> clips = new List<AudioClip>();
         public List<ThemeDecor> decor = new List<ThemeDecor>();
-        public Font codeFont;
+        public Font codeFont;   // Chakra Petch Bold: codes, digits
+        public Font titleFont;  // Chakra Petch SemiBold: headings, buttons
+        public Font uiFont;     // Barlow SemiBold: body text
 
         Dictionary<string, GameObject> prefabIndex;
         Dictionary<string, Material> materialIndex;
