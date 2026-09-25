@@ -204,7 +204,7 @@ namespace EscapeOffice.UI
             var sideColor = Palette.ForSide(gm.Side);
             MenuArt.Glass(new Rect(12, 12, 250, 108), new Color(sideColor.r, sideColor.g, sideColor.b, 0.55f));
             MenuArt.Fill(new Rect(24, 12, 90, 3), sideColor);
-            GUI.Label(new Rect(26, 16, 230, 26), $"SIDE {gm.Side}" + (gm.Offline ? "  · offline" : ""), new GUIStyle(label) { font = Art.Catalog != null ? Art.Catalog.titleFont : label.font, normal = { textColor = sideColor } });
+            GUI.Label(new Rect(26, 16, 230, 26), $"SIDE {gm.Side}" + (gm.Offline ? "  · offline" : ""), new GUIStyle(label) { font = Art.Catalog != null && Art.Catalog.titleFont != null ? Art.Catalog.titleFont : label.font, normal = { textColor = sideColor } });
             var room = player != null ? player.GetComponent<RoomTracker>().Current : null;
             GUI.Label(new Rect(26, 40, 230, 22), room != null ? $"Room: {room.Id}" + (room.IsDark ? " (dark)" : "") : "Room: —", small);
             var inv = gm.Inventory();

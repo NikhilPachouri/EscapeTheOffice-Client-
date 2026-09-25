@@ -13,6 +13,8 @@ namespace EscapeOffice
 
         // Camera (perspective view; distance also scales the orthographic view).
         public static float Height, Behind, Fov, Distance, Follow;
+        // Side angle: degrees the camera orbits around the player (0 = from the south).
+        public static float Yaw;
         // Vision circle: multipliers on the level's radius / darkRadius, edge softness in tiles,
         // and how opaque the darkness outside it is.
         public static float VisionScale, DarkScale, Softness, FogAlpha;
@@ -29,6 +31,7 @@ namespace EscapeOffice
             Height = PlayerPrefs.GetFloat(Pref + "height", Height);
             Behind = PlayerPrefs.GetFloat(Pref + "behind", Behind);
             Fov = PlayerPrefs.GetFloat(Pref + "fov", Fov);
+            Yaw = PlayerPrefs.GetFloat(Pref + "yaw", Yaw);
             Distance = PlayerPrefs.GetFloat(Pref + "distance", Distance);
             Follow = PlayerPrefs.GetFloat(Pref + "follow", Follow);
             VisionScale = PlayerPrefs.GetFloat(Pref + "vision", VisionScale);
@@ -45,6 +48,7 @@ namespace EscapeOffice
             Height = art.camera.height;
             Behind = art.camera.behind;
             Fov = art.camera.fov;
+            Yaw = art.camera.yaw;
             Distance = 1f;
             Follow = 10f;
             VisionScale = 1f;
@@ -60,6 +64,7 @@ namespace EscapeOffice
             PlayerPrefs.SetFloat(Pref + "height", Height);
             PlayerPrefs.SetFloat(Pref + "behind", Behind);
             PlayerPrefs.SetFloat(Pref + "fov", Fov);
+            PlayerPrefs.SetFloat(Pref + "yaw", Yaw);
             PlayerPrefs.SetFloat(Pref + "distance", Distance);
             PlayerPrefs.SetFloat(Pref + "follow", Follow);
             PlayerPrefs.SetFloat(Pref + "vision", VisionScale);
@@ -73,7 +78,7 @@ namespace EscapeOffice
 
         public static void Reset()
         {
-            foreach (var k in new[] { "height", "behind", "fov", "distance", "follow", "vision", "dark", "softness", "fogAlpha", "vignette", "vignetteStart" })
+            foreach (var k in new[] { "height", "behind", "fov", "yaw", "distance", "follow", "vision", "dark", "softness", "fogAlpha", "vignette", "vignetteStart" })
                 PlayerPrefs.DeleteKey(Pref + k);
             PlayerPrefs.Save();
             Defaults();
@@ -85,7 +90,7 @@ namespace EscapeOffice
             string F(float v) => v.ToString("0.###", CultureInfo.InvariantCulture);
             float r = (level?.Radius ?? 8f) * VisionScale, d = (level?.DarkRadius ?? 2f) * DarkScale;
             return
-                $"\"camera\": {{ \"height\": {F(Height * Distance)}, \"behind\": {F(Behind * Distance)}, \"fov\": {F(Fov)} }},\n" +
+                $"\"camera\": {{ \"height\": {F(Height * Distance)}, \"behind\": {F(Behind * Distance)}, \"fov\": {F(Fov)}, \"yaw\": {F(Yaw)} }},\n" +
                 $"\"world\": {{ \"fogAlpha\": {F(FogAlpha)} }},\n" +
                 $"\"grading\": {{ \"vignette\": {F(Vignette)}, \"vignetteStart\": {F(VignetteStart)} }}\n" +
                 $"// level camera: {{ \"radius\": {F(r)}, \"darkRadius\": {F(d)} }}, mask softness {F(Softness)}";

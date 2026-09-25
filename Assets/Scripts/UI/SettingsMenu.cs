@@ -172,9 +172,11 @@ namespace EscapeOffice.UI
         {
             if (title != null) return;
             var font = Art.Catalog != null ? Art.Catalog.codeFont : null;
-            title = new GUIStyle(GUI.skin.label) { fontSize = 30, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, font = font, normal = { textColor = Ink } };
-            rowLabel = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleLeft, normal = { textColor = Ink } };
-            small = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, font = font };
+            var text = Art.Catalog != null ? Art.Catalog.uiFont : null;
+            var bold = font != null ? FontStyle.Normal : FontStyle.Bold; // the font carries the weight
+            title = new GUIStyle(GUI.skin.label) { fontSize = 30, fontStyle = bold, alignment = TextAnchor.MiddleLeft, font = font, normal = { textColor = Ink } };
+            rowLabel = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleLeft, font = text, normal = { textColor = Ink } };
+            small = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = bold, font = font };
             button = new GUIStyle(GUI.skin.button) { fontSize = 20, font = font };
         }
 

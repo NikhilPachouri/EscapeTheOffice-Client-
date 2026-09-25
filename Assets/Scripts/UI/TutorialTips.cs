@@ -327,10 +327,12 @@ namespace EscapeOffice.UI
         void Styles()
         {
             if (title != null) return;
-            title = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, richText = true };
-            body = new GUIStyle(GUI.skin.label) { fontSize = 13, wordWrap = true, richText = true };
+            var head = Art.Catalog != null ? Art.Catalog.titleFont : null;
+            var text = Art.Catalog != null ? Art.Catalog.uiFont : null;
+            title = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = head != null ? FontStyle.Normal : FontStyle.Bold, richText = true, font = head };
+            body = new GUIStyle(GUI.skin.label) { fontSize = 13, wordWrap = true, richText = true, font = text };
             body.normal.textColor = Ink;
-            button = new GUIStyle(GUI.skin.button) { fontSize = 15 };
+            button = new GUIStyle(GUI.skin.button) { fontSize = 15, font = head };
         }
     }
 }

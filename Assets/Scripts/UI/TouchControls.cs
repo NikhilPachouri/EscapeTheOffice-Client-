@@ -140,7 +140,7 @@ namespace EscapeOffice.UI
             if (label == null)
             {
                 label = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, wordWrap = true };
-                if (Art.Catalog != null && Art.Catalog.codeFont != null) label.font = Art.Catalog.codeFont;
+                if (Art.Catalog != null && Art.Catalog.codeFont != null) { label.font = Art.Catalog.codeFont; label.fontStyle = FontStyle.Normal; }
             }
 
             var side = Palette.ForSide(gm.Side);

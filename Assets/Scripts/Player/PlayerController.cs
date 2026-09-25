@@ -102,6 +102,7 @@ namespace EscapeOffice
 
             input = canAct ? new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")) + UI.TouchControls.Move : Vector2.zero;
             if (input.sqrMagnitude > 1f) input.Normalize();
+            if (gm.CameraRig != null) input = gm.CameraRig.ScreenToWorld * input; // "up" follows the camera's side angle
             if (input.sqrMagnitude > 0.01f) facing.localPosition = input.normalized * Radius * 0.6f;
 
             Focus = FindFocus(gm.World);
