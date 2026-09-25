@@ -322,6 +322,7 @@ public class OtherSideImporter : AssetPostprocessor
         catalog.materials = Load<Material>("t:Material", MaterialsDir);
         catalog.sprites = Load<Sprite>("t:Sprite", Root + "/Textures");
         catalog.clips = Load<AudioClip>("t:AudioClip", Root + "/Audio");
+        catalog.symbols = Load<Texture2D>("t:Texture2D", Root + "/Textures/Symbols");
         catalog.codeFont = AssetDatabase.LoadAssetAtPath<Font>(Root + "/Fonts/ChakraPetch-Bold.ttf");
         catalog.titleFont = AssetDatabase.LoadAssetAtPath<Font>(Root + "/Fonts/ChakraPetch-SemiBold.ttf");
         catalog.uiFont = AssetDatabase.LoadAssetAtPath<Font>(Root + "/Fonts/Barlow-SemiBold.ttf");

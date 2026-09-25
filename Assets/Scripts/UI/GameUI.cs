@@ -23,7 +23,7 @@ namespace EscapeOffice.UI
         string toast;
         float toastUntil;
 
-        GUIStyle title, big, label, small, box, button, field, digits;
+        GUIStyle title, big, label, small, box, button, field, digits, key;
         Texture2D white;
 
         void Awake()
@@ -270,38 +270,63 @@ namespace EscapeOffice.UI
                 else if (e.keyCode == KeyCode.Escape) { keypad = null; e.Use(); return; }
             }
 
-            var r = new Rect(w / 2 - 170, h / 2 - 250, 340, 470);
-            Fill(new Rect(0, 0, w, h), new Color(0, 0, 0, 0.4f));
-            Fill(r, new Color(0.12f, 0.13f, 0.15f, 0.97f));
-            GUI.Label(new Rect(r.x, r.y + 10, r.width, 30), "KEYPAD", new GUIStyle(label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold });
-            Fill(new Rect(r.x + 20, r.y + 46, r.width - 40, 80), new Color(0.05f, 0.1f, 0.06f));
-            GUI.Label(new Rect(r.x + 20, r.y + 46, r.width - 40, 80), typed.PadRight(length, '_'), new GUIStyle(digits) { normal = { textColor = new Color(0.4f, 1f, 0.5f) } });
-
+            // Drawn as the riddle keypad itself (tos-interactables.js): metal body, recessed face
+            // ringed in the keypad's side colour, display strip, the four colour swatches, 12 keys.
             var order = keypad.Order;
-            if (order != null && order.Length > 0)
-            {
-                float sw = (r.width - 40) / order.Length;
-                GUI.Label(new Rect(r.x, r.y - 72, r.width, 20), "ENTER IN ORDER", new GUIStyle(small) { alignment = TextAnchor.MiddleCenter });
-                Fill(new Rect(r.x, r.y - 52, r.width, 52), new Color(0.12f, 0.13f, 0.15f, 0.97f));
-                for (int i = 0; i < order.Length; i++)
-                {
-                    var cell = new Rect(r.x + 20 + i * sw + 3, r.y - 48, sw - 6, 22);
-                    Fill(cell, Palette.ForName(order[i]));
-                    GUI.Label(new Rect(cell.x, cell.yMax, cell.width, 22), order[i], new GUIStyle(small) { alignment = TextAnchor.MiddleCenter });
-                }
-            }
+            var tint = keypad.Tag == Palette.Tag.None ? Color.white : Palette.ForTag(keypad.Tag);
+            var r = new Rect(w / 2 - 180, h / 2 - 265, 360, 530);
+            Fill(new Rect(0, 0, w, h), new Color(0, 0, 0, 0.5f));
+            Fill(r, new Color(0.43f, 0.45f, 0.48f, 0.98f));                               // body
+            var face = new Rect(r.x + 14, r.y + 44, r.width - 28, r.height - 58);
+            Fill(face, new Color(0.2f, 0.22f, 0.25f, 1f));                                 // recessed face
+            Outline(new Rect(face.x - 3, face.y - 3, face.width + 6, face.height + 6), new Color(tint.r, tint.g, tint.b, 0.9f), 2);
+            GUI.Label(new Rect(r.x, r.y + 8, r.width, 30), "KEYPAD", new GUIStyle(label) { alignment = TextAnchor.MiddleCenter });
+            if (GUI.Button(new Rect(r.xMax - 44, r.y + 6, 36, 32), "X", button)) keypad = null;
 
-            float bx = r.x + 30, by = r.y + 140, bw = 90, bh = 58, gap = 5;
+            // display strip
+            var strip = new Rect(face.x + 16, face.y + 16, face.width - 32, 74);
+            Fill(strip, new Color(0.72f, 0.73f, 0.75f, 1f));
+            var screen = new Rect(strip.x + 6, strip.y + 6, strip.width - 12, strip.height - 12);
+            Fill(screen, new Color(0.1f, 0.11f, 0.13f, 1f));
+            GUI.Label(screen, typed.PadRight(length, '_'), new GUIStyle(digits) { fontSize = 50, normal = { textColor = new Color(0.4f, 1f, 0.6f) } });
+
+            // four swatch slots: the order to read the partner's panels in; the next one is outlined
+            int slots = Mathf.Max(4, length);
+            float sw = 52f, gap = 12f, sx = face.center.x - (slots * sw + (slots - 1) * gap) / 2f, sy = strip.yMax + 18;
+            for (int i = 0; i < slots; i++)
+            {
+                var cell = new Rect(sx + i * (sw + gap), sy, sw, sw);
+                Fill(cell, new Color(0.4f, 0.42f, 0.45f, 1f));
+                bool used = order != null && i < order.Length;
+                var colour = used ? Palette.ForName(order[i]) : new Color(0.95f, 0.95f, 0.96f, 0.35f);
+                Fill(new Rect(cell.x + 6, cell.y + 6, cell.width - 12, cell.height - 12), colour);
+                if (i < typed.Length)
+                    GUI.Label(cell, typed[i].ToString(), new GUIStyle(digits) { fontSize = 26, normal = { textColor = colour.grayscale > 0.6f ? Color.black : Color.white } });
+                if (i == typed.Length && i < length)
+                    Outline(new Rect(cell.x - 3, cell.y - 3, cell.width + 6, cell.height + 6), new Color(1f, 1f, 1f, 0.6f + 0.4f * Mathf.Sin(Time.time * 6f)), 2);
+            }
+            if (order != null && order.Length > 0)
+                GUI.Label(new Rect(face.x, sy + sw + 4, face.width, 22), "Read your partner's panels in this order", new GUIStyle(small) { alignment = TextAnchor.MiddleCenter });
+
+            // 12 keys, 3 x 4
+            key ??= UiSkin.Key(button);
+            float bw = 88, bh = 50, kg = 8, bx = face.center.x - (3 * bw + 2 * kg) / 2f, by = sy + sw + 34;
             for (int i = 0; i < 9; i++)
-                if (GUI.Button(new Rect(bx + (i % 3) * (bw + gap), by + (i / 3) * (bh + gap), bw, bh), (i + 1).ToString(), button) && typed.Length < length)
+                if (GUI.Button(new Rect(bx + (i % 3) * (bw + kg), by + (i / 3) * (bh + kg), bw, bh), (i + 1).ToString(), key) && typed.Length < length)
                     typed += (i + 1);
-            if (GUI.Button(new Rect(bx, by + 3 * (bh + gap), bw, bh), "DEL", button) && typed.Length > 0) typed = typed.Substring(0, typed.Length - 1);
-            if (GUI.Button(new Rect(bx + bw + gap, by + 3 * (bh + gap), bw, bh), "0", button) && typed.Length < length) typed += "0";
+            if (GUI.Button(new Rect(bx, by + 3 * (bh + kg), bw, bh), "DEL", key) && typed.Length > 0) typed = typed.Substring(0, typed.Length - 1);
+            if (GUI.Button(new Rect(bx + bw + kg, by + 3 * (bh + kg), bw, bh), "0", key) && typed.Length < length) typed += "0";
             GUI.enabled = typed.Length == length;
-            if (GUI.Button(new Rect(bx + 2 * (bw + gap), by + 3 * (bh + gap), bw, bh), "OK", button)) SubmitKeypad();
+            if (GUI.Button(new Rect(bx + 2 * (bw + kg), by + 3 * (bh + kg), bw, bh), "OK", key)) SubmitKeypad();
             GUI.enabled = true;
-            GUI.Label(new Rect(r.x, r.yMax - 32, r.width, 24), "Tap the digits, then OK", new GUIStyle(small) { alignment = TextAnchor.MiddleCenter });
-            if (GUI.Button(new Rect(r.xMax - 46, r.y + 8, 38, 34), "X", button)) keypad = null;
+        }
+
+        void Outline(Rect r, Color c, float t)
+        {
+            Fill(new Rect(r.x, r.y, r.width, t), c);
+            Fill(new Rect(r.x, r.yMax - t, r.width, t), c);
+            Fill(new Rect(r.x, r.y, t, r.height), c);
+            Fill(new Rect(r.xMax - t, r.y, t, r.height), c);
         }
 
         void SubmitKeypad()

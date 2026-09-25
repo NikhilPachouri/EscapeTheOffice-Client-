@@ -12,7 +12,7 @@ using UnityEngine;
 // Decor variants are muted to the art direction (no full-strength side colours, dimmer LEDs);
 // the machine keeps its energy colours. Static parts are merged into one mesh per prop; moving
 // parts stay separate for TosPropAnimator.
-public static class TosProps
+public static partial class TosProps
 {
     const string PrefabDir = "Assets/OtherSide/Prefabs/Props";
     const string MatDir = "Assets/OtherSide/Materials/Props";
@@ -41,12 +41,13 @@ public static class TosProps
         }
         { var k = new Kit("TOS_Machine_Lab", false); Machine(k, 0x8fd9c8, 0xb3bcff); Save(k); n++; }
         { var k = new Kit("TOS_Machine_Final", false); Machine(k, 0xff9f43, 0xc49bff); Save(k); n++; }
+        n += BuildInteractables(); // tos-interactables.js
         return n;
     }
 
     // ------------------------------------------------------------------ kit
 
-    enum Shape { Box, Cyl, Cyl8, CylOpen, Sph, Ico, Cone, Torus, Handle, Plane }
+    enum Shape { Box, Cyl, Cyl8, CylOpen, Sph, Ico, Cone, Torus, Handle, Plane, Hex, Ring, RingThick, Rim, Band }
 
     class Opt
     {
@@ -63,6 +64,8 @@ public static class TosProps
         public readonly Transform root;
         public readonly HashSet<Transform> keep = new HashSet<Transform>();
         public readonly List<Transform> merge = new List<Transform>();
+        // Parts sharing the tintable emissive ring material; gathered into one "Ring" renderer.
+        public readonly List<Transform> ringParts = new List<Transform>();
         public System.Action<GameObject> configure;
 
         public Kit(string name, bool muted)
@@ -617,6 +620,13 @@ public static class TosProps
     static void Save(Kit k)
     {
         var root = k.root.gameObject;
+        if (k.ringParts.Count > 0)
+        {
+            var ring = new GameObject("Ring").transform;
+            ring.SetParent(k.root, false);
+            foreach (var p in k.ringParts) p.SetParent(ring, true);
+            k.keep.Add(ring); k.merge.Add(ring);
+        }
         foreach (var g in k.merge) MergeInto(g, $"{k.name}_{g.name}");
 
         // Everything not kept (and not under a kept part) becomes one mesh, a submesh per material.
@@ -713,6 +723,11 @@ public static class TosProps
             case Shape.Torus: m = Torus(0.5f, 0.035f, 8, 48, Mathf.PI * 2); break;
             case Shape.Handle: m = Torus(0.5f, 0.18f, 6, 12, Mathf.PI); break;
             case Shape.Ico: m = Icosahedron(); break;
+            case Shape.Hex: m = Cylinder(6, false); break;
+            case Shape.Ring: m = Torus(0.5f, 0.035f, 10, 56, Mathf.PI * 2); break;
+            case Shape.RingThick: m = Torus(0.5f, 0.09f, 14, 64, Mathf.PI * 2); break;
+            case Shape.Rim: m = Torus(0.5f, 0.07f, 12, 48, Mathf.PI * 2); break;
+            case Shape.Band: m = Torus(0.5f, 0.025f, 8, 48, Mathf.PI * 2); break;
         }
         shapes[s] = m;
         return m;
@@ -767,7 +782,7 @@ public static class TosProps
                 int a = (tubular + 1) * j + i - 1, b = (tubular + 1) * (j - 1) + i - 1, c = (tubular + 1) * (j - 1) + i, d = (tubular + 1) * j + i;
                 tri.AddRange(new[] { a, b, d, b, c, d });
             }
-        return Build("Torus" + r, v, tri, p => { var ring = new Vector3(p.x, p.y, 0).normalized * R; return p - ring; });
+        return Build($"Torus_{r}_{radial}_{tubular}_{Mathf.RoundToInt(arc * 100)}", v, tri, p => { var ring = new Vector3(p.x, p.y, 0).normalized * R; return p - ring; });
     }
 
     static Mesh Icosahedron()

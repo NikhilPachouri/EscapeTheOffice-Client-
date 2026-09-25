@@ -23,9 +23,12 @@ namespace EscapeOffice.Objects
             }
         }
 
-        protected override string ModelName => "CodePanel";
-        protected override float ModelYaw => Art.WallYaw(World, Def.X, Def.Y);
+        // tos-interactables.js code panel: a plaque in the panel's colour with its digit.
+        protected override string ModelName => "TOS_CodePanel";
+        protected override string FallbackModelName => "CodePanel";
+        protected override float ModelYaw => Art.WallYaw(World, Def.X, Def.Y, 180f);
         TextMesh text;
+        string shown;
 
         protected override void Build()
         {
@@ -36,6 +39,12 @@ namespace EscapeOffice.Objects
                 // digit reads upside down or sideways.
                 if (ModelYaw != 180f)
                     Debug.LogWarning($"[world] code panel {Id} at ({Def.X},{Def.Y}) is not against a top wall; its digit will read upside down");
+                if (Tos != null)
+                {
+                    Tos.SetPlate(Plate);
+                    Tos.SetDigit(Code, Ink, Art.Catalog.codeFont);
+                    return;
+                }
                 BuildScreenText();
                 return;
             }
@@ -88,7 +97,9 @@ namespace EscapeOffice.Objects
         protected override void Update()
         {
             base.Update();
-            if (text != null && GameManager.Instance != null && text.text != Code) text.text = Code;
+            if (GameManager.Instance == null) return;
+            if (text != null && text.text != Code) text.text = Code;
+            if (Tos != null && Code != shown) { shown = Code; Tos.SetDigit(shown, Ink, Art.Catalog.codeFont); }
         }
     }
 }
