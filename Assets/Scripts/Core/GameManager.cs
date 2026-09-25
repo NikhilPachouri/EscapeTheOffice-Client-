@@ -319,6 +319,8 @@ namespace EscapeOffice
         }
 
         public void SendEnter(string portalId) => Send(MsgType.Enter, new EnterData { PortalId = portalId });
+        // Diagnostics line for the server log (phones without adb). Silently dropped when not connected.
+        public void SendLog(string msg) => Send(MsgType.Log, new Dictionary<string, string> { ["msg"] = msg });
 
         public void SendRoom(string id)
         {

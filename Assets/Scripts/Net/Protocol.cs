@@ -14,6 +14,7 @@ namespace EscapeOffice.Net
         public const string Join = "join";
         public const string Interact = "interact";
         public const string Enter = "enter";
+        public const string Log = "log"; // { msg }: client diagnostics, printed in the server log
         public const string Room = "room";
         public const string Leave = "leave"; // { } — ends the game for both players
 

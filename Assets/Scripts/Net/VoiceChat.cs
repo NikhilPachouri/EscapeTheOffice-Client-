@@ -45,6 +45,31 @@ namespace EscapeOffice.Net
         public int FramesDropped;   // outgoing frames discarded because the socket fell behind
         public int Underruns;       // playback ran dry long enough to rebuffer
         public int MicRate;         // what the device actually captures at
+        public int OutputRate;      // Unity's DSP output rate
+        public int BufferMs;        // decoded audio waiting to play
+        public int Outbox => outbox.Count;
+        public int MicAvailable;    // samples the last Update pulled from the mic
+        float nextLog;
+        bool wasTalking;
+
+        // Every voice log line also goes to the server (game socket "log"), so a phone's numbers
+        // show up in the server log without adb. Some lines come from the socket task, and the
+        // game socket must be used from the main thread, so they are queued and flushed in Update.
+        static readonly ConcurrentQueue<string> serverLog = new ConcurrentQueue<string>();
+        static void Log(string line)
+        {
+            Debug.Log(line);
+            serverLog.Enqueue(line);
+            while (serverLog.Count > 32) serverLog.TryDequeue(out _);
+        }
+
+        void FlushServerLog()
+        {
+            var gm = GameManager.Instance;
+            if (gm == null) return;
+            while (serverLog.TryDequeue(out var line)) gm.SendLog(line);
+        }
+        public string Diag => $"tx {FramesSent} rx {FramesReceived} lost {FramesLost} drop {FramesDropped} under {Underruns} buf {BufferMs}ms q {Outbox} mic {MicRate}Hz/{MicAvailable} out {OutputRate}Hz {(Talking ? "TALK" : "")}";
 
         string code, token;
         Uri uri;
@@ -70,6 +95,7 @@ namespace EscapeOffice.Net
         readonly float[] ring = new float[Rate];
         int ringStart, ringCount;
         int drySamples;
+        double readPos;      // fractional position into the ring, for the 48 kHz -> output rate resample
         bool playing;
         readonly object ringLock = new object();
         AudioSource source;
@@ -157,13 +183,13 @@ namespace EscapeOffice.Net
                     }
                     // The server closes with 1001 when the room ends: don't come back.
                     if (socket.CloseStatus == WebSocketCloseStatus.EndpointUnavailable) { Status = "Voice ended"; return; }
-                    if (socket.CloseStatus.HasValue) Debug.LogWarning($"[voice] closed {(int)socket.CloseStatus} {socket.CloseStatusDescription}");
+                    if (socket.CloseStatus.HasValue) Log($"[voice] closed {(int)socket.CloseStatus} {socket.CloseStatusDescription}");
                 }
                 catch (OperationCanceledException) { return; }
                 catch (Exception e)
                 {
                     // A 401 (bad token / room gone) also lands here; backoff keeps it cheap.
-                    Debug.LogWarning($"[voice] {e.Message}");
+                    Log($"[voice] error {e.Message}");
                 }
                 finally
                 {
@@ -248,6 +274,10 @@ namespace EscapeOffice.Net
 
         // ---------------------------------------------------------------- playback
 
+        // Playback goes through OnAudioFilterRead on a silent looping AudioSource: the audio thread
+        // asks for one DSP buffer at a time at the device rate, and we resample from the 48 kHz ring
+        // ourselves. Streaming clips (PCMReaderCallback) glitched at their loop point and asked for
+        // unpredictable chunk sizes, which chopped the voice at fixed intervals.
         void StartPlayback()
         {
             if (source == null)
@@ -256,37 +286,48 @@ namespace EscapeOffice.Net
                 source.playOnAwake = false;
                 source.spatialBlend = 0f;
                 source.loop = true;
-                // Streaming clip at 48 kHz; Unity resamples to the device rate. Streaming clips
-                // allocate nothing for their length, and Unity glitches at every loop point, so make
-                // it an hour long: a one-second clip cut the audio once a second, like clockwork.
-                source.clip = AudioClip.Create("voice", Rate * 3600, 1, Rate, true, OnAudioRead);
+                source.clip = AudioClip.Create("voice-carrier", Rate / 10, 1, Rate, false); // 100 ms of silence
             }
+            OutputRate = AudioSettings.outputSampleRate;
+            if (OutputRate <= 0) OutputRate = Rate;
             source.Play();
         }
 
         // Audio thread. Never blocks for long; outputs silence when dry.
         // A momentary shortfall (one late packet) is padded with silence and playback carries on;
-        // only a long dry spell drops back to rebuffering, otherwise every jitter spike cost a
-        // 60 ms hole and speech came out chopped.
-        void OnAudioRead(float[] data)
+        // only a long fully-dry spell drops back to rebuffering.
+        void OnAudioFilterRead(float[] data, int channels)
         {
+            if (channels <= 0) return;
+            int frames = data.Length / channels;
+            double step = (double)Rate / OutputRate; // ring samples per output frame
             lock (ringLock)
             {
-                if (!playing && ringCount >= StartSamples) { playing = true; drySamples = 0; }
-                int n = playing ? Math.Min(ringCount, data.Length) : 0;
-                for (int i = 0; i < n; i++) data[i] = MuteIncoming ? 0f : ring[(ringStart + i) % ring.Length];
-                for (int i = n; i < data.Length; i++) data[i] = 0f;
-                ringStart = (ringStart + n) % ring.Length;
-                ringCount -= n;
+                if (!playing && ringCount >= StartSamples) { playing = true; drySamples = 0; readPos = 0; }
+                int produced = 0;
                 if (playing)
                 {
-                    // Only fully dry callbacks count. Mic and DSP clocks drift a little, so a
-                    // healthy stream can sit a few samples short on every callback; counting
-                    // those shortfalls used to reach the rebuffer threshold at a fixed period
-                    // and pause playback each time.
-                    drySamples = n == 0 ? drySamples + data.Length : 0;
+                    while (produced < frames)
+                    {
+                        int i0 = (int)readPos;
+                        if (i0 + 1 >= ringCount) break;
+                        float frac = (float)(readPos - i0);
+                        float a = ring[(ringStart + i0) % ring.Length];
+                        float b = ring[(ringStart + i0 + 1) % ring.Length];
+                        float v = MuteIncoming ? 0f : a + (b - a) * frac;
+                        for (int c = 0; c < channels; c++) data[produced * channels + c] = v;
+                        produced++;
+                        readPos += step;
+                    }
+                    int consumed = (int)readPos;
+                    ringStart = (ringStart + consumed) % ring.Length;
+                    ringCount -= consumed;
+                    readPos -= consumed;
+                    drySamples = produced == 0 ? drySamples + frames : 0;
                     if (drySamples > RebufferAfter) { playing = false; drySamples = 0; Underruns++; }
                 }
+                for (int i = produced * channels; i < data.Length; i++) data[i] = 0f;
+                BufferMs = ringCount * 1000 / Rate;
             }
         }
 
@@ -311,6 +352,7 @@ namespace EscapeOffice.Net
 
         void Update()
         {
+            FlushServerLog();
             if (announce)
             {
                 announce = false;
@@ -322,13 +364,27 @@ namespace EscapeOffice.Net
             {
                 mic = Microphone.Start(null, true, 1, Rate);
                 micPos = 0;
+                Log($"[voice] mic '{Microphone.devices[0]}' started: {mic.frequency} Hz, {mic.channels} ch, {mic.samples} samples, output {AudioSettings.outputSampleRate} Hz");
             }
 
             Talking = (TalkHeld || Input.GetKey(KeyCode.V) || openMicForTesting) && Connected && mic != null;
+            if (Talking != wasTalking)
+            {
+                wasTalking = Talking;
+                Log(Talking ? "[voice] TALK down" : $"[voice] TALK up — {Diag}");
+            }
+            // Periodic line while voice is up; every 2 s when talking or receiving, otherwise every 10 s.
+            if (Time.unscaledTime >= nextLog)
+            {
+                bool busy = Talking || PartnerSpeaking;
+                nextLog = Time.unscaledTime + (busy ? 2f : 10f);
+                Log($"[voice] {(Connected ? "on" : Status)} {Diag}");
+            }
             if (mic == null) return;
 
             int pos = Microphone.GetPosition(null);
             int available = (pos - micPos + mic.samples) % mic.samples;
+            MicAvailable = available;
             if (available == 0) return;
 
             int channels = mic.channels;
