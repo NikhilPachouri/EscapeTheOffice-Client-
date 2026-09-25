@@ -250,7 +250,7 @@ namespace EscapeOffice.UI
         {
             Fill(new Rect(0, 0, w, h), new Color(0, 0, 0, 0.75f));
             GUI.Label(new Rect(w / 2 - 400, h * 0.35f, 800, 60), "You escaped the office!", title);
-            GUI.Label(new Rect(w / 2 - 400, h * 0.35f + 70, 800, 40), "Both sides made it out. Nice teamwork.", big);
+            GUI.Label(new Rect(w / 2 - 400, h * 0.35f + 70, 800, 40), "Escape Successful. Nice teamwork.", big);
             if (GUI.Button(new Rect(w / 2 - 120, h * 0.35f + 140, 240, 44), "Back to menu", button)) gm.Leave();
         }
 
