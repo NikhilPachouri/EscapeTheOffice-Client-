@@ -29,6 +29,11 @@ namespace EscapeOffice
         ArtDirection.PlayerLook look = new ArtDirection.PlayerLook();
         float yaw, walkPhase, lean;
         int lastStep;
+        // The office worker from tos-characters.js (A: short, B: tall) in place of the pack's
+        // body; the pack prefab stays for its lamp and side ring.
+        TosCharacter character;
+        const float CharacterScale = 0.75f; // 1.55 / 1.8 m builds against 1.35-tile walls
+        const float RunSpeed = 4f;          // full speed runs; debuffed (×0.55) walks
 
         public static PlayerController Spawn(Vector2 at, string side, Transform parent)
         {
@@ -60,6 +65,7 @@ namespace EscapeOffice
                 pc.bodyRenderer.enabled = false;
                 pc.facing.GetComponent<SpriteRenderer>().enabled = false;
                 pc.look = ArtDirection.Current.Player(side);
+                pc.character = pc.Worker(side);
                 pc.Dress(side);
             }
             return pc;
@@ -118,6 +124,19 @@ namespace EscapeOffice
 
         // Side identity beyond colour (ArtDirection.json "players"): proportions, an accessory and
         // a lamp in the side's temperature. Accessories hang off the model so they move with it.
+        TosCharacter Worker(string side)
+        {
+            var source = Art.Catalog.Prefab(side == "B" ? "TOS_WorkerTall" : "TOS_WorkerShort");
+            if (source == null) return null;
+            var packBody = Art.Find(model.gameObject, "Body");
+            if (packBody != null) packBody.gameObject.SetActive(false);
+            var go = Instantiate(source, model, false);
+            go.transform.localScale = Vector3.one * CharacterScale;
+            var c = go.GetComponent<TosCharacter>();
+            c.Tint(Palette.ForSide(side)); // the tie carries the side colour
+            return c;
+        }
+
         void Dress(string side)
         {
             var lamp = GetComponentInChildren<Light>();
@@ -128,7 +147,7 @@ namespace EscapeOffice
             }
             var suit = side == "B" ? "M_PlayerB_Suit" : "M_PlayerA_Suit";
             var glow = side == "B" ? "M_Glow_B" : "M_Glow_A";
-            switch (look.accessory)
+            switch (character != null ? null : look.accessory) // the robot's add-ons; workers have the tie
             {
                 case "backpack": // A: sturdy, a pack on the back and a little antenna
                     Part(PrimitiveType.Cube, "M_MetalDark", new Vector3(0f, 0.56f, -0.27f), Vector3.zero, new Vector3(0.36f, 0.42f, 0.2f));
@@ -171,6 +190,8 @@ namespace EscapeOffice
             else walkPhase = Mathf.Lerp(walkPhase, Mathf.Round(walkPhase / Mathf.PI) * Mathf.PI, Art.Smooth(12f));
             lean = Mathf.Lerp(lean, moving ? look.lean : 0f, Art.Smooth(8f));
 
+            if (character != null) { AnimateWorker(moving); return; }
+
             float idle = moving ? 0f : Mathf.Sin(Time.time * 2.2f) * 0.012f; // breathing
             float hop = Mathf.Abs(Mathf.Sin(walkPhase)) * look.hop + idle;
             model.localPosition = new Vector3(0f, 0f, -hop); // up is -Z
@@ -182,6 +203,27 @@ namespace EscapeOffice
             model.localScale = new Vector3(look.width * (1f + wobble + squash), look.height * (1f - wobble - squash), look.width * (1f + wobble + squash));
 
             int step = Mathf.FloorToInt(walkPhase / Mathf.PI);
+            if (moving && step != lastStep)
+                Fx3D.Puff(new Vector3(rb.position.x, rb.position.y, -0.05f), new Color(0.62f, 0.6f, 0.57f, 0.22f),
+                    count: 1, radius: 0.06f, size: 0.22f, life: 0.45f, rise: 0.12f);
+            lastStep = step;
+        }
+
+        // The worker animates its own joints (TosCharacter): pick the motion and pace it to the
+        // ground speed, lean into the run, dust at each footfall.
+        void AnimateWorker(bool moving)
+        {
+            float v = rb.linearVelocity.magnitude;
+            bool run = v > RunSpeed;
+            character.SetMotion(!moving ? TosCharacter.Motion.Idle : run ? TosCharacter.Motion.Run : TosCharacter.Motion.Walk);
+            character.speed = moving ? Mathf.Clamp(v / (run ? speed : speed * 0.55f), 0.6f, 1.3f) : 1f;
+
+            model.localPosition = Vector3.zero;
+            model.localRotation = Art.Rotation(yaw) * Quaternion.Euler(lean * 0.5f, 0f, 0f);
+            float wobble = Debuffed ? Mathf.Sin(Time.time * 8f) * 0.04f : 0f; // sluggish
+            model.localScale = new Vector3(1f + wobble, 1f - wobble, 1f + wobble);
+
+            int step = Mathf.FloorToInt(character.Phase / Mathf.PI);
             if (moving && step != lastStep)
                 Fx3D.Puff(new Vector3(rb.position.x, rb.position.y, -0.05f), new Color(0.62f, 0.6f, 0.57f, 0.22f),
                     count: 1, radius: 0.06f, size: 0.22f, life: 0.45f, rise: 0.12f);

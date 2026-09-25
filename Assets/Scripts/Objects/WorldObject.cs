@@ -98,8 +98,9 @@ namespace EscapeOffice.Objects
                     scale: Bounds.size);
             if (Art.Available && ModelName != null)
             {
-                model = Art.Spawn(ModelName, transform, Vector3.zero, ModelYaw);
-                if (model == null && FallbackModelName != null) model = Art.Spawn(FallbackModelName, transform, Vector3.zero, ModelYaw);
+                var modelName = ModelName;
+                model = Art.Spawn(modelName, transform, Vector3.zero, ModelYaw);
+                if (model == null && FallbackModelName != null) model = Art.Spawn(modelName = FallbackModelName, transform, Vector3.zero, ModelYaw);
                 if (model != null)
                 {
                     body.enabled = false;
@@ -110,7 +111,7 @@ namespace EscapeOffice.Objects
                         tos.Tint(Tag == Palette.Tag.None ? (Color?)null : GlowColor); // the ring carries the side colour
                     }
                     // Exaggerated silhouettes for small interactables (ArtDirection.json "objectScale").
-                    modelScale = ArtDirection.Current.ScaleFor(ModelName);
+                    modelScale = ArtDirection.Current.ScaleFor(modelName);
                     model.transform.localScale = Vector3.one * modelScale;
                 }
             }
