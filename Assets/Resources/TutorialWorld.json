@@ -185,7 +185,7 @@
         },
         {
           "id": "sprinkler_A",
-          "type": "valve",
+          "type": "switch",
           "x": 20,
           "y": 1,
           "key": "sprinkler_A.on",

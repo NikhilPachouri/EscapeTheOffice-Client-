@@ -74,6 +74,9 @@ namespace EscapeOffice.UI
         // Join screen: start offline and open once the world arrives.
         public void OpenWhenReady() => openWhenReady = true;
 
+        // Dev-only: off in the shipped game; set true from code to allow F3 / OpenWhenReady.
+        public static bool Enabled = false;
+
         // ------------------------------------------------------------------ open / close
 
         void Toggle()
@@ -153,7 +156,7 @@ namespace EscapeOffice.UI
 
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.F3)) Toggle();
+            if (Enabled && Input.GetKeyDown(KeyCode.F3)) Toggle();
             if (openWhenReady && Gm.Current == GameManager.Phase.Playing && Fake != null && Fake.Level != null)
             {
                 openWhenReady = false;

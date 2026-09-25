@@ -12,6 +12,8 @@ namespace EscapeOffice.UI
     public class GameUI : MonoBehaviour
     {
         const float RefHeight = 720f;
+        // Size of the top-left HUD group (badge, inventory, Play side, Tips, debuff), scaled from the corner.
+        public const float HudScale = 1.2f;
 
         public bool IsModal => keypad != null || codePanel != null || SettingsMenu.IsOpen;
 
@@ -174,15 +176,9 @@ namespace EscapeOffice.UI
                 y += 50;
             }
 
-            // Extras, as quiet chips.
-            float cw = (iw - 16) / 3f;
-            if (GUI.Button(new Rect(x, y, cw, 40), "Tutorial", ghost)) gm.StartTutorial();
-            if (GUI.Button(new Rect(x + cw + 8, y, cw, 40), "Offline test", ghost)) gm.StartOffline();
-            if (GUI.Button(new Rect(x + 2 * (cw + 8), y, cw, 40), "Level editor", ghost))
-            {
-                gm.StartOffline();
-                gm.GetComponent<LevelEditor>().OpenWhenReady();
-            }
+            // Extra, as a quiet chip. (Offline test and the level editor are dev-only: see
+            // GameManager.StartOffline and LevelEditor.Enabled.)
+            if (GUI.Button(new Rect(x, y, iw, 40), "Tutorial", ghost)) gm.StartTutorial();
             y += 54;
 
             if (hasStatus)
@@ -256,6 +252,11 @@ namespace EscapeOffice.UI
         {
             var player = gm.Player;
 
+            // Top-left group (side badge, room, inventory, Play side, Tips, debuff), drawn HudScale
+            // larger from the corner, text included.
+            var screenMatrix = GUI.matrix;
+            GUI.matrix = screenMatrix * Matrix4x4.Scale(new Vector3(HudScale, HudScale, 1f));
+
             // Side badge, room and inventory, top-left.
             var sideColor = Palette.ForSide(gm.Side);
             MenuArt.Glass(new Rect(12, 12, 250, 108), new Color(sideColor.r, sideColor.g, sideColor.b, 0.55f));
@@ -271,6 +272,16 @@ namespace EscapeOffice.UI
                 HudButton(new Rect(270, 12, 150, 44), $"Play side {(gm.Side == "A" ? "B" : "A")}", MenuArt.Hud(Art.Catalog != null ? Art.Catalog.titleFont : null)))
                 gm.SwitchSide();
 
+            if (player != null && player.Debuffed)
+                GUI.Label(new Rect(12, 126, 300, 24), $"Sluggish… {player.DebuffRemaining:0}s", new GUIStyle(label) { normal = { textColor = new Color(1f, 0.5f, 0.4f) } });
+
+            // Beside the side badge (after "Play side" when offline); top-right belongs to status and voice.
+            if (gm.Current == GameManager.Phase.Playing && !IsModal && !gm.EditorOpen &&
+                HudButton(new Rect(gm.CanSwitchSide ? 428 : 270, 12, 150, 44), gm.Tips.Show ? "Tips: on" : "Tips: off", MenuArt.Hud(Art.Catalog != null ? Art.Catalog.titleFont : null)))
+                gm.Tips.Show = !gm.Tips.Show;
+
+            GUI.matrix = screenMatrix;
+
             // Voice: partner speaking indicator and mute for incoming audio, top-right.
             var voice = gm.Voice;
             if (voice != null && voice.Active)
@@ -284,14 +295,6 @@ namespace EscapeOffice.UI
                 if (HudButton(new Rect(vr.xMax - 78, vr.y + 6, 70, 32), voice.MuteIncoming ? "Unmute" : "Mute", MenuArt.Hud(Art.Catalog != null ? Art.Catalog.titleFont : null)))
                     voice.MuteIncoming = !voice.MuteIncoming;
             }
-
-            if (player != null && player.Debuffed)
-                GUI.Label(new Rect(12, 126, 300, 24), $"Sluggish… {player.DebuffRemaining:0}s", new GUIStyle(label) { normal = { textColor = new Color(1f, 0.5f, 0.4f) } });
-
-            // Beside the side badge (after "Play side" when offline); top-right belongs to status and voice.
-            if (gm.Current == GameManager.Phase.Playing && !IsModal && !gm.EditorOpen &&
-                HudButton(new Rect(gm.CanSwitchSide ? 428 : 270, 12, 150, 44), gm.Tips.Show ? "Tips: on" : "Tips: off", MenuArt.Hud(Art.Catalog != null ? Art.Catalog.titleFont : null)))
-                gm.Tips.Show = !gm.Tips.Show;
 
             if (!string.IsNullOrEmpty(gm.Status) && !gm.Offline)
                 GUI.Label(new Rect(w - 480, 12, 400, 26), gm.Status, new GUIStyle(small) { alignment = TextAnchor.UpperRight, normal = { textColor = new Color(1f, 0.7f, 0.4f) } });

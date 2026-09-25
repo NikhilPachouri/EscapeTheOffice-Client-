@@ -15,6 +15,8 @@ namespace EscapeOffice.UI
         public static bool MusicOn { get; private set; } = true;
         public static bool SfxOn { get; private set; } = true;
         public static bool IsOpen { get; private set; }
+        // Dev-only: set true from code to show the "Camera & vision" tuner button.
+        public static bool ShowCameraVision = false;
 
         static readonly Color Panel = new Color32(0x14, 0x18, 0x1d, 0xf2);
         static readonly Color Ink = new Color32(0xe8, 0xee, 0xf2, 0xff);
@@ -84,7 +86,8 @@ namespace EscapeOffice.UI
 
             // Dim everything behind; tapping outside the panel closes it.
             MenuArt.DimScreen(new Rect(0, 0, w, h));
-            var p = new Rect(w / 2 - 230, h / 2 - 205, 460, 410); // room for Camera & vision
+            float ph = ShowCameraVision ? 410f : 326f; // room for Camera & vision when shown
+            var p = new Rect(w / 2 - 230, h / 2 - ph / 2, 460, ph);
             if (Event.current.type == EventType.MouseDown && !p.Contains(Event.current.mousePosition) && !gear.Contains(Event.current.mousePosition))
             {
                 IsOpen = false;
@@ -102,8 +105,11 @@ namespace EscapeOffice.UI
             y += 76;
             if (Switch(new Rect(p.x + 28, y, p.width - 56, 64), "Sound effects", SfxOn, side)) SetSfx(!SfxOn);
             y += 80;
-            if (GUI.Button(new Rect(p.x + 28, y, p.width - 56, 52), "Camera & vision", MenuArt.Hud(title.font))) { IsOpen = false; ViewTuner.IsOpen = true; return; }
-            y += 80;
+            if (ShowCameraVision)
+            {
+                if (GUI.Button(new Rect(p.x + 28, y, p.width - 56, 52), "Camera & vision", MenuArt.Hud(title.font))) { IsOpen = false; ViewTuner.IsOpen = true; return; }
+                y += 80;
+            }
 
             var gm = GameManager.Instance;
             bool inGame = gm != null && gm.Current != GameManager.Phase.Join;

@@ -113,6 +113,7 @@ namespace EscapeOffice
         void Open(string url, string code, string token, string world)
         {
             Leave();
+            Tips.Show = true; // online games start with tips; the HUD's Tips button turns them off
             RoomCode = code ?? "";
             serverUrl = url;
 

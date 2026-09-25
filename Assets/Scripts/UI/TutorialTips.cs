@@ -127,10 +127,11 @@ namespace EscapeOffice.UI
             }
             else if (!switched && gm.CanSwitchSide && !string.IsNullOrEmpty(content.Hud.Switch))
             {
-                // GameUI's "Play side" button: (270, 12, 150, 44).
-                var a = new Vector2(345f, 56f);
+                // GameUI's "Play side" button: (270, 12, 150, 44), drawn GameUI.HudScale larger from the corner.
+                const float s = GameUI.HudScale;
+                var a = new Vector2(345f * s, 56f * s);
                 var box = Measure(HintWidth, null, content.Hud.Switch);
-                Draw(a, new Rect(270f, 80f, box.x, box.y), null, content.Hud.Switch, color);
+                Draw(a, new Rect(270f * s, 56f * s + 24f, box.x, box.y), null, content.Hud.Switch, color);
             }
         }
 
@@ -220,8 +221,9 @@ namespace EscapeOffice.UI
         // Things the tips must not cover.
         void ReserveHud(GameManager gm, float w, float h)
         {
-            placed.Add(new Rect(0, 0, 590, 60));   // side badge, Play side, Tips
-            placed.Add(new Rect(0, 0, 270, 152));  // badge, inventory, debuff timer
+            const float hud = GameUI.HudScale;      // GameUI draws the top-left group scaled from the corner
+            placed.Add(new Rect(0, 0, 590 * hud, 60 * hud));   // side badge, Play side, Tips
+            placed.Add(new Rect(0, 0, 270 * hud, 152 * hud));  // badge, inventory, debuff timer
             placed.Add(new Rect(w / 2 - 260, h - 60, 520, 40)); // toasts
             if (!gm.Offline) placed.Add(new Rect(w - 420, 0, 420, 92)); // status and voice
             if (touch == null) return;

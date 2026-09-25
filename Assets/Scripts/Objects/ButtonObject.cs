@@ -27,9 +27,10 @@ namespace EscapeOffice.Objects
         protected override string ModelName => Type switch
         {
             "final_button" or "latch_button" => "TOS_FinalButton",
-            "light_switch" => "TOS_LightSwitch",
+            "light_switch" => "TOS_Breaker",
             "valve" or "drain" => "TOS_DrainValve",
-            "lever" or "switch" or "laser_switch" => Mentions("sprinkler") ? "TOS_SprinklerValve" : Mentions("breaker") ? "TOS_Breaker" : "TOS_LaserLever",
+            "laser_switch" => Mentions("sprinkler") ? "TOS_SprinklerValve" : "TOS_LaserLever",
+            "lever" or "switch" => Mentions("sprinkler") ? "TOS_SprinklerValve" : "TOS_LightSwitch",
             _ => "TOS_DoorButton",
         };
         protected override string FallbackModelName => Type switch
@@ -40,14 +41,14 @@ namespace EscapeOffice.Objects
             "valve" or "drain" => "Valve",
             _ => "Button",
         };
-        public override string Symbol => ModelName switch
+        // By what the control does, not which model it uses, so the USE button's icon stays right.
+        public override string Symbol => Type switch
         {
-            "TOS_FinalButton" => "star",
-            "TOS_LightSwitch" => "bulb",
-            "TOS_DrainValve" => "wavesDown",
-            "TOS_SprinklerValve" => "flameDrop",
-            "TOS_Breaker" => "bolt",
-            "TOS_LaserLever" => "beam",
+            "final_button" or "latch_button" => "star",
+            "light_switch" => "bulb",
+            "valve" or "drain" => "wavesDown",
+            "laser_switch" => Mentions("sprinkler") ? "flameDrop" : "beam",
+            "lever" or "switch" => Mentions("sprinkler") ? "flameDrop" : Mentions("laser") ? "beam" : "bolt",
             _ => "door",
         };
         bool Mentions(string word) =>
