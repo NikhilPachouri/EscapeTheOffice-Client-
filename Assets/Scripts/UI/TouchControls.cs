@@ -15,7 +15,7 @@ namespace EscapeOffice.UI
         const float RadiusFraction = 0.12f;  // joystick radius as a fraction of screen height
         const float ButtonFraction = 0.10f;  // use button radius
 
-        static readonly Color Base = new Color32(0x14, 0x18, 0x1d, 0x99); // pack grout colour
+        static readonly Color Base = new Color(0.04f, 0.05f, 0.11f, 0.62f); // start-screen navy glass
         static readonly Color Ink = new Color32(0xe8, 0xee, 0xf2, 0xff);
 
         bool enabledHere;
@@ -140,7 +140,7 @@ namespace EscapeOffice.UI
             if (label == null)
             {
                 label = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, wordWrap = true };
-                if (Art.Catalog != null && Art.Catalog.codeFont != null) label.font = Art.Catalog.codeFont;
+                if (Art.Catalog != null && Art.Catalog.codeFont != null) { label.font = Art.Catalog.codeFont; label.fontStyle = FontStyle.Normal; }
             }
 
             var side = Palette.ForSide(gm.Side);

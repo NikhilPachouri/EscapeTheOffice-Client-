@@ -112,11 +112,9 @@ namespace EscapeOffice
             {
                 cam.fieldOfView = ViewTuning.Fov;
                 if (grading != null) { grading.vignette = ViewTuning.Vignette; grading.vignetteStart = ViewTuning.VignetteStart; }
-                // "Up" is -Z and "behind" is -Y (south) in the game plane.
-                float scale = settings.Radius / 8f * Zoom;
-                var offset = new Vector3(0f, -Behind * scale, -Height * scale);
+                var offset = Offset(settings.Radius / 8f * Zoom, out var up);
                 transform.position = Vector3.Lerp(transform.position, p + offset, 1f - Mathf.Exp(-follow * Time.deltaTime));
-                transform.rotation = Quaternion.LookRotation(-offset, Vector3.up);
+                transform.rotation = Quaternion.LookRotation(-offset, up);
             }
             else
             {
@@ -167,11 +165,24 @@ namespace EscapeOffice
         public void SnapTo(Vector2 p)
         {
             float scale = (GameManager.Instance.World != null ? GameManager.Instance.World.Camera.Radius / 8f : 1f) * Zoom;
-            var offset = perspective ? new Vector3(0f, -Behind * scale, -Height * scale) : new Vector3(0f, 0f, -10f);
+            var up = Vector3.up;
+            var offset = perspective ? Offset(scale, out up) : new Vector3(0f, 0f, -10f);
             shakeOffset = Vector3.zero;
             transform.position = (Vector3)p + offset;
-            if (perspective) transform.rotation = Quaternion.LookRotation(-offset, Vector3.up);
+            if (perspective) transform.rotation = Quaternion.LookRotation(-offset, up);
         }
+
+        // "Up" is -Z and "behind" is -Y (south) in the game plane; the side angle orbits that
+        // around the player. `up` is the world direction that points up the screen.
+        static Vector3 Offset(float scale, out Vector3 up)
+        {
+            var yaw = Quaternion.AngleAxis(ViewTuning.Yaw, Vector3.forward);
+            up = yaw * Vector3.up;
+            return yaw * new Vector3(0f, -Behind * scale, -Height * scale);
+        }
+
+        // Rotation from screen directions to the game plane (the camera's side angle; 0 in 2D).
+        public Quaternion ScreenToWorld => perspective ? Quaternion.AngleAxis(ViewTuning.Yaw, Vector3.forward) : Quaternion.identity;
 
         // Is a world point outside the visible area? Used for edge-of-screen cue indicators.
         public bool IsOffscreen(Vector2 worldPos)

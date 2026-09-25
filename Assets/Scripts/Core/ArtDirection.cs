@@ -21,7 +21,7 @@ namespace EscapeOffice
 
         public class CameraLook
         {
-            public float height = 22f, behind = 8f, fov = 40f;
+            public float height = 22f, behind = 8f, fov = 40f, yaw = 0f; // yaw: degrees around the player
         }
 
         public class GradeLook

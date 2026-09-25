@@ -28,7 +28,7 @@ namespace EscapeOffice.UI
         readonly List<Rect> placed = new List<Rect>();
 
         GUIStyle title, body, button;
-        static readonly Color Panel = new Color32(0x14, 0x18, 0x1d, 0xeb);
+        static readonly Color Panel = new Color(0.04f, 0.05f, 0.11f, 0.9f); // start-screen navy glass
         static readonly Color Ink = new Color32(0xe8, 0xee, 0xf2, 0xff);
         static readonly Color WaterTip = new Color(0.35f, 0.62f, 1f);
 
@@ -327,10 +327,12 @@ namespace EscapeOffice.UI
         void Styles()
         {
             if (title != null) return;
-            title = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, richText = true };
-            body = new GUIStyle(GUI.skin.label) { fontSize = 13, wordWrap = true, richText = true };
+            var head = Art.Catalog != null ? Art.Catalog.titleFont : null;
+            var text = Art.Catalog != null ? Art.Catalog.uiFont : null;
+            title = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = head != null ? FontStyle.Normal : FontStyle.Bold, richText = true, font = head };
+            body = new GUIStyle(GUI.skin.label) { fontSize = 13, wordWrap = true, richText = true, font = text };
             body.normal.textColor = Ink;
-            button = new GUIStyle(GUI.skin.button) { fontSize = 15 };
+            button = new GUIStyle(GUI.skin.button) { fontSize = 15, font = head };
         }
     }
 }

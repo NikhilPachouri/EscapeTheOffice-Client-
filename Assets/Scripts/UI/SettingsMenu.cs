@@ -22,7 +22,6 @@ namespace EscapeOffice.UI
         AudioSource music;
         bool confirmExit;
         GUIStyle title, rowLabel, button, small;
-        Texture2D pill, knob;
 
         void Awake()
         {
@@ -37,8 +36,6 @@ namespace EscapeOffice.UI
             music.clip = Resources.Load<AudioClip>("Music/theme") ?? AmbientLoop();
             if (MusicOn) music.Play();
 
-            pill = Rounded(128, 48);
-            knob = Rounded(64, 64);
         }
 
         void Update()
@@ -50,6 +47,7 @@ namespace EscapeOffice.UI
         }
 
         public static void Open() { IsOpen = true; }
+        public static void Close() { IsOpen = false; }
 
         void SetMusic(bool on)
         {
@@ -78,15 +76,15 @@ namespace EscapeOffice.UI
 
             // Gear button, top-right.
             var gear = new Rect(w - 64, 12, 52, 52);
-            Fill(gear, new Color(0, 0, 0, 0.55f));
+            MenuArt.Glass(gear, null, 0.8f);
             if (GUI.Button(gear, "", GUIStyle.none)) { IsOpen = !IsOpen; confirmExit = false; }
             DrawGear(gear.center, 17f, scale);
 
             if (!IsOpen) return;
 
             // Dim everything behind; tapping outside the panel closes it.
-            Fill(new Rect(0, 0, w, h), new Color(0, 0, 0, 0.55f));
-            var p = new Rect(w / 2 - 230, h / 2 - 205, 460, 410);
+            MenuArt.DimScreen(new Rect(0, 0, w, h));
+            var p = new Rect(w / 2 - 230, h / 2 - 205, 460, 410); // room for Camera & vision
             if (Event.current.type == EventType.MouseDown && !p.Contains(Event.current.mousePosition) && !gear.Contains(Event.current.mousePosition))
             {
                 IsOpen = false;
@@ -94,18 +92,17 @@ namespace EscapeOffice.UI
                 return;
             }
 
-            Fill(p, Panel);
+            MenuArt.Panel(p);
             var side = Palette.ForSide(GameManager.Instance.Side);
-            Fill(new Rect(p.x, p.y, p.width, 4), side);
             GUI.Label(new Rect(p.x + 28, p.y + 20, p.width - 100, 44), "SETTINGS", title);
-            if (GUI.Button(new Rect(p.xMax - 64, p.y + 18, 44, 44), "X", button)) { IsOpen = false; return; }
+            if (GUI.Button(new Rect(p.xMax - 64, p.y + 18, 44, 44), "X", MenuArt.Hud(title.font))) { IsOpen = false; return; }
 
             float y = p.y + 90;
             if (Switch(new Rect(p.x + 28, y, p.width - 56, 64), "Music", MusicOn, side)) SetMusic(!MusicOn);
             y += 76;
             if (Switch(new Rect(p.x + 28, y, p.width - 56, 64), "Sound effects", SfxOn, side)) SetSfx(!SfxOn);
             y += 80;
-            if (GUI.Button(new Rect(p.x + 28, y, p.width - 56, 52), "Camera & vision", button)) { IsOpen = false; ViewTuner.IsOpen = true; return; }
+            if (GUI.Button(new Rect(p.x + 28, y, p.width - 56, 52), "Camera & vision", MenuArt.Hud(title.font))) { IsOpen = false; ViewTuner.IsOpen = true; return; }
             y += 80;
 
             var gm = GameManager.Instance;
@@ -116,8 +113,8 @@ namespace EscapeOffice.UI
                     : gm.Offline || gm.Current == GameManager.Phase.Complete ? "Leave and return to the menu?"
                     : "Leave? This ends the game for your partner too.";
                 GUI.Label(new Rect(p.x, y, p.width, 30), question, new GUIStyle(rowLabel) { alignment = TextAnchor.MiddleCenter });
-                if (GUI.Button(new Rect(p.x + 40, y + 40, 180, 52), "Cancel", button)) confirmExit = false;
-                if (GUI.Button(new Rect(p.xMax - 220, y + 40, 180, 52), inGame ? "Leave" : "Exit", button))
+                if (GUI.Button(new Rect(p.x + 40, y + 40, 180, 52), "Cancel", MenuArt.Hud(title.font))) confirmExit = false;
+                if (GUI.Button(new Rect(p.xMax - 220, y + 40, 180, 52), inGame ? "Leave" : "Exit", MenuArt.Secondary(title.font)))
                 {
                     confirmExit = false;
                     if (inGame) { IsOpen = false; gm.Leave(); }
@@ -125,7 +122,7 @@ namespace EscapeOffice.UI
                 }
                 return;
             }
-            if (GUI.Button(new Rect(p.x + 28, y, p.width - 56, 52), inGame ? "Leave game" : "Exit game", button)) confirmExit = true;
+            if (GUI.Button(new Rect(p.x + 28, y, p.width - 56, 52), inGame ? "Leave game" : "Exit game", MenuArt.Secondary(title.font))) confirmExit = true;
         }
 
         static void Quit()
@@ -140,15 +137,14 @@ namespace EscapeOffice.UI
         // A row with a label and an on/off pill; returns true when tapped.
         bool Switch(Rect r, string text, bool on, Color accent)
         {
-            Fill(r, new Color(1, 1, 1, 0.04f));
+            MenuArt.Glass(r, null, 0.45f);
             GUI.Label(new Rect(r.x + 18, r.y, r.width - 150, r.height), text, rowLabel);
             var pr = new Rect(r.xMax - 118, r.y + (r.height - 40) / 2, 100, 40);
             var old = GUI.color;
-            GUI.color = on ? accent : new Color(1, 1, 1, 0.18f);
-            GUI.DrawTexture(pr, pill);
+            GUI.DrawTexture(pr, on ? MenuArt.SwitchOn : MenuArt.SwitchOff); // two-tone when on
             GUI.color = Ink;
             float kx = on ? pr.xMax - 36 : pr.x + 4;
-            GUI.DrawTexture(new Rect(kx, pr.y + 4, 32, 32), knob);
+            GUI.DrawTexture(new Rect(kx, pr.y + 4, 32, 32), MenuArt.Knob);
             GUI.color = old;
             GUI.Label(new Rect(pr.x - 58, r.y, 50, r.height), on ? "ON" : "OFF", new GUIStyle(small) { alignment = TextAnchor.MiddleRight, normal = { textColor = on ? Ink : new Color(1, 1, 1, 0.45f) } });
             return GUI.Button(r, "", GUIStyle.none);
@@ -176,9 +172,11 @@ namespace EscapeOffice.UI
         {
             if (title != null) return;
             var font = Art.Catalog != null ? Art.Catalog.codeFont : null;
-            title = new GUIStyle(GUI.skin.label) { fontSize = 30, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, font = font, normal = { textColor = Ink } };
-            rowLabel = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleLeft, normal = { textColor = Ink } };
-            small = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = FontStyle.Bold, font = font };
+            var text = Art.Catalog != null ? Art.Catalog.uiFont : null;
+            var bold = font != null ? FontStyle.Normal : FontStyle.Bold; // the font carries the weight
+            title = new GUIStyle(GUI.skin.label) { fontSize = 30, fontStyle = bold, alignment = TextAnchor.MiddleLeft, font = font, normal = { textColor = Ink } };
+            rowLabel = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleLeft, font = text, normal = { textColor = Ink } };
+            small = new GUIStyle(GUI.skin.label) { fontSize = 15, fontStyle = bold, font = font };
             button = new GUIStyle(GUI.skin.button) { fontSize = 20, font = font };
         }
 

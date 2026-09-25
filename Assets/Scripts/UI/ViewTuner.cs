@@ -49,7 +49,7 @@ namespace EscapeOffice.UI
             if (GUI.Button(new Rect(p.xMax - 52, p.y + 10, 40, 36), "X", button)) { IsOpen = false; return; }
 
             var body = new Rect(p.x + 8, p.y + 54, p.width - 16, p.height - 54 - 64);
-            var content = new Rect(0, 0, body.width - 20, 15 * 46f);
+            var content = new Rect(0, 0, body.width - 20, 3 * 32f + 12 * 50f);
             scroll = GUI.BeginScrollView(body, scroll, content);
             float y = 0f, w = content.width;
             GUI.changed = false;
@@ -58,6 +58,7 @@ namespace EscapeOffice.UI
             ViewTuning.Distance = Slider(ref y, w, "Distance", ViewTuning.Distance, 0.4f, 2.5f, "x0.00");
             ViewTuning.Height = Slider(ref y, w, "Height", ViewTuning.Height, 5f, 40f, "0.0");
             ViewTuning.Behind = Slider(ref y, w, "Behind (tilt)", ViewTuning.Behind, 0f, 30f, "0.0");
+            ViewTuning.Yaw = Slider(ref y, w, "Side angle", ViewTuning.Yaw, -90f, 90f, "0°");
             ViewTuning.Fov = Slider(ref y, w, "Field of view", ViewTuning.Fov, 15f, 90f, "0");
             ViewTuning.Follow = Slider(ref y, w, "Follow speed", ViewTuning.Follow, 1f, 30f, "0.0");
 
@@ -111,9 +112,11 @@ namespace EscapeOffice.UI
         {
             if (title != null) return;
             var font = Art.Catalog != null ? Art.Catalog.codeFont : null;
-            title = new GUIStyle(GUI.skin.label) { fontSize = 24, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, font = font, normal = { textColor = Ink } };
-            header = new GUIStyle(GUI.skin.label) { fontSize = 13, fontStyle = FontStyle.Bold, font = font, normal = { textColor = new Color(1, 1, 1, 0.5f) } };
-            row = new GUIStyle(GUI.skin.label) { fontSize = 16, alignment = TextAnchor.MiddleLeft, normal = { textColor = Ink } };
+            var text = Art.Catalog != null ? Art.Catalog.uiFont : null;
+            var bold = font != null ? FontStyle.Normal : FontStyle.Bold; // the font carries the weight
+            title = new GUIStyle(GUI.skin.label) { fontSize = 24, fontStyle = bold, alignment = TextAnchor.MiddleLeft, font = font, normal = { textColor = Ink } };
+            header = new GUIStyle(GUI.skin.label) { fontSize = 13, fontStyle = bold, font = font, normal = { textColor = new Color(1, 1, 1, 0.5f) } };
+            row = new GUIStyle(GUI.skin.label) { fontSize = 16, alignment = TextAnchor.MiddleLeft, font = text, normal = { textColor = Ink } };
             value = new GUIStyle(row) { alignment = TextAnchor.MiddleRight, normal = { textColor = new Color(1, 1, 1, 0.7f) } };
             button = new GUIStyle(GUI.skin.button) { fontSize = 16, font = font };
             slider = new GUIStyle(GUI.skin.horizontalSlider) { fixedHeight = 10, margin = new RectOffset() };

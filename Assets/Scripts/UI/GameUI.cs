@@ -23,7 +23,7 @@ namespace EscapeOffice.UI
         string toast;
         float toastUntil;
 
-        GUIStyle title, big, label, small, box, button, field, digits, key;
+        GUIStyle title, big, label, small, box, button, field, digits;
         Texture2D white;
 
         void Awake()
@@ -158,21 +158,42 @@ namespace EscapeOffice.UI
 
         void WaitingScreen(GameManager gm, float w, float h)
         {
-            Fill(new Rect(0, 0, w, h), new Color(0.05f, 0.05f, 0.07f, 1f));
-            float cx = w / 2f;
-            GUI.Label(new Rect(cx - 300, h * 0.3f, 600, 50), gm.RoomCode.Length > 0 ? $"Room {gm.RoomCode}" : "Creating room…", title);
-            string msg = gm.Current == GameManager.Phase.Waiting
-                ? $"Tell your partner the code: {gm.RoomCode}"
+            MenuArt.DrawBackdrop(new Rect(0, 0, w, h));
+            var headFont = Art.Catalog != null ? Art.Catalog.titleFont : null;
+            var codeFont = Art.Catalog != null ? Art.Catalog.codeFont : null;
+            var hint = new GUIStyle(small) { fontSize = 16, alignment = TextAnchor.MiddleLeft, wordWrap = true, normal = { textColor = MenuArt.Dim } };
+            bool waiting = gm.Current == GameManager.Phase.Waiting;
+
+            float pw = 420, ph = 380;
+            var p = new Rect(Mathf.Max(24, w * 0.05f), (h - ph) / 2, pw, ph);
+            MenuArt.Panel(p);
+            float x = p.x + 32, iw = pw - 64, y = p.y + 28;
+
+            MenuArt.Title(new Rect(x, y, iw, 44), headFont, 34);
+            y += 60;
+            GUI.Label(new Rect(x, y, iw, 22), gm.RoomCode.Length > 0 ? "ROOM CODE" : "CREATING ROOM", new GUIStyle(hint) { font = headFont, fontSize = 14 });
+            y += 26;
+
+            // The code, big: it is what the player reads out to their partner.
+            var codeRect = new Rect(x, y, iw, 86);
+            MenuArt.Glass(codeRect, new Color(MenuArt.Warm.r, MenuArt.Warm.g, MenuArt.Warm.b, 0.6f), 0.85f);
+            string shown = gm.RoomCode.Length > 0 ? gm.RoomCode : new string('.', 1 + (int)(Time.time * 3f) % 3);
+            GUI.Label(codeRect, shown, new GUIStyle(digits) { font = codeFont, fontSize = 56, normal = { textColor = MenuArt.Warm } });
+            y += 100;
+
+            string msg = waiting ? "Read this code to your partner. The game starts when they join."
                 : string.IsNullOrEmpty(gm.Status) ? "Connecting…" : gm.Status;
-            GUI.Label(new Rect(cx - 300, h * 0.3f + 70, 600, 40), msg, big);
-            if (gm.Current == GameManager.Phase.Waiting)
+            GUI.Label(new Rect(x, y, iw, 44), msg, hint);
+            y += 52;
+
+            if (waiting)
             {
-                var old = GUI.color;
-                GUI.color = Palette.ForSide(gm.Side);
-                GUI.Label(new Rect(cx - 300, h * 0.3f + 120, 600, 40), $"You are side {gm.Side}", big);
-                GUI.color = old;
+                var sideColor = Palette.ForSide(gm.Side);
+                var badge = new Rect(x, y, 170, 34);
+                MenuArt.Glass(badge, sideColor, 0.8f);
+                GUI.Label(badge, $"You are side {gm.Side}", new GUIStyle(label) { font = headFont, fontSize = 16, alignment = TextAnchor.MiddleCenter, normal = { textColor = sideColor } });
             }
-            if (GUI.Button(new Rect(cx - 100, h * 0.3f + 190, 200, 40), "Cancel", button)) gm.Leave();
+            if (GUI.Button(new Rect(p.xMax - 32 - 140, y, 140, 34), "Cancel", MenuArt.Ghost(headFont))) gm.Leave();
         }
 
         void Hud(GameManager gm, float w, float h)
@@ -181,9 +202,9 @@ namespace EscapeOffice.UI
 
             // Side badge, room and inventory, top-left.
             var sideColor = Palette.ForSide(gm.Side);
-            Fill(new Rect(12, 12, 250, 108), new Color(0, 0, 0, 0.55f));
-            Fill(new Rect(12, 12, 6, 108), sideColor);
-            GUI.Label(new Rect(26, 16, 230, 26), $"Side {gm.Side}" + (gm.Offline ? "  (offline)" : ""), new GUIStyle(label) { fontStyle = FontStyle.Bold, normal = { textColor = sideColor } });
+            MenuArt.Glass(new Rect(12, 12, 250, 108), new Color(sideColor.r, sideColor.g, sideColor.b, 0.55f));
+            MenuArt.Fill(new Rect(24, 12, 90, 3), sideColor);
+            GUI.Label(new Rect(26, 16, 230, 26), $"SIDE {gm.Side}" + (gm.Offline ? "  · offline" : ""), new GUIStyle(label) { font = Art.Catalog != null && Art.Catalog.titleFont != null ? Art.Catalog.titleFont : label.font, normal = { textColor = sideColor } });
             var room = player != null ? player.GetComponent<RoomTracker>().Current : null;
             GUI.Label(new Rect(26, 40, 230, 22), room != null ? $"Room: {room.Id}" + (room.IsDark ? " (dark)" : "") : "Room: —", small);
             var inv = gm.Inventory();
@@ -191,7 +212,7 @@ namespace EscapeOffice.UI
             Slot(new Rect(142, 66, 110, 44), "Key", inv.Any(i => i.ToLowerInvariant().Contains("key")));
 
             if (gm.CanSwitchSide && gm.Current == GameManager.Phase.Playing &&
-                HudButton(new Rect(270, 12, 150, 44), $"Play side {(gm.Side == "A" ? "B" : "A")}", button))
+                HudButton(new Rect(270, 12, 150, 44), $"Play side {(gm.Side == "A" ? "B" : "A")}", MenuArt.Hud(Art.Catalog != null ? Art.Catalog.titleFont : null)))
                 gm.SwitchSide();
 
             // Voice: partner speaking indicator and mute for incoming audio, top-right.
@@ -199,12 +220,12 @@ namespace EscapeOffice.UI
             if (voice != null && voice.Active)
             {
                 var vr = new Rect(w - 232, 72, 220, 44); // below the settings gear
-                Fill(vr, new Color(0, 0, 0, 0.55f));
+                MenuArt.Glass(vr);
                 bool speaking = voice.PartnerSpeaking && !voice.MuteIncoming;
                 var dot = new Rect(vr.x + 12, vr.y + 16, 12, 12);
-                Fill(dot, speaking ? Palette.ForSide(gm.Side == "A" ? "B" : "A") * (0.7f + 0.3f * Mathf.Sin(Time.time * 12f)) : new Color(1, 1, 1, 0.2f));
+                MenuArt.Fill(dot, speaking ? Palette.ForSide(gm.Side == "A" ? "B" : "A") * (0.7f + 0.3f * Mathf.Sin(Time.time * 12f)) : new Color(1, 1, 1, 0.2f));
                 GUI.Label(new Rect(vr.x + 30, vr.y, 110, vr.height), voice.Connected ? (speaking ? "Partner speaking" : "Voice on") : voice.Status, new GUIStyle(small) { alignment = TextAnchor.MiddleLeft });
-                if (HudButton(new Rect(vr.xMax - 78, vr.y + 6, 70, 32), voice.MuteIncoming ? "Unmute" : "Mute", new GUIStyle(button) { fontSize = 14 }))
+                if (HudButton(new Rect(vr.xMax - 78, vr.y + 6, 70, 32), voice.MuteIncoming ? "Unmute" : "Mute", MenuArt.Hud(Art.Catalog != null ? Art.Catalog.titleFont : null)))
                     voice.MuteIncoming = !voice.MuteIncoming;
             }
 
@@ -213,7 +234,7 @@ namespace EscapeOffice.UI
 
             // Beside the side badge (after "Play side" when offline); top-right belongs to status and voice.
             if (gm.Current == GameManager.Phase.Playing && !IsModal && !gm.EditorOpen &&
-                HudButton(new Rect(gm.CanSwitchSide ? 428 : 270, 12, 150, 44), gm.Tips.Show ? "Tips: on" : "Tips: off", button))
+                HudButton(new Rect(gm.CanSwitchSide ? 428 : 270, 12, 150, 44), gm.Tips.Show ? "Tips: on" : "Tips: off", MenuArt.Hud(Art.Catalog != null ? Art.Catalog.titleFont : null)))
                 gm.Tips.Show = !gm.Tips.Show;
 
             if (!string.IsNullOrEmpty(gm.Status) && !gm.Offline)
@@ -223,8 +244,9 @@ namespace EscapeOffice.UI
             {
                 var c = GUI.color;
                 GUI.color = new Color(1, 1, 1, Mathf.Clamp01((toastUntil - Time.time) * 2f));
-                Fill(new Rect(w / 2 - 260, h - 60, 520, 40), new Color(0, 0, 0, 0.7f));
-                GUI.Label(new Rect(w / 2 - 260, h - 60, 520, 40), toast, new GUIStyle(label) { alignment = TextAnchor.MiddleCenter });
+                var tr = new Rect(w / 2 - 280, h - 66, 560, 46);
+                MenuArt.Glass(tr, new Color(MenuArt.Cool.r, MenuArt.Cool.g, MenuArt.Cool.b, 0.5f), 0.85f);
+                GUI.Label(tr, toast, new GUIStyle(label) { alignment = TextAnchor.MiddleCenter });
                 GUI.color = c;
             }
 
@@ -242,16 +264,22 @@ namespace EscapeOffice.UI
 
         void Slot(Rect r, string name, bool held)
         {
-            Fill(r, held ? new Color(1f, 1f, 1f, 0.18f) : new Color(1f, 1f, 1f, 0.05f));
-            GUI.Label(r, held ? name : $"<color=#777>{name}</color>", new GUIStyle(label) { alignment = TextAnchor.MiddleCenter, richText = true });
+            MenuArt.Glass(r, held ? MenuArt.Warm : new Color(1, 1, 1, 0.1f), held ? 0.85f : 0.45f);
+            GUI.Label(r, name, new GUIStyle(label) { alignment = TextAnchor.MiddleCenter, normal = { textColor = held ? MenuArt.Ink : new Color(1, 1, 1, 0.35f) } });
         }
 
         void EndScreen(GameManager gm, float w, float h)
         {
-            Fill(new Rect(0, 0, w, h), new Color(0, 0, 0, 0.75f));
-            GUI.Label(new Rect(w / 2 - 400, h * 0.35f, 800, 60), "You escaped the office!", title);
-            GUI.Label(new Rect(w / 2 - 400, h * 0.35f + 70, 800, 40), "Escape Successful. Nice teamwork.", big);
-            if (GUI.Button(new Rect(w / 2 - 120, h * 0.35f + 140, 240, 44), "Back to menu", button)) gm.Leave();
+            MenuArt.DrawBackdrop(new Rect(0, 0, w, h));
+            MenuArt.DimScreen(new Rect(0, 0, w, h));
+            var headFont = Art.Catalog != null ? Art.Catalog.titleFont : null;
+            var p = new Rect(w / 2 - 260, h / 2 - 150, 520, 300);
+            MenuArt.Panel(p);
+            GUI.Label(new Rect(p.x, p.y + 36, p.width, 50), $"<color=#{ColorUtility.ToHtmlStringRGB(MenuArt.Cool)}>YOU</color> <color=#{ColorUtility.ToHtmlStringRGB(MenuArt.Warm)}>ESCAPED</color>",
+                new GUIStyle(title) { font = headFont, fontSize = 46, richText = true, alignment = TextAnchor.MiddleCenter });
+            GUI.Label(new Rect(p.x + 30, p.y + 100, p.width - 60, 60), "Escape Successful. Nice teamwork.",
+                new GUIStyle(big) { fontSize = 20, normal = { textColor = MenuArt.Dim } });
+            if (GUI.Button(new Rect(p.x + 110, p.yMax - 96, p.width - 220, 58), "Back to menu", MenuArt.Primary(headFont))) gm.Leave();
         }
 
         // ---------------------------------------------------------------- modals
@@ -275,20 +303,18 @@ namespace EscapeOffice.UI
             var order = keypad.Order;
             var tint = keypad.Tag == Palette.Tag.None ? Color.white : Palette.ForTag(keypad.Tag);
             var r = new Rect(w / 2 - 180, h / 2 - 265, 360, 530);
-            Fill(new Rect(0, 0, w, h), new Color(0, 0, 0, 0.5f));
-            Fill(r, new Color(0.43f, 0.45f, 0.48f, 0.98f));                               // body
+            var headFont = Art.Catalog != null ? Art.Catalog.titleFont : null;
+            MenuArt.DimScreen(new Rect(0, 0, w, h));
+            MenuArt.Panel(r);                                                               // body: the theme's glass
             var face = new Rect(r.x + 14, r.y + 44, r.width - 28, r.height - 58);
-            Fill(face, new Color(0.2f, 0.22f, 0.25f, 1f));                                 // recessed face
-            Outline(new Rect(face.x - 3, face.y - 3, face.width + 6, face.height + 6), new Color(tint.r, tint.g, tint.b, 0.9f), 2);
-            GUI.Label(new Rect(r.x, r.y + 8, r.width, 30), "KEYPAD", new GUIStyle(label) { alignment = TextAnchor.MiddleCenter });
-            if (GUI.Button(new Rect(r.xMax - 44, r.y + 6, 36, 32), "X", button)) keypad = null;
+            MenuArt.Glass(face, new Color(tint.r, tint.g, tint.b, 0.9f), 0.9f);            // face ringed in the side colour
+            GUI.Label(new Rect(r.x, r.y + 8, r.width, 30), "KEYPAD", new GUIStyle(label) { font = headFont, alignment = TextAnchor.MiddleCenter });
+            if (GUI.Button(new Rect(r.xMax - 48, r.y + 8, 38, 32), "X", MenuArt.Hud(headFont))) keypad = null;
 
             // display strip
             var strip = new Rect(face.x + 16, face.y + 16, face.width - 32, 74);
-            Fill(strip, new Color(0.72f, 0.73f, 0.75f, 1f));
-            var screen = new Rect(strip.x + 6, strip.y + 6, strip.width - 12, strip.height - 12);
-            Fill(screen, new Color(0.1f, 0.11f, 0.13f, 1f));
-            GUI.Label(screen, typed.PadRight(length, '_'), new GUIStyle(digits) { fontSize = 50, normal = { textColor = new Color(0.4f, 1f, 0.6f) } });
+            MenuArt.Glass(strip, new Color(MenuArt.Warm.r, MenuArt.Warm.g, MenuArt.Warm.b, 0.55f), 0.95f);
+            GUI.Label(strip, typed.PadRight(length, '_'), new GUIStyle(digits) { fontSize = 50, normal = { textColor = MenuArt.Warm } });
 
             // four swatch slots: the order to read the partner's panels in; the next one is outlined
             int slots = Mathf.Max(4, length);
@@ -296,7 +322,7 @@ namespace EscapeOffice.UI
             for (int i = 0; i < slots; i++)
             {
                 var cell = new Rect(sx + i * (sw + gap), sy, sw, sw);
-                Fill(cell, new Color(0.4f, 0.42f, 0.45f, 1f));
+                MenuArt.Glass(cell, null, 0.9f);
                 bool used = order != null && i < order.Length;
                 var colour = used ? Palette.ForName(order[i]) : new Color(0.95f, 0.95f, 0.96f, 0.35f);
                 Fill(new Rect(cell.x + 6, cell.y + 6, cell.width - 12, cell.height - 12), colour);
@@ -306,18 +332,18 @@ namespace EscapeOffice.UI
                     Outline(new Rect(cell.x - 3, cell.y - 3, cell.width + 6, cell.height + 6), new Color(1f, 1f, 1f, 0.6f + 0.4f * Mathf.Sin(Time.time * 6f)), 2);
             }
             if (order != null && order.Length > 0)
-                GUI.Label(new Rect(face.x, sy + sw + 4, face.width, 22), "Read your partner's panels in this order", new GUIStyle(small) { alignment = TextAnchor.MiddleCenter });
+                GUI.Label(new Rect(face.x, sy + sw + 4, face.width, 22), "Read your partner's panels in this order", new GUIStyle(small) { alignment = TextAnchor.MiddleCenter, normal = { textColor = MenuArt.Dim } });
 
             // 12 keys, 3 x 4
-            key ??= UiSkin.Key(button);
+            var key = MenuArt.Keycap(headFont);
             float bw = 88, bh = 50, kg = 8, bx = face.center.x - (3 * bw + 2 * kg) / 2f, by = sy + sw + 34;
             for (int i = 0; i < 9; i++)
                 if (GUI.Button(new Rect(bx + (i % 3) * (bw + kg), by + (i / 3) * (bh + kg), bw, bh), (i + 1).ToString(), key) && typed.Length < length)
                     typed += (i + 1);
-            if (GUI.Button(new Rect(bx, by + 3 * (bh + kg), bw, bh), "DEL", key) && typed.Length > 0) typed = typed.Substring(0, typed.Length - 1);
+            if (GUI.Button(new Rect(bx, by + 3 * (bh + kg), bw, bh), "DEL", MenuArt.Hud(headFont)) && typed.Length > 0) typed = typed.Substring(0, typed.Length - 1);
             if (GUI.Button(new Rect(bx + bw + kg, by + 3 * (bh + kg), bw, bh), "0", key) && typed.Length < length) typed += "0";
             GUI.enabled = typed.Length == length;
-            if (GUI.Button(new Rect(bx + 2 * (bw + kg), by + 3 * (bh + kg), bw, bh), "OK", key)) SubmitKeypad();
+            if (GUI.Button(new Rect(bx + 2 * (bw + kg), by + 3 * (bh + kg), bw, bh), "OK", MenuArt.Primary(headFont))) SubmitKeypad();
             GUI.enabled = true;
         }
 
@@ -354,13 +380,12 @@ namespace EscapeOffice.UI
                 return;
             }
             var r = new Rect(w / 2 - 200, h / 2 - 130, 400, 240);
-            Fill(new Rect(0, 0, w, h), new Color(0, 0, 0, 0.4f));
-            Fill(r, new Color(0.04f, 0.1f, 0.06f, 0.97f));
-            Fill(new Rect(r.x, r.y, r.width, 4), Palette.Info);
+            MenuArt.DimScreen(new Rect(0, 0, w, h));
+            MenuArt.Panel(r);
             GUI.Label(new Rect(r.x, r.y + 16, r.width, 30), "The screen shows a code:", new GUIStyle(label) { alignment = TextAnchor.MiddleCenter });
-            GUI.Label(new Rect(r.x, r.y + 56, r.width, 100), codePanel.Code, new GUIStyle(digits) { fontSize = 80, normal = { textColor = new Color(0.4f, 1f, 0.5f) } });
-            GUI.Label(new Rect(r.x, r.y + 160, r.width, 24), "Your partner needs this.", new GUIStyle(small) { alignment = TextAnchor.MiddleCenter });
-            if (GUI.Button(new Rect(r.x + r.width / 2 - 60, r.yMax - 44, 120, 34), "Close", button)) codePanel = null;
+            GUI.Label(new Rect(r.x, r.y + 56, r.width, 100), codePanel.Code, new GUIStyle(digits) { fontSize = 80, normal = { textColor = MenuArt.Warm } });
+            GUI.Label(new Rect(r.x, r.y + 150, r.width, 24), "Your partner needs this.", new GUIStyle(small) { alignment = TextAnchor.MiddleCenter, normal = { textColor = MenuArt.Dim } });
+            if (GUI.Button(new Rect(r.x + r.width / 2 - 70, r.yMax - 52, 140, 40), "Close", MenuArt.Hud(Art.Catalog != null ? Art.Catalog.titleFont : null))) codePanel = null;
         }
 
         // ---------------------------------------------------------------- cues
