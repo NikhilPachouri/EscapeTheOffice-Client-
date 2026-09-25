@@ -32,6 +32,10 @@ namespace EscapeOffice.Objects
             World.Lights.Add(new Vector3(Bounds.center.x, Bounds.center.y, 1.2f)); // self-lit
             if (HasModel)
             {
+                // The kiosk's screen tilts toward the camera only on a top wall; anywhere else the
+                // digit reads upside down or sideways.
+                if (ModelYaw != 180f)
+                    Debug.LogWarning($"[world] code panel {Id} at ({Def.X},{Def.Y}) is not against a top wall; its digit will read upside down");
                 BuildScreenText();
                 return;
             }

@@ -177,7 +177,7 @@ namespace EscapeOffice
         }
 
         public Camera Camera => cam;
-        // Current (lerped) vision radius on the floor, in tiles.
+        // How far the player can see right now, in tiles (smaller in dark rooms and when debuffed).
         public float VisionRadius => radius;
     }
 }

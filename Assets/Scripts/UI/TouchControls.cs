@@ -26,10 +26,11 @@ namespace EscapeOffice.UI
         static Texture2D disc, ring, knob, shadow;
         GUIStyle label;
 
-        float StickRadius => Screen.height * RadiusFraction;
-        float ButtonRadius => Screen.height * ButtonFraction;
-        Vector2 StickHome => new Vector2(StickRadius * 1.7f, StickRadius * 1.7f);
-        Vector2 ButtonCenter => new Vector2(Screen.width - ButtonRadius * 1.9f, ButtonRadius * 1.9f);
+        // Screen pixels, bottom-left origin. Public so the tutorial can point at the controls.
+        public float StickRadius => Screen.height * RadiusFraction;
+        public float ButtonRadius => Screen.height * ButtonFraction;
+        public Vector2 StickHome => new Vector2(StickRadius * 1.7f, StickRadius * 1.7f);
+        public Vector2 ButtonCenter => new Vector2(Screen.width - ButtonRadius * 1.9f, ButtonRadius * 1.9f);
         Vector2 TalkCenter => ButtonCenter + new Vector2(0f, ButtonRadius * 2.5f);
         bool OnTalk(Vector2 p) => Vector2.Distance(p, TalkCenter) < ButtonRadius * 0.9f * 1.3f;
 
@@ -50,8 +51,33 @@ namespace EscapeOffice.UI
             });
         }
 
+        // On-screen IMGUI buttons (HUD, tutorial). A touch that starts on one belongs to it: it
+        // never becomes the joystick, a USE press or a tap on the world. Buttons register each
+        // repaint; Update reads what the previous frame drew.
+        static readonly System.Collections.Generic.List<Rect> blocked = new System.Collections.Generic.List<Rect>();
+        static readonly System.Collections.Generic.List<Rect> blockedNext = new System.Collections.Generic.List<Rect>();
+
+        // Call from OnGUI with the rect as passed to GUI.Button (any GUI.matrix scale).
+        public static void Block(Rect guiRect)
+        {
+            if (Event.current == null || Event.current.type != EventType.Repaint) return;
+            Vector2 a = GUI.matrix.MultiplyPoint3x4(guiRect.min), b = GUI.matrix.MultiplyPoint3x4(guiRect.max);
+            blockedNext.Add(Rect.MinMaxRect(a.x, a.y, b.x, b.y)); // screen pixels, top-left origin
+        }
+
+        static bool IsBlocked(Vector2 touch)
+        {
+            var p = new Vector2(touch.x, Screen.height - touch.y);
+            foreach (var r in blocked) if (r.Contains(p)) return true;
+            return false;
+        }
+
         void Update()
         {
+            blocked.Clear();
+            blocked.AddRange(blockedNext);
+            blockedNext.Clear();
+
             Move = Vector2.zero;
             InteractPressed = false;
             pressFlash = Mathf.Max(0f, pressFlash - Time.deltaTime * 4f);
@@ -76,6 +102,7 @@ namespace EscapeOffice.UI
                 switch (t.phase)
                 {
                     case TouchPhase.Began:
+                        if (IsBlocked(t.position)) break; // a HUD button's; IMGUI handles the press
                         if (Vector2.Distance(t.position, ButtonCenter) < ButtonRadius * 1.3f)
                         {
                             InteractPressed = true;

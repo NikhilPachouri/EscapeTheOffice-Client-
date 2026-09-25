@@ -1,0 +1,166 @@
+{
+  "goal": "You're playing <b>both sides</b> of the office. What you do on one side changes the other. Get both sides to press their <b>final button</b>, then walk out an exit.",
+  "hud": {
+    "move": "Drag here to walk. On a computer, WASD or the arrow keys work too.",
+    "use": "When something near you glows, tap <b>USE</b> (or press E) to use it.",
+    "switch": "Switch to your partner's side. Everything you did carries over, so go and see what your buttons changed. Online, your partner plays this side."
+  },
+  "sideLine": {
+    "mine": "Glows in your colour: changes your side",
+    "partner": "Glows in your partner's colour: changes their side",
+    "both": "Glows purple: changes both sides"
+  },
+  "rooms": {
+    "flooded": {
+      "title": "Flooded room",
+      "text": "You can't get in yet. A drain valve, usually on your partner's side, empties it for good."
+    },
+    "dark": {
+      "title": "Dark room",
+      "text": "The lights are off, so you can only see close by. Find the light switch, or ask your partner."
+    }
+  },
+  "tips": [
+    {
+      "types": ["button"],
+      "title": "Button",
+      "text": {
+        "true": "Pressed. If nothing changed here, it changed on your partner's side.",
+        "*": "Tap USE to press it. It changes something, often on your partner's side."
+      }
+    },
+    {
+      "types": ["switch", "lever"],
+      "title": "Switch",
+      "text": {
+        "true": "Switched on. Its label says what it controls.",
+        "*": "Tap USE to flip it. Its label says what it controls."
+      }
+    },
+    {
+      "types": ["valve", "drain"],
+      "title": "Valve",
+      "text": {
+        "true": "Open, and it stays open. Check your partner's side for what it changed.",
+        "*": "Tap USE to open it. Sprinklers put out fire and drain valves empty flooded rooms, usually on the other side."
+      }
+    },
+    {
+      "types": ["light_switch"],
+      "title": "Light switch",
+      "text": {
+        "*": "Tap USE to turn the lights on or off. In the dark you can only see close by."
+      }
+    },
+    {
+      "types": ["laser_switch"],
+      "title": "Laser lever",
+      "text": {
+        "*": "Tap USE to switch lasers on or off, usually on your partner's side. Leave them off until your partner is through."
+      }
+    },
+    {
+      "types": ["final_button", "latch_button"],
+      "title": "Final button",
+      "text": {
+        "true": "Pressed! Now the other side needs to press theirs.",
+        "*": "Press it. The exits open once both sides have pressed their final button."
+      }
+    },
+    {
+      "types": ["button_door", "door"],
+      "title": "Locked door",
+      "text": {
+        "true": null,
+        "*": "There's no handle on this side. A button on your partner's side opens it."
+      }
+    },
+    {
+      "types": ["code_door"],
+      "title": "Code door",
+      "text": {
+        "true": null,
+        "*": "Opened by the keypad next to it."
+      }
+    },
+    {
+      "types": ["keypad"],
+      "title": "Keypad",
+      "text": {
+        "true": null,
+        "*": "Tap USE to enter a code. It shows four colours: the digits are on your partner's coloured panels, in that order."
+      }
+    },
+    {
+      "types": ["code_panel"],
+      "title": "Code panels",
+      "group": true,
+      "text": {
+        "*": "These digits are for your partner's keypad. Tell them each colour and its number."
+      }
+    },
+    {
+      "types": ["key_door"],
+      "title": "Key door",
+      "text": {
+        "true": null,
+        "*": "Locked. Find the key on this side, then tap USE here."
+      }
+    },
+    {
+      "types": ["key"],
+      "title": "Key",
+      "text": {
+        "home": "Tap USE to pick it up. It opens the key door on this side.",
+        "*": null
+      }
+    },
+    {
+      "types": ["bomb"],
+      "title": "Bomb",
+      "text": {
+        "home": "Tap USE to pick it up. It breaks the cracked wall on this side.",
+        "*": null
+      }
+    },
+    {
+      "types": ["bombable_wall"],
+      "title": "Cracked wall",
+      "text": {
+        "true": null,
+        "*": "Bring the bomb from this side and tap USE to blow it open."
+      }
+    },
+    {
+      "types": ["lasers", "laser"],
+      "title": "Lasers",
+      "text": {
+        "false": "Off for now. Get through before they switch back on.",
+        "*": "Blocked. A laser lever, usually on your partner's side, switches them off."
+      }
+    },
+    {
+      "types": ["fire"],
+      "title": "Fire",
+      "text": {
+        "false": null,
+        "*": "Blocked. Sprinklers, usually on your partner's side, put it out for good."
+      }
+    },
+    {
+      "types": ["exit_door", "exit"],
+      "title": "Exit",
+      "text": {
+        "true": "Open! Walk through to escape.",
+        "*": "Locked until both sides have pressed their final button."
+      }
+    },
+    {
+      "types": ["boss"],
+      "title": "The boss",
+      "text": {
+        "*": "Keep your distance. If they catch you, you move slowly and see less for a few seconds."
+      }
+    }
+  ]
+}

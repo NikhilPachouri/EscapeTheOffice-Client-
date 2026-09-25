@@ -29,6 +29,7 @@ namespace EscapeOffice
         public CameraRig CameraRig { get; private set; }
         public FxPlayer Fx { get; private set; }
         public GameUI UI { get; private set; }
+        public TutorialTips Tips { get; private set; }
         public VoiceChat Voice { get; private set; }
         string serverUrl;
 
@@ -78,10 +79,12 @@ namespace EscapeOffice
             World.transform.SetParent(transform, false);
             Fx = gameObject.AddComponent<FxPlayer>();
             UI = gameObject.AddComponent<GameUI>();
+            Tips = gameObject.AddComponent<TutorialTips>();
             gameObject.AddComponent<DebugOverlay>();
             gameObject.AddComponent<LevelEditor>();
             gameObject.AddComponent<TouchControls>();
             Voice = gameObject.AddComponent<VoiceChat>();
+            gameObject.AddComponent<SettingsMenu>();
 
             var cam = Camera.main;
             if (cam == null)
@@ -126,6 +129,17 @@ namespace EscapeOffice
             fake.Begin(level);
         }
 
+        // Resources/TutorialWorld.json (maps in Resources/Maps/tutorial_*.txt): one small room per
+        // mechanic on each side, client only. Played offline with tips; falls back to the offline level.
+        public const string TutorialWorld = "TutorialWorld";
+
+        public void StartTutorial()
+        {
+            var asset = Resources.Load<TextAsset>(TutorialWorld);
+            StartOffline(asset != null ? WorldFile.ToLevel(JObject.Parse(asset.text), "A") : null);
+            Tips.BeginTutorial();
+        }
+
         void Attach(IServerLink l)
         {
             link = l;
@@ -136,6 +150,7 @@ namespace EscapeOffice
         public void Leave()
         {
             Voice.Stop();
+            Tips.EndTutorial();
             if (link != null)
             {
                 link.MessageReceived -= OnMessage;
@@ -157,6 +172,8 @@ namespace EscapeOffice
             World.Clear();
             State.Reset(null);
             lastRoomSent = null;
+            worldSide = null;
+            offlineSidePositions.Clear(); // positions belong to the level that was just left
         }
 
         // ---------------------------------------------------------------- inbound
@@ -220,14 +237,18 @@ namespace EscapeOffice
         }
 
         readonly Dictionary<string, Vector2> offlineSidePositions = new Dictionary<string, Vector2>();
+        // The side the current world was built for. Not `Side`: `assigned` for the new side
+        // arrives just before its `world`, so Side has already changed by the time we build.
+        string worldSide;
 
         public bool CanSwitchSide => link is FakeServer f && f.CanSwitchSide;
         public void SwitchSide() { if (link is FakeServer f) f.SwitchSide(); }
 
         void BuildWorld(WorldData data)
         {
-            string previousSide = Side;
+            string previousSide = worldSide;
             if (!string.IsNullOrEmpty(data.Side)) Side = data.Side;
+            worldSide = Side;
 
             // A world on a fresh connection is a reconnect: keep the player where they were.
             // A world on the same connection is a hot reload with fresh state: back to spawn.
@@ -238,7 +259,7 @@ namespace EscapeOffice
             KeepPlayerOnNextWorld = false;
             worldSession = session;
             // Offline side switch: remember where each side's player stood.
-            bool sideSwitch = Offline && Player != null && previousSide != Side;
+            bool sideSwitch = Offline && Player != null && previousSide != null && previousSide != Side;
             if (sideSwitch) offlineSidePositions[previousSide] = keep;
 
             if (Player != null) Destroy(Player.gameObject);
@@ -260,8 +281,14 @@ namespace EscapeOffice
 
         // ---------------------------------------------------------------- outbound
 
-        public void SendInteract(string id, string action, string value = null) =>
+        // Any interaction the player sends (the tutorial listens to learn they've used something).
+        public event System.Action<string> Interacted;
+
+        public void SendInteract(string id, string action, string value = null)
+        {
+            Interacted?.Invoke(id);
             Send(MsgType.Interact, new InteractData { Id = id, Action = action, Value = value });
+        }
 
         public void SendEnter(string portalId) => Send(MsgType.Enter, new EnterData { PortalId = portalId });
 

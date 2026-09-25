@@ -5,12 +5,13 @@ using UnityEngine;
 namespace EscapeOffice.UI
 {
     // All screens in IMGUI so the main scene needs no UI setup: join, waiting, HUD, keypad,
-    // code panel, end screen, toasts and edge-of-screen cue indicators.
+    // code panel, end screen, toasts and edge-of-screen cue indicators. Tutorial tips draw
+    // themselves (TutorialTips); these screens only start or toggle them.
     public class GameUI : MonoBehaviour
     {
         const float RefHeight = 720f;
 
-        public bool IsModal => keypad != null || codePanel != null;
+        public bool IsModal => keypad != null || codePanel != null || SettingsMenu.IsOpen;
 
         string url;
         string code = "";
@@ -122,6 +123,8 @@ namespace EscapeOffice.UI
                 gm.StartOffline();
                 gm.GetComponent<LevelEditor>().OpenWhenReady();
             }
+            y += 46;
+            if (GUI.Button(new Rect(cx - 200, y, 400, 36), "Tutorial", button)) gm.StartTutorial();
             y += 50;
 
             if (!string.IsNullOrEmpty(gm.Status))
@@ -163,28 +166,33 @@ namespace EscapeOffice.UI
             Slot(new Rect(142, 66, 110, 44), "Key", inv.Any(i => i.ToLowerInvariant().Contains("key")));
 
             if (gm.CanSwitchSide && gm.Current == GameManager.Phase.Playing &&
-                GUI.Button(new Rect(270, 12, 150, 44), $"Play side {(gm.Side == "A" ? "B" : "A")}", button))
+                HudButton(new Rect(270, 12, 150, 44), $"Play side {(gm.Side == "A" ? "B" : "A")}", button))
                 gm.SwitchSide();
 
             // Voice: partner speaking indicator and mute for incoming audio, top-right.
             var voice = gm.Voice;
             if (voice != null && voice.Active)
             {
-                var vr = new Rect(w - 232, 44, 220, 44);
+                var vr = new Rect(w - 232, 72, 220, 44); // below the settings gear
                 Fill(vr, new Color(0, 0, 0, 0.55f));
                 bool speaking = voice.PartnerSpeaking && !voice.MuteIncoming;
                 var dot = new Rect(vr.x + 12, vr.y + 16, 12, 12);
                 Fill(dot, speaking ? Palette.ForSide(gm.Side == "A" ? "B" : "A") * (0.7f + 0.3f * Mathf.Sin(Time.time * 12f)) : new Color(1, 1, 1, 0.2f));
                 GUI.Label(new Rect(vr.x + 30, vr.y, 110, vr.height), voice.Connected ? (speaking ? "Partner speaking" : "Voice on") : voice.Status, new GUIStyle(small) { alignment = TextAnchor.MiddleLeft });
-                if (GUI.Button(new Rect(vr.xMax - 78, vr.y + 6, 70, 32), voice.MuteIncoming ? "Unmute" : "Mute", new GUIStyle(button) { fontSize = 14 }))
+                if (HudButton(new Rect(vr.xMax - 78, vr.y + 6, 70, 32), voice.MuteIncoming ? "Unmute" : "Mute", new GUIStyle(button) { fontSize = 14 }))
                     voice.MuteIncoming = !voice.MuteIncoming;
             }
 
             if (player != null && player.Debuffed)
                 GUI.Label(new Rect(12, 126, 300, 24), $"Sluggish… {player.DebuffRemaining:0}s", new GUIStyle(label) { normal = { textColor = new Color(1f, 0.5f, 0.4f) } });
 
+            // Beside the side badge (after "Play side" when offline); top-right belongs to status and voice.
+            if (gm.Current == GameManager.Phase.Playing && !IsModal && !gm.EditorOpen &&
+                HudButton(new Rect(gm.CanSwitchSide ? 428 : 270, 12, 150, 44), gm.Tips.Show ? "Tips: on" : "Tips: off", button))
+                gm.Tips.Show = !gm.Tips.Show;
+
             if (!string.IsNullOrEmpty(gm.Status) && !gm.Offline)
-                GUI.Label(new Rect(w - 412, 12, 400, 26), gm.Status, new GUIStyle(small) { alignment = TextAnchor.UpperRight, normal = { textColor = new Color(1f, 0.7f, 0.4f) } });
+                GUI.Label(new Rect(w - 480, 12, 400, 26), gm.Status, new GUIStyle(small) { alignment = TextAnchor.UpperRight, normal = { textColor = new Color(1f, 0.7f, 0.4f) } });
 
             if (toast != null && Time.time < toastUntil)
             {
@@ -198,6 +206,13 @@ namespace EscapeOffice.UI
             EdgeIndicators(gm, w, h);
             if (keypad != null) KeypadModal(w, h);
             if (codePanel != null) CodeModal(w, h);
+        }
+
+        // A button over the game view: touches that start on it don't also move the joystick or use things.
+        static bool HudButton(Rect r, string text, GUIStyle style)
+        {
+            TouchControls.Block(r);
+            return GUI.Button(r, text, style);
         }
 
         void Slot(Rect r, string name, bool held)
