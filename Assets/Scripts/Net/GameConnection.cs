@@ -97,7 +97,9 @@ namespace EscapeOffice.Net
             if (Time.unscaledTime - lostAt > GracePeriod)
             {
                 wantConnected = false;
-                StatusChanged?.Invoke("Lost connection to the server.");
+                // Give up as a server error so GameManager drops back to the join screen, where
+                // Create lives; a bare status left the player parked on the waiting screen.
+                MessageReceived?.Invoke(MsgType.Error, new JObject { ["reason"] = "Lost connection to the server." });
                 return;
             }
             StatusChanged?.Invoke($"{reason}. Retrying…");
