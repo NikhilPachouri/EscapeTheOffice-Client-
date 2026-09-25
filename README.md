@@ -25,6 +25,7 @@ Two clients side by side: build a standalone player and run it next to the edito
 | Digits, Enter, Esc | Keypad |
 | F1 | Debug overlay: state keys + last messages (offline: click a bool to flip it) |
 | F2 | Toggle the vision mask |
+| F3 | Level editor (offline only), see below |
 
 ## Layout
 
@@ -38,6 +39,24 @@ Two clients side by side: build a standalone player and run it next to the edito
 | `Scripts/Objects/*` | One class per object type, each with `Apply(value)` |
 | `Scripts/Player/*` | Rigidbody2D controller, room tracking, camera + vision mask |
 | `Scripts/UI/*` | IMGUI screens and debug overlay |
+
+## Level editor
+
+**Level editor** on the join screen (or F3 during an offline game) opens an in-game editor for
+the offline level. Every edit rebuilds the world live, so you can walk around and play-test as
+you go (no clipping while the editor is open; scroll to zoom).
+
+- **Tools:** Select (edit or drag objects and rooms), Wall / Floor / Erase (paint), Spawn,
+  Object (place any type), Room (drag a rectangle; set theme, dark, flooded), Link.
+- **Link** connects a trigger to what it controls, writing the rule for you: button → door,
+  switch → lasers (toggle), button → fire (put out), valve → flooded room, light switch → dark
+  room, keypad → code door, keypad → code panel (requires that code). Key doors, bombable walls
+  and latch buttons get their rules when placed; `exit_open` = all latch buttons pressed.
+- Right-click deletes, Delete removes the selection, Ctrl+Z undoes. W±/H± resize the map.
+- **Save** writes `Assets/Resources/Levels/<name>.json` (FakeWorld.json format; a build saves
+  to `persistentDataPath`). **Load** opens any saved level or the built-in FakeWorld.
+
+Levels are one side, for offline play; the live server still uses its own `world.json`.
 
 ## Art
 

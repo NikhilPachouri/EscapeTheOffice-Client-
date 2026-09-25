@@ -31,6 +31,8 @@ namespace EscapeOffice
         static readonly int ProjectId = Shader.PropertyToID("_Project");
 
         bool perspective;
+        // Level editor zoom; 1 = the prototype's framing.
+        public float Zoom { get; set; } = 1f;
 
         void Awake()
         {
@@ -82,7 +84,7 @@ namespace EscapeOffice
             if (perspective)
             {
                 // "Up" is -Z and "behind" is -Y (south) in the game plane.
-                float scale = settings.Radius / 8f;
+                float scale = settings.Radius / 8f * Zoom;
                 var offset = new Vector3(0f, -Behind * scale, -Height * scale);
                 transform.position = Vector3.Lerp(transform.position, p + offset, 1f - Mathf.Exp(-follow * Time.deltaTime));
                 transform.rotation = Quaternion.LookRotation(-offset, Vector3.up);
@@ -124,7 +126,7 @@ namespace EscapeOffice
         // Jump straight to a spawn point instead of gliding across the map.
         public void SnapTo(Vector2 p)
         {
-            float scale = GameManager.Instance.World != null ? GameManager.Instance.World.Camera.Radius / 8f : 1f;
+            float scale = (GameManager.Instance.World != null ? GameManager.Instance.World.Camera.Radius / 8f : 1f) * Zoom;
             var offset = perspective ? new Vector3(0f, -Behind * scale, -Height * scale) : new Vector3(0f, 0f, -10f);
             transform.position = (Vector3)p + offset;
             if (perspective) transform.rotation = Quaternion.LookRotation(-offset, Vector3.up);

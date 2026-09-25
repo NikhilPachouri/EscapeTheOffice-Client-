@@ -30,7 +30,10 @@ namespace EscapeOffice
         public FxPlayer Fx { get; private set; }
         public GameUI UI { get; private set; }
 
-        public bool InputEnabled => Current == Phase.Playing && !UI.IsModal;
+        public bool InputEnabled => Current == Phase.Playing && !UI.IsModal && !(EditorOpen && GUIUtility.keyboardControl != 0);
+        // Level editor: open (no fog, no clip) and "keep the player where they are on the next world".
+        public bool EditorOpen { get; set; }
+        public bool KeepPlayerOnNextWorld { get; set; }
         public bool DebugNoFog { get; set; }
 
         public readonly List<string> MessageLog = new List<string>();
@@ -68,6 +71,7 @@ namespace EscapeOffice
             Fx = gameObject.AddComponent<FxPlayer>();
             UI = gameObject.AddComponent<GameUI>();
             gameObject.AddComponent<DebugOverlay>();
+            gameObject.AddComponent<LevelEditor>();
 
             var cam = Camera.main;
             if (cam == null)
@@ -94,14 +98,16 @@ namespace EscapeOffice
             connection.Connect(url, RoomCode, token);
         }
 
-        public void StartOffline()
+        public void StartOffline() => StartOffline(null);
+
+        public void StartOffline(JObject level)
         {
             Leave();
             RoomCode = "OFFLINE";
             var fake = gameObject.AddComponent<FakeServer>();
             Attach(fake);
             Current = Phase.Connecting;
-            fake.Begin();
+            fake.Begin(level);
         }
 
         void Attach(IServerLink l)
@@ -203,6 +209,8 @@ namespace EscapeOffice
             int session = connection != null ? connection.Session : 0;
             bool reconnect = Player != null && worldSession >= 0 && session != worldSession;
             Vector2 keep = Player != null ? Player.Position : Vector2.zero;
+            bool keepAnywhere = KeepPlayerOnNextWorld && Player != null; // the editor may stand inside a wall
+            KeepPlayerOnNextWorld = false;
             worldSession = session;
 
             if (Player != null) Destroy(Player.gameObject);
@@ -213,7 +221,8 @@ namespace EscapeOffice
             World.Build(data, State);
 
             var spawn = World.Spawn;
-            if (reconnect && !World.IsWall(Mathf.FloorToInt(keep.x), World.Height - 1 - Mathf.FloorToInt(keep.y))) spawn = keep;
+            if (keepAnywhere) spawn = keep;
+            else if (reconnect && !World.IsWall(Mathf.FloorToInt(keep.x), World.Height - 1 - Mathf.FloorToInt(keep.y))) spawn = keep;
             Player = PlayerController.Spawn(spawn, Side, World.transform);
             CameraRig.SnapTo(spawn);
             Current = Phase.Playing;

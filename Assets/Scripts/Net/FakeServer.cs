@@ -29,17 +29,39 @@ namespace EscapeOffice.Net
 
         string InvKey => "inv_" + side;
 
-        public void Begin()
+        // The level document being played (FakeWorld.json format). The level editor edits a
+        // copy and hands it back through Reload.
+        public JObject Level { get; private set; }
+
+        public void Begin(JObject level = null)
         {
-            var asset = Resources.Load<TextAsset>("FakeWorld");
-            if (asset == null)
+            level ??= LevelStore.Load(LevelStore.Default);
+            if (level == null)
             {
                 StatusChanged?.Invoke("Resources/FakeWorld.json not found");
                 return;
             }
-            var root = JObject.Parse(asset.text);
+            var world = Load(level);
+
+            StatusChanged?.Invoke("Offline");
+            Emit(MsgType.Assigned, JObject.FromObject(new { side, token = "offline" }));
+            Emit(MsgType.Waiting, new JObject());
+            Emit(MsgType.World, world, 0.6f);
+        }
+
+        // New world on the same connection with fresh state (level editor, level switch).
+        public void Reload(JObject level)
+        {
+            outbox.Clear();
+            Emit(MsgType.World, Load(level));
+        }
+
+        JObject Load(JObject root)
+        {
+            Level = root;
+            finished = false;
             side = root.Value<string>("side") ?? "A";
-            var world = (JObject)root["world"];
+            var world = (JObject)root["world"].DeepClone();
 
             state = ((JObject)world["state"] ?? new JObject()).Properties().ToDictionary(p => p.Name, p => p.Value);
             if (!state.ContainsKey(InvKey)) state[InvKey] = new JArray();
@@ -47,16 +69,14 @@ namespace EscapeOffice.Net
             foreach (var code in root["codes"]?.Values<string>() ?? Enumerable.Empty<string>())
                 state[code] = UnityEngine.Random.Range(0, 10000).ToString("0000");
 
-            objects = ((JArray)world["objects"]).Cast<JObject>().ToDictionary(o => o.Value<string>("id"));
+            objects = ((JArray)world["objects"] ?? new JArray()).Cast<JObject>()
+                .Where(o => o.Value<string>("id") != null)
+                .GroupBy(o => o.Value<string>("id")).ToDictionary(g => g.Key, g => g.First());
             rules = (root["rules"] as JArray)?.Cast<JObject>().ToList() ?? new List<JObject>();
             derived = root["derived"]?.ToObject<Dictionary<string, string>>() ?? new Dictionary<string, string>();
             RecomputeDerived();
             world["state"] = JObject.FromObject(state);
-
-            StatusChanged?.Invoke("Offline");
-            Emit(MsgType.Assigned, JObject.FromObject(new { side, token = "offline" }));
-            Emit(MsgType.Waiting, new JObject());
-            Emit(MsgType.World, world, 0.6f);
+            return world;
         }
 
         public void Send(string type, object data)

@@ -115,7 +115,12 @@ namespace EscapeOffice.UI
                     gm.Join(url, lastCode, lastToken);
                 y += 46;
             }
-            if (GUI.Button(new Rect(cx - 200, y, 400, 36), "Offline test (fake world)", button)) gm.StartOffline();
+            if (GUI.Button(new Rect(cx - 200, y, 196, 36), "Offline test", button)) gm.StartOffline();
+            if (GUI.Button(new Rect(cx + 4, y, 196, 36), "Level editor", button))
+            {
+                gm.StartOffline();
+                gm.GetComponent<LevelEditor>().OpenWhenReady();
+            }
             y += 50;
 
             if (!string.IsNullOrEmpty(gm.Status))
