@@ -1,0 +1,427 @@
+{
+ "_comment": "Offline test world for the Unity client (one side of a `world` message plus rules). Not used by the server.",
+ "side": "A",
+ "codes": [
+  "code_A1"
+ ],
+ "derived": {
+  "exit_open": "final_A"
+ },
+ "rules": [
+  {
+   "on": "button_A1:press",
+   "do": [
+    {
+     "toggle": "door_A1"
+    },
+    {
+     "fx": "door_clunk",
+     "at": "door_A1"
+    }
+   ]
+  },
+  {
+   "on": "keypad_A1:submit",
+   "requires": {
+    "code": "code_A1"
+   },
+   "do": [
+    {
+     "set": {
+      "door_A2": true
+     }
+    },
+    {
+     "fx": "door_open",
+     "at": "door_A2"
+    }
+   ]
+  },
+  {
+   "on": "light_A1:press",
+   "do": [
+    {
+     "toggle": "A.archive.lights"
+    },
+    {
+     "fx": "light_switch"
+    }
+   ]
+  },
+  {
+   "on": "laser_switch_A1:press",
+   "do": [
+    {
+     "toggle": "lasers_A1"
+    },
+    {
+     "fx": "laser_zap",
+     "at": "lasers_A1"
+    }
+   ]
+  },
+  {
+   "on": "keydoor_A1:use_key",
+   "requires": {
+    "holding": "key"
+   },
+   "do": [
+    {
+     "set": {
+      "keydoor_A1": true
+     }
+    },
+    {
+     "consume": "key"
+    },
+    {
+     "fx": "door_clunk",
+     "at": "keydoor_A1"
+    }
+   ]
+  },
+  {
+   "on": "valve_A1:press",
+   "do": [
+    {
+     "set": {
+      "A.basement.flooded": false
+     }
+    },
+    {
+     "fx": "water_drain",
+     "at": [
+      24,
+      13
+     ]
+    }
+   ]
+  },
+  {
+   "on": "extinguisher_A1:press",
+   "do": [
+    {
+     "set": {
+      "fire_A1": false
+     }
+    },
+    {
+     "fx": "fire_hiss",
+     "at": "fire_A1"
+    }
+   ]
+  },
+  {
+   "on": "final_A:press",
+   "do": [
+    {
+     "set": {
+      "final_A": true
+     }
+    },
+    {
+     "fx": "final_button"
+    }
+   ]
+  },
+  {
+   "on": "wall_A3:use_bomb",
+   "requires": {
+    "holding": "bomb"
+   },
+   "do": [
+    {
+     "set": {
+      "wall_A3.broken": true
+     }
+    },
+    {
+     "consume": "bomb"
+    },
+    {
+     "fx": "explosion",
+     "at": "wall_A3"
+    }
+   ]
+  }
+ ],
+ "world": {
+  "tileSize": 32,
+  "camera": {
+   "radius": 8,
+   "darkRadius": 2
+  },
+  "tiles": [
+   "########################################",
+   "#........#.........#..........#........#",
+   "#........#.........#..........#........#",
+   "#.......................................",
+   "#........#.........#..........#........#",
+   "#........#.........#..........#........#",
+   "####.##############################.####",
+   "#......................................#",
+   "#......................................#",
+   "####.#########.#########.#########.#####",
+   "#........#.........#..........#........#",
+   "#........#.........#..........#........#",
+   "#........#.........#..........#........#",
+   "#........#.........#..........#........#",
+   "#........#.........#..........#........#",
+   "#........#.........#..........#........#",
+   "#........#.........#..........#........#",
+   "########################################"
+  ],
+  "rooms": [
+   {
+    "id": "lobby",
+    "x": 1,
+    "y": 1,
+    "w": 8,
+    "h": 5
+   },
+   {
+    "id": "office",
+    "x": 10,
+    "y": 1,
+    "w": 9,
+    "h": 5
+   },
+   {
+    "id": "archive",
+    "x": 20,
+    "y": 1,
+    "w": 10,
+    "h": 5,
+    "lights": "A.archive.lights"
+   },
+   {
+    "id": "server",
+    "x": 31,
+    "y": 1,
+    "w": 8,
+    "h": 5
+   },
+   {
+    "id": "hallway",
+    "x": 1,
+    "y": 7,
+    "w": 38,
+    "h": 2
+   },
+   {
+    "id": "breakroom",
+    "x": 1,
+    "y": 10,
+    "w": 8,
+    "h": 7
+   },
+   {
+    "id": "storage",
+    "x": 10,
+    "y": 10,
+    "w": 9,
+    "h": 7
+   },
+   {
+    "id": "basement",
+    "x": 20,
+    "y": 10,
+    "w": 10,
+    "h": 7,
+    "water": "A.basement.flooded"
+   },
+   {
+    "id": "manager",
+    "x": 31,
+    "y": 10,
+    "w": 8,
+    "h": 7
+   }
+  ],
+  "objects": [
+   {
+    "id": "button_A1",
+    "type": "button",
+    "x": 7,
+    "y": 1,
+    "key": "door_A1",
+    "color": "A"
+   },
+   {
+    "id": "door_A1",
+    "type": "button_door",
+    "x": 9,
+    "y": 3,
+    "key": "door_A1"
+   },
+   {
+    "id": "panel_A1",
+    "type": "code_panel",
+    "x": 1,
+    "y": 12,
+    "key": "code_A1",
+    "color": "info"
+   },
+   {
+    "id": "keypad_A1",
+    "type": "keypad",
+    "x": 18,
+    "y": 2,
+    "key": "door_A2",
+    "interact": "submit",
+    "color": "A"
+   },
+   {
+    "id": "door_A2",
+    "type": "code_door",
+    "x": 19,
+    "y": 3,
+    "key": "door_A2"
+   },
+   {
+    "id": "light_A1",
+    "type": "light_switch",
+    "x": 20,
+    "y": 2,
+    "key": "A.archive.lights",
+    "color": "A"
+   },
+   {
+    "id": "key_A",
+    "type": "key",
+    "x": 27,
+    "y": 4,
+    "key": "key_A"
+   },
+   {
+    "id": "laser_switch_A1",
+    "type": "laser_switch",
+    "x": 29,
+    "y": 1,
+    "key": "lasers_A1",
+    "color": "A"
+   },
+   {
+    "id": "lasers_A1",
+    "type": "lasers",
+    "x": 30,
+    "y": 3,
+    "key": "lasers_A1"
+   },
+   {
+    "id": "keydoor_A1",
+    "type": "key_door",
+    "x": 14,
+    "y": 9,
+    "key": "keydoor_A1",
+    "color": "A"
+   },
+   {
+    "id": "valve_A1",
+    "type": "valve",
+    "x": 12,
+    "y": 14,
+    "key": "A.basement.flooded",
+    "color": "A"
+   },
+   {
+    "id": "bomb_A",
+    "type": "bomb",
+    "x": 27,
+    "y": 15,
+    "key": "bomb_A"
+   },
+   {
+    "id": "extinguisher_A1",
+    "type": "button",
+    "x": 21,
+    "y": 15,
+    "key": "fire_A1",
+    "color": "A"
+   },
+   {
+    "id": "fire_A1",
+    "type": "fire",
+    "x": 34,
+    "y": 9,
+    "key": "fire_A1"
+   },
+   {
+    "id": "boss_A",
+    "type": "boss",
+    "x": 32,
+    "y": 11,
+    "path": [
+     [
+      32,
+      11
+     ],
+     [
+      37,
+      11
+     ],
+     [
+      37,
+      15
+     ],
+     [
+      32,
+      15
+     ]
+    ],
+    "chaseRadius": 4,
+    "speed": 2.2,
+    "chaseSpeed": 3.4,
+    "debuff": 15
+   },
+   {
+    "id": "final_A",
+    "type": "final_button",
+    "x": 37,
+    "y": 13,
+    "key": "final_A",
+    "color": "both"
+   },
+   {
+    "id": "wall_A3",
+    "type": "bombable_wall",
+    "x": 35,
+    "y": 6,
+    "key": "wall_A3.broken",
+    "color": "A"
+   },
+   {
+    "id": "exit_A",
+    "type": "exit_door",
+    "x": 39,
+    "y": 3,
+    "key": "exit_open"
+   },
+   {
+    "id": "mystery_A1",
+    "type": "coffee_machine",
+    "x": 2,
+    "y": 1
+   }
+  ],
+  "spawn": [
+   3,
+   3
+  ],
+  "state": {
+   "door_A1": false,
+   "door_A2": false,
+   "A.archive.lights": false,
+   "lasers_A1": true,
+   "keydoor_A1": false,
+   "A.basement.flooded": true,
+   "fire_A1": true,
+   "final_A": false,
+   "wall_A3.broken": false,
+   "exit_open": false,
+   "bomb_A": "home",
+   "key_A": "home",
+   "inv_A": []
+  }
+ }
+}
