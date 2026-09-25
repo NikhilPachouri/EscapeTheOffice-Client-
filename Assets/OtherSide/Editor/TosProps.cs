@@ -42,6 +42,7 @@ public static partial class TosProps
         { var k = new Kit("TOS_Machine_Lab", false); Machine(k, 0x8fd9c8, 0xb3bcff); Save(k); n++; }
         { var k = new Kit("TOS_Machine_Final", false); Machine(k, 0xff9f43, 0xc49bff); Save(k); n++; }
         n += BuildInteractables(); // tos-interactables.js
+        n += BuildCharacters();    // tos-characters.js
         return n;
     }
 

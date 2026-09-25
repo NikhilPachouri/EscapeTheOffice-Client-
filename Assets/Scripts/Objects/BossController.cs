@@ -38,8 +38,12 @@ namespace EscapeOffice.Objects
         CircleCollider2D col;
         SpriteRenderer[] eyes;
 
-        // 3D: Boss_Drone, facing where it flies; its Halo spins faster while chasing.
-        protected override string ModelName => "Boss_Drone";
+        // 3D: the supervisor from tos-characters.js, walking the patrol and running the chase, with
+        // a red lamp that pulses while chasing. Boss_Drone (Halo spins faster while chasing) until
+        // the characters are built.
+        protected override string ModelName => "TOS_Supervisor";
+        protected override string FallbackModelName => "Boss_Drone";
+        TosCharacter supervisor;
         Transform halo, hover;
         Light eyeLight;
         float yaw, haloAngle;
@@ -66,6 +70,19 @@ namespace EscapeOffice.Objects
                 hover = Art.Find(model, "Hover");
                 eyeLight = hover != null ? hover.GetComponentInChildren<Light>() : null;
                 eyes = new SpriteRenderer[0];
+                supervisor = model.GetComponent<TosCharacter>();
+                if (supervisor != null)
+                {
+                    // The drone's menace light, over the supervisor's head.
+                    var l = new GameObject("PointLight").AddComponent<Light>();
+                    l.transform.SetParent(model.transform, false);
+                    l.transform.localPosition = new Vector3(0f, 2.1f, 0.2f);
+                    l.type = LightType.Point;
+                    l.color = new Color(1f, 0.19f, 0.19f);
+                    l.intensity = 0.9f;
+                    l.range = 3.2f;
+                    eyeLight = l;
+                }
             }
             else
             {
@@ -206,6 +223,9 @@ namespace EscapeOffice.Objects
             var v = rb.linearVelocity;
             if (v.sqrMagnitude > 0.01f) yaw = Mathf.LerpAngle(yaw, Art.YawFor(v), Art.Smooth(8f));
             model.transform.localRotation = Art.Rotation(yaw);
+            if (supervisor != null)
+                supervisor.SetMotion(v.sqrMagnitude < 0.04f ? TosCharacter.Motion.Idle
+                    : chasing ? TosCharacter.Motion.Run : TosCharacter.Motion.Walk);
             haloAngle += (chasing ? 6f : 2f) * Mathf.Rad2Deg * Time.deltaTime;
             if (halo != null) halo.localRotation = Quaternion.Euler(0f, haloAngle, 0f);
             if (hover != null) hover.localPosition = new Vector3(0f, 0.75f + Mathf.Sin(Time.time * 2f) * 0.08f, 0f);

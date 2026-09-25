@@ -37,6 +37,7 @@
     "focusRing": 0.55
   },
   "objectScale": {
+    "TOS_Supervisor": 0.75,
     "Button": 1.35,
     "FinalButton": 1.25,
     "LeverSwitch": 1.3,
