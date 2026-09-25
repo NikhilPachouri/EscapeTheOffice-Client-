@@ -12,7 +12,8 @@ namespace EscapeOffice.Net
     // Assets/Resources/Levels so they ship with builds; a build saves to persistentDataPath.
     public static class LevelStore
     {
-        public const string Default = "FakeWorld";
+        // The offline default is the server's own world.json (two sides), converted on load.
+        public const string Default = "OfflineWorld";
 
         public static string SaveDir =>
             Application.isEditor
@@ -32,9 +33,9 @@ namespace EscapeOffice.Net
         {
             // A file on disk is always the freshest copy (Resources only update on reimport).
             var path = Path.Combine(SaveDir, name + ".json");
-            if (File.Exists(path)) return JObject.Parse(File.ReadAllText(path));
-            var asset = Resources.Load<TextAsset>(name == Default ? Default : "Levels/" + name);
-            return asset != null ? JObject.Parse(asset.text) : null;
+            var asset = File.Exists(path) ? null : Resources.Load<TextAsset>(name == Default ? Default : "Levels/" + name);
+            var doc = File.Exists(path) ? JObject.Parse(File.ReadAllText(path)) : asset != null ? JObject.Parse(asset.text) : null;
+            return WorldFile.IsServerFormat(doc) ? WorldFile.ToLevel(doc, "A") : doc;
         }
 
         public static string Save(string name, JObject level)

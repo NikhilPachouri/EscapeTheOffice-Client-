@@ -161,6 +161,10 @@ namespace EscapeOffice.UI
             Slot(new Rect(26, 66, 110, 44), "Bomb", inv.Any(i => i.ToLowerInvariant().Contains("bomb")));
             Slot(new Rect(142, 66, 110, 44), "Key", inv.Any(i => i.ToLowerInvariant().Contains("key")));
 
+            if (gm.CanSwitchSide && gm.Current == GameManager.Phase.Playing &&
+                GUI.Button(new Rect(270, 12, 150, 44), $"Play side {(gm.Side == "A" ? "B" : "A")}", button))
+                gm.SwitchSide();
+
             if (player != null && player.Debuffed)
                 GUI.Label(new Rect(12, 126, 300, 24), $"Sluggish… {player.DebuffRemaining:0}s", new GUIStyle(label) { normal = { textColor = new Color(1f, 0.5f, 0.4f) } });
 

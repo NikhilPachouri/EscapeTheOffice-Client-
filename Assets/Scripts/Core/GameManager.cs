@@ -207,8 +207,14 @@ namespace EscapeOffice
             }
         }
 
+        readonly Dictionary<string, Vector2> offlineSidePositions = new Dictionary<string, Vector2>();
+
+        public bool CanSwitchSide => link is FakeServer f && f.CanSwitchSide;
+        public void SwitchSide() { if (link is FakeServer f) f.SwitchSide(); }
+
         void BuildWorld(WorldData data)
         {
+            string previousSide = Side;
             if (!string.IsNullOrEmpty(data.Side)) Side = data.Side;
 
             // A world on a fresh connection is a reconnect: keep the player where they were.
@@ -219,6 +225,9 @@ namespace EscapeOffice
             bool keepAnywhere = KeepPlayerOnNextWorld && Player != null; // the editor may stand inside a wall
             KeepPlayerOnNextWorld = false;
             worldSession = session;
+            // Offline side switch: remember where each side's player stood.
+            bool sideSwitch = Offline && Player != null && previousSide != Side;
+            if (sideSwitch) offlineSidePositions[previousSide] = keep;
 
             if (Player != null) Destroy(Player.gameObject);
             Player = null;
@@ -229,6 +238,7 @@ namespace EscapeOffice
 
             var spawn = World.Spawn;
             if (keepAnywhere) spawn = keep;
+            else if (sideSwitch && offlineSidePositions.TryGetValue(Side, out var back)) spawn = back;
             else if (reconnect && !World.IsWall(Mathf.FloorToInt(keep.x), World.Height - 1 - Mathf.FloorToInt(keep.y))) spawn = keep;
             Player = PlayerController.Spawn(spawn, Side, World.transform);
             CameraRig.SnapTo(spawn);

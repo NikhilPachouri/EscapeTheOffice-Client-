@@ -49,6 +49,19 @@ namespace EscapeOffice.Net
             Emit(MsgType.World, world, 0.6f);
         }
 
+        // Offline hotseat for a two-sided world: play the other side with the same shared state.
+        public bool CanSwitchSide => Level?["_source"] is JObject;
+
+        public void SwitchSide()
+        {
+            if (!CanSwitchSide) return;
+            var level = WorldFile.ToLevel((JObject)Level["_source"], side == "A" ? "B" : "A", state);
+            outbox.Clear();
+            var world = Load(level);
+            Emit(MsgType.Assigned, JObject.FromObject(new { side, token = "offline" }));
+            Emit(MsgType.World, world);
+        }
+
         // New world on the same connection with fresh state (level editor, level switch).
         public void Reload(JObject level)
         {

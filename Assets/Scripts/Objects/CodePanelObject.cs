@@ -9,6 +9,7 @@ namespace EscapeOffice.Objects
     public class CodePanelObject : WorldObject
     {
         Color Plate => Palette.ForName(Def.Color);
+        Color Ink => Plate.grayscale > 0.6f ? Color.black : Color.white; // readable on the plate
 
         public string Code
         {
@@ -41,9 +42,9 @@ namespace EscapeOffice.Objects
             text = go.AddComponent<TextMesh>();
             text.font = Art.Catalog != null && Art.Catalog.codeFont != null ? Art.Catalog.codeFont : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             text.fontSize = 64;
-            text.characterSize = 0.1f;
+            text.characterSize = 0.16f;
             text.anchor = TextAnchor.MiddleCenter;
-            text.color = Plate.grayscale > 0.6f ? Color.black : Color.white;
+            text.color = Ink;
             var mr = go.GetComponent<MeshRenderer>();
             mr.sharedMaterial = text.font.material;
             mr.sortingOrder = Layers.ObjectTop;
@@ -63,10 +64,20 @@ namespace EscapeOffice.Objects
             text = go.AddComponent<TextMesh>();
             text.font = font;
             text.fontSize = 64;
-            text.characterSize = 0.02f;
+            text.characterSize = 0.045f;
             text.anchor = TextAnchor.MiddleCenter;
             text.alignment = TextAlignment.Center;
-            text.color = Plate; // digit glows in the plate colour
+            text.color = Ink;
+
+            // The colour is on the panel: tint every material slot of the model (the visible face
+            // is the Kiosk's second slot, M_Bezel), as per-panel instances.
+            foreach (var r in model.GetComponentsInChildren<MeshRenderer>(true))
+            {
+                if (r.GetComponent<TextMesh>() != null) continue;
+                var mats = r.materials;
+                foreach (var m in mats) m.color = Plate;
+                r.materials = mats;
+            }
             go.GetComponent<MeshRenderer>().sharedMaterial = font.material;
         }
 
