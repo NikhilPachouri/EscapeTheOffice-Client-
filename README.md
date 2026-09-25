@@ -16,8 +16,8 @@ objects from `patch` messages. It bundles no map data. Movement is never synced.
    `Resources/Maps/tutorial_a.txt` / `tutorial_b.txt`; client only, the server never loads it):
    one small room per mechanic on each side. Tips beside what's in your current room and its
    doorways say what each thing does and how to get past it (changing with its state), hints
-   on the controls show until you've used them, and a banner gives the goal. **Tips** in the
-   HUD shows the object tips in any game.
+   on the controls show until you've used them, and a banner gives the goal. Online games also
+   start with the object tips on; **Tips** in the HUD turns them on or off in any game.
 
 Two clients side by side: build a standalone player and run it next to the editor
 (`runInBackground` is on).
