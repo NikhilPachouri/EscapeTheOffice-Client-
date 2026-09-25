@@ -8,6 +8,8 @@ namespace EscapeOffice.Objects
     {
         protected override Color ClosedColor => Palette.Both;
         protected override Palette.Tag DefaultTag => Palette.Tag.Both;
+        // Door_Exit is authored a quarter turn off from the other door models.
+        protected override float ModelYaw => base.ModelYaw + 90f;
 
         BoxCollider2D portal;
         float lastSent = -10f;
