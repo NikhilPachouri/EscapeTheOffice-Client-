@@ -277,7 +277,7 @@ namespace EscapeOffice.UI
             MenuArt.Panel(p);
             GUI.Label(new Rect(p.x, p.y + 36, p.width, 50), $"<color=#{ColorUtility.ToHtmlStringRGB(MenuArt.Cool)}>YOU</color> <color=#{ColorUtility.ToHtmlStringRGB(MenuArt.Warm)}>ESCAPED</color>",
                 new GUIStyle(title) { font = headFont, fontSize = 46, richText = true, alignment = TextAnchor.MiddleCenter });
-            GUI.Label(new Rect(p.x + 30, p.y + 100, p.width - 60, 60), "Both sides made it out of the office. Nice teamwork.",
+            GUI.Label(new Rect(p.x + 30, p.y + 100, p.width - 60, 60), "Escape Successful. Nice teamwork.",
                 new GUIStyle(big) { fontSize = 20, normal = { textColor = MenuArt.Dim } });
             if (GUI.Button(new Rect(p.x + 110, p.yMax - 96, p.width - 220, 58), "Back to menu", MenuArt.Primary(headFont))) gm.Leave();
         }
@@ -298,41 +298,61 @@ namespace EscapeOffice.UI
                 else if (e.keyCode == KeyCode.Escape) { keypad = null; e.Use(); return; }
             }
 
-            var r = new Rect(w / 2 - 170, h / 2 - 250, 340, 470);
+            // Drawn as the riddle keypad itself (tos-interactables.js): metal body, recessed face
+            // ringed in the keypad's side colour, display strip, the four colour swatches, 12 keys.
+            var order = keypad.Order;
+            var tint = keypad.Tag == Palette.Tag.None ? Color.white : Palette.ForTag(keypad.Tag);
+            var r = new Rect(w / 2 - 180, h / 2 - 265, 360, 530);
             var headFont = Art.Catalog != null ? Art.Catalog.titleFont : null;
             MenuArt.DimScreen(new Rect(0, 0, w, h));
-            MenuArt.Panel(r);
-            GUI.Label(new Rect(r.x + 24, r.y + 10, r.width, 30), "KEYPAD", new GUIStyle(label) { font = headFont, alignment = TextAnchor.MiddleLeft });
-            var display = new Rect(r.x + 20, r.y + 46, r.width - 40, 80);
-            MenuArt.Glass(display, new Color(MenuArt.Warm.r, MenuArt.Warm.g, MenuArt.Warm.b, 0.5f), 0.9f);
-            GUI.Label(display, typed.PadRight(length, '_'), new GUIStyle(digits) { normal = { textColor = MenuArt.Warm } });
+            MenuArt.Panel(r);                                                               // body: the theme's glass
+            var face = new Rect(r.x + 14, r.y + 44, r.width - 28, r.height - 58);
+            MenuArt.Glass(face, new Color(tint.r, tint.g, tint.b, 0.9f), 0.9f);            // face ringed in the side colour
+            GUI.Label(new Rect(r.x, r.y + 8, r.width, 30), "KEYPAD", new GUIStyle(label) { font = headFont, alignment = TextAnchor.MiddleCenter });
+            if (GUI.Button(new Rect(r.xMax - 48, r.y + 8, 38, 32), "X", MenuArt.Hud(headFont))) keypad = null;
 
-            var order = keypad.Order;
-            if (order != null && order.Length > 0)
+            // display strip
+            var strip = new Rect(face.x + 16, face.y + 16, face.width - 32, 74);
+            MenuArt.Glass(strip, new Color(MenuArt.Warm.r, MenuArt.Warm.g, MenuArt.Warm.b, 0.55f), 0.95f);
+            GUI.Label(strip, typed.PadRight(length, '_'), new GUIStyle(digits) { fontSize = 50, normal = { textColor = MenuArt.Warm } });
+
+            // four swatch slots: the order to read the partner's panels in; the next one is outlined
+            int slots = Mathf.Max(4, length);
+            float sw = 52f, gap = 12f, sx = face.center.x - (slots * sw + (slots - 1) * gap) / 2f, sy = strip.yMax + 18;
+            for (int i = 0; i < slots; i++)
             {
-                float sw = (r.width - 40) / order.Length;
-                MenuArt.Glass(new Rect(r.x, r.y - 86, r.width, 78), null, 0.85f);
-                GUI.Label(new Rect(r.x, r.y - 82, r.width, 18), "ENTER IN ORDER", new GUIStyle(small) { font = headFont, alignment = TextAnchor.MiddleCenter, normal = { textColor = MenuArt.Dim } });
-                for (int i = 0; i < order.Length; i++)
-                {
-                    var cell = new Rect(r.x + 20 + i * sw + 3, r.y - 60, sw - 6, 24);
-                    MenuArt.Glass(cell, Palette.ForName(order[i]), 1f);
-                    MenuArt.Fill(new Rect(cell.x + 4, cell.y + 4, cell.width - 8, cell.height - 8), Palette.ForName(order[i]));
-                    GUI.Label(new Rect(cell.x, cell.yMax, cell.width, 22), order[i], new GUIStyle(small) { alignment = TextAnchor.MiddleCenter });
-                }
+                var cell = new Rect(sx + i * (sw + gap), sy, sw, sw);
+                MenuArt.Glass(cell, null, 0.9f);
+                bool used = order != null && i < order.Length;
+                var colour = used ? Palette.ForName(order[i]) : new Color(0.95f, 0.95f, 0.96f, 0.35f);
+                Fill(new Rect(cell.x + 6, cell.y + 6, cell.width - 12, cell.height - 12), colour);
+                if (i < typed.Length)
+                    GUI.Label(cell, typed[i].ToString(), new GUIStyle(digits) { fontSize = 26, normal = { textColor = colour.grayscale > 0.6f ? Color.black : Color.white } });
+                if (i == typed.Length && i < length)
+                    Outline(new Rect(cell.x - 3, cell.y - 3, cell.width + 6, cell.height + 6), new Color(1f, 1f, 1f, 0.6f + 0.4f * Mathf.Sin(Time.time * 6f)), 2);
             }
+            if (order != null && order.Length > 0)
+                GUI.Label(new Rect(face.x, sy + sw + 4, face.width, 22), "Read your partner's panels in this order", new GUIStyle(small) { alignment = TextAnchor.MiddleCenter, normal = { textColor = MenuArt.Dim } });
 
-            float bx = r.x + 30, by = r.y + 140, bw = 90, bh = 58, gap = 5;
+            // 12 keys, 3 x 4
+            var key = MenuArt.Keycap(headFont);
+            float bw = 88, bh = 50, kg = 8, bx = face.center.x - (3 * bw + 2 * kg) / 2f, by = sy + sw + 34;
             for (int i = 0; i < 9; i++)
-                if (GUI.Button(new Rect(bx + (i % 3) * (bw + gap), by + (i / 3) * (bh + gap), bw, bh), (i + 1).ToString(), MenuArt.Keycap(headFont)) && typed.Length < length)
+                if (GUI.Button(new Rect(bx + (i % 3) * (bw + kg), by + (i / 3) * (bh + kg), bw, bh), (i + 1).ToString(), key) && typed.Length < length)
                     typed += (i + 1);
-            if (GUI.Button(new Rect(bx, by + 3 * (bh + gap), bw, bh), "DEL", MenuArt.Hud(headFont)) && typed.Length > 0) typed = typed.Substring(0, typed.Length - 1);
-            if (GUI.Button(new Rect(bx + bw + gap, by + 3 * (bh + gap), bw, bh), "0", MenuArt.Keycap(headFont)) && typed.Length < length) typed += "0";
+            if (GUI.Button(new Rect(bx, by + 3 * (bh + kg), bw, bh), "DEL", MenuArt.Hud(headFont)) && typed.Length > 0) typed = typed.Substring(0, typed.Length - 1);
+            if (GUI.Button(new Rect(bx + bw + kg, by + 3 * (bh + kg), bw, bh), "0", key) && typed.Length < length) typed += "0";
             GUI.enabled = typed.Length == length;
-            if (GUI.Button(new Rect(bx + 2 * (bw + gap), by + 3 * (bh + gap), bw, bh), "OK", MenuArt.Primary(headFont))) SubmitKeypad();
+            if (GUI.Button(new Rect(bx + 2 * (bw + kg), by + 3 * (bh + kg), bw, bh), "OK", MenuArt.Primary(headFont))) SubmitKeypad();
             GUI.enabled = true;
-            GUI.Label(new Rect(r.x, r.yMax - 32, r.width, 24), "Tap the digits, then OK", new GUIStyle(small) { alignment = TextAnchor.MiddleCenter, normal = { textColor = MenuArt.Dim } });
-            if (GUI.Button(new Rect(r.xMax - 50, r.y + 10, 38, 34), "X", MenuArt.Hud(headFont))) keypad = null;
+        }
+
+        void Outline(Rect r, Color c, float t)
+        {
+            Fill(new Rect(r.x, r.y, r.width, t), c);
+            Fill(new Rect(r.x, r.yMax - t, r.width, t), c);
+            Fill(new Rect(r.x, r.y, t, r.height), c);
+            Fill(new Rect(r.xMax - t, r.y, t, r.height), c);
         }
 
         void SubmitKeypad()

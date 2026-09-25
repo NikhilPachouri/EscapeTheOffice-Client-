@@ -23,7 +23,16 @@ namespace EscapeOffice.Objects
         public override bool CanInteractNow => !(latching && WorldState.Truthy(Value));
         protected override string DefaultAction => "press";
 
+        // tos-interactables.js: one prop per kind. Switches are told apart by what they do.
         protected override string ModelName => Type switch
+        {
+            "final_button" or "latch_button" => "TOS_FinalButton",
+            "light_switch" => "TOS_LightSwitch",
+            "valve" or "drain" => "TOS_DrainValve",
+            "lever" or "switch" or "laser_switch" => Mentions("sprinkler") ? "TOS_SprinklerValve" : Mentions("breaker") ? "TOS_Breaker" : "TOS_LaserLever",
+            _ => "TOS_DoorButton",
+        };
+        protected override string FallbackModelName => Type switch
         {
             "final_button" or "latch_button" => "FinalButton",
             "lever" or "switch" or "laser_switch" => "LeverSwitch",
@@ -31,10 +40,23 @@ namespace EscapeOffice.Objects
             "valve" or "drain" => "Valve",
             _ => "Button",
         };
+        public override string Symbol => ModelName switch
+        {
+            "TOS_FinalButton" => "star",
+            "TOS_LightSwitch" => "bulb",
+            "TOS_DrainValve" => "wavesDown",
+            "TOS_SprinklerValve" => "flameDrop",
+            "TOS_Breaker" => "bolt",
+            "TOS_LaserLever" => "beam",
+            _ => "door",
+        };
+        bool Mentions(string word) =>
+            (Def.Id ?? "").ToLowerInvariant().Contains(word) || (Def.Get<string>("label") ?? "").ToLowerInvariant().Contains(word);
         // Final buttons are the shared goal: purple (both) unless the server colours them.
-        protected override Palette.Tag DefaultTag => ModelName == "FinalButton" ? Palette.Tag.Both : Palette.Tag.None;
-        bool WallMounted => ModelName != "Button" && ModelName != "FinalButton";
-        protected override float ModelYaw => WallMounted ? Art.WallYaw(World, Def.X, Def.Y) : 0f;
+        protected override Palette.Tag DefaultTag => Type is "final_button" or "latch_button" ? Palette.Tag.Both : Palette.Tag.None;
+        // Wall props back onto the nearest wall; floor props (and free-standing posts) face the camera.
+        bool WallMounted => ModelName is "TOS_DoorButton" or "TOS_LightSwitch" or "TOS_Breaker";
+        protected override float ModelYaw => WallMounted ? Art.WallYaw(World, Def.X, Def.Y, 180f) : 180f;
 
         protected override void Build()
         {
@@ -62,6 +84,7 @@ namespace EscapeOffice.Objects
 
         void Show(bool on)
         {
+            if (Tos != null) Tos.SetState(on, instant: !Settled);
             var tint = Tag == Palette.Tag.None ? Color.white : Palette.ForTag(Tag);
             if (knob != null)
             {

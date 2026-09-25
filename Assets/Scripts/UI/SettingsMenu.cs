@@ -3,7 +3,7 @@ using UnityEngine;
 namespace EscapeOffice.UI
 {
     // Gear button (top-right, every screen) and the settings panel: music and SFX switches
-    // (saved), exit/leave (with confirm) and close. Android's back button toggles it.
+    // (saved), the camera & vision tuner, exit/leave (with confirm) and close. Android's back button toggles it.
     // On the menu the button quits the app; inside a game it becomes "Leave game", which ends the
     // game for both players (the server frees the room) and returns to the menu.
     // Music plays Resources/Music/theme if present, otherwise a generated ambient loop.
@@ -84,7 +84,7 @@ namespace EscapeOffice.UI
 
             // Dim everything behind; tapping outside the panel closes it.
             MenuArt.DimScreen(new Rect(0, 0, w, h));
-            var p = new Rect(w / 2 - 230, h / 2 - 163, 460, 326);
+            var p = new Rect(w / 2 - 230, h / 2 - 205, 460, 410); // room for Camera & vision
             if (Event.current.type == EventType.MouseDown && !p.Contains(Event.current.mousePosition) && !gear.Contains(Event.current.mousePosition))
             {
                 IsOpen = false;
@@ -101,7 +101,9 @@ namespace EscapeOffice.UI
             if (Switch(new Rect(p.x + 28, y, p.width - 56, 64), "Music", MusicOn, side)) SetMusic(!MusicOn);
             y += 76;
             if (Switch(new Rect(p.x + 28, y, p.width - 56, 64), "Sound effects", SfxOn, side)) SetSfx(!SfxOn);
-            y += 96;
+            y += 80;
+            if (GUI.Button(new Rect(p.x + 28, y, p.width - 56, 52), "Camera & vision", MenuArt.Hud(title.font))) { IsOpen = false; ViewTuner.IsOpen = true; return; }
+            y += 80;
 
             var gm = GameManager.Instance;
             bool inGame = gm != null && gm.Current != GameManager.Phase.Join;

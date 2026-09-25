@@ -22,7 +22,7 @@ namespace EscapeOffice.Net
         const int MaxPayload = 480;
         const int StartSamples = Frame * 5;     // start playback with 100 ms buffered (internet jitter)
         const int MaxSamples = Rate * 3 / 10;   // past 300 ms, drop the oldest
-        const int RebufferAfter = Rate / 5;     // 200 ms of continuous dry output before rebuffering
+        const int RebufferAfter = Rate / 5;     // 200 ms of *fully* dry output before rebuffering
         const int MaxConcealed = 5;             // PLC frames for one gap, at most
         static readonly long SpeakingWindow = TimeSpan.FromMilliseconds(200).Ticks;
 
@@ -256,8 +256,10 @@ namespace EscapeOffice.Net
                 source.playOnAwake = false;
                 source.spatialBlend = 0f;
                 source.loop = true;
-                // Streaming clip at 48 kHz; Unity resamples to the device rate.
-                source.clip = AudioClip.Create("voice", Rate, 1, Rate, true, OnAudioRead);
+                // Streaming clip at 48 kHz; Unity resamples to the device rate. Streaming clips
+                // allocate nothing for their length, and Unity glitches at every loop point, so make
+                // it an hour long: a one-second clip cut the audio once a second, like clockwork.
+                source.clip = AudioClip.Create("voice", Rate * 3600, 1, Rate, true, OnAudioRead);
             }
             source.Play();
         }
@@ -278,7 +280,11 @@ namespace EscapeOffice.Net
                 ringCount -= n;
                 if (playing)
                 {
-                    drySamples = n < data.Length ? drySamples + (data.Length - n) : 0;
+                    // Only fully dry callbacks count. Mic and DSP clocks drift a little, so a
+                    // healthy stream can sit a few samples short on every callback; counting
+                    // those shortfalls used to reach the rebuffer threshold at a fixed period
+                    // and pause playback each time.
+                    drySamples = n == 0 ? drySamples + data.Length : 0;
                     if (drySamples > RebufferAfter) { playing = false; drySamples = 0; Underruns++; }
                 }
             }

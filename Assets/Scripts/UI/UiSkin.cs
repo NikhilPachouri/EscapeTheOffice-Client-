@@ -36,6 +36,20 @@ namespace EscapeOffice.UI
             field.normal.textColor = field.focused.textColor = Text;
         }
 
+        // Light metal key with dark lettering, like the riddle keypad's keys.
+        public static GUIStyle Key(GUIStyle button)
+        {
+            var s = new GUIStyle(button) { fontSize = 24, alignment = TextAnchor.MiddleCenter };
+            s.normal.background = Panel(new Color(0.72f, 0.73f, 0.75f, 1f), new Color(1f, 1f, 1f, 0.5f));
+            s.hover.background = Panel(new Color(0.8f, 0.81f, 0.83f, 1f), new Color(1f, 1f, 1f, 0.7f));
+            s.active.background = Panel(new Color(0.58f, 0.6f, 0.63f, 1f), new Color(0f, 0f, 0f, 0.3f));
+            s.onNormal = s.normal; s.onHover = s.hover; s.onActive = s.active;
+            s.normal.textColor = s.hover.textColor = s.active.textColor = new Color(0.11f, 0.13f, 0.15f);
+            s.border = new RectOffset(3, 3, 3, 3);
+            if (Art.Catalog != null && Art.Catalog.titleFont != null) s.font = Art.Catalog.titleFont;
+            return s;
+        }
+
         static void Font(GUIStyle s, Font f)
         {
             if (f != null) s.font = f;

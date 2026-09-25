@@ -50,6 +50,12 @@ namespace EscapeOffice.Objects
         // Pack prefab for this object, or null to keep the sprite. Multi-tile objects spawn
         // their own models in Build() instead.
         protected virtual string ModelName => null;
+        // Used when ModelName isn't in the catalog (e.g. before the TOS interactables are built).
+        protected virtual string FallbackModelName => null;
+        // The interactable built from tos-interactables.js, when the model is one.
+        protected TosInteractable Tos { get; private set; }
+        // Its raised symbol (Textures/Symbols/Sym_<name>), shown on the interact button too.
+        public virtual string Symbol => null;
         protected virtual float ModelYaw => 0f;
         protected bool HasModel => model != null;
         GameObject ring;
@@ -93,9 +99,16 @@ namespace EscapeOffice.Objects
             if (Art.Available && ModelName != null)
             {
                 model = Art.Spawn(ModelName, transform, Vector3.zero, ModelYaw);
+                if (model == null && FallbackModelName != null) model = Art.Spawn(FallbackModelName, transform, Vector3.zero, ModelYaw);
                 if (model != null)
                 {
                     body.enabled = false;
+                    var tos = model.GetComponent<TosInteractable>();
+                    if (tos != null)
+                    {
+                        Tos = tos;
+                        tos.Tint(Tag == Palette.Tag.None ? (Color?)null : GlowColor); // the ring carries the side colour
+                    }
                     // Exaggerated silhouettes for small interactables (ArtDirection.json "objectScale").
                     modelScale = ArtDirection.Current.ScaleFor(ModelName);
                     model.transform.localScale = Vector3.one * modelScale;
@@ -262,6 +275,7 @@ namespace EscapeOffice.Objects
                 ringBlock.SetColor(TintId, new Color(ringTint.r, ringTint.g, ringTint.b, look.focusRing * focus));
                 foreach (var r in ring.GetComponentsInChildren<Renderer>()) r.SetPropertyBlock(ringBlock);
             }
+            if (Tos != null) Tos.SetPresence(presence);
             if (model != null)
             {
                 float swell = 1f + look.react * Mathf.Clamp01((presence - 0.5f) * 2f) * (0.8f + 0.2f * Mathf.Sin(t * 5f));

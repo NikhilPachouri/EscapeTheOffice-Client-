@@ -212,9 +212,16 @@ namespace EscapeOffice.UI
             Draw(disc, c, r, new Color(accent.r, accent.g, accent.b, (ready ? 0.22f : 0.05f) + 0.4f * pressFlash));
             Draw(ring, c, r, new Color(accent.r, accent.g, accent.b, ready ? 0.95f : 0.35f));
 
-            // Colour-blind icon of whose world it changes, above the text.
+            // The object's own symbol (the one raised on the prop) above the text, in its side
+            // colour; the colour-blind side icon moves to a badge on the rim.
+            var sym = ready && Art.Catalog != null ? Art.Catalog.Symbol(focus.Symbol) : null;
+            if (sym != null) Draw(sym, c + new Vector2(0, r * 0.36f), r * 0.2f, ready ? accent : Ink);
             var icon = ready ? Palette.IconFor(focus.Tag) : null;
-            if (icon != null) Draw(icon.texture, c + new Vector2(0, r * 0.38f), r * 0.16f, accent);
+            if (icon != null)
+            {
+                if (sym != null) Draw(icon.texture, c + new Vector2(r * 0.66f, r * 0.66f), r * 0.17f, accent);
+                else Draw(icon.texture, c + new Vector2(0, r * 0.38f), r * 0.16f, accent);
+            }
 
             string text = ready ? focus.Prompt.ToUpperInvariant() : "USE";
             label.fontSize = Mathf.RoundToInt(r * (text.Length > 6 ? 0.26f : 0.34f));

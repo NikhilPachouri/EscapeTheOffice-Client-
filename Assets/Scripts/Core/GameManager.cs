@@ -86,6 +86,7 @@ namespace EscapeOffice
             gameObject.AddComponent<TouchControls>();
             Voice = gameObject.AddComponent<VoiceChat>();
             gameObject.AddComponent<SettingsMenu>();
+            gameObject.AddComponent<ViewTuner>();
 
             var cam = Camera.main;
             if (cam == null)

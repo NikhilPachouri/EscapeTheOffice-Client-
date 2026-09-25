@@ -17,13 +17,22 @@ namespace EscapeOffice.Objects
         public string[] Order => Def.Get<string[]>("order");
         public int CodeLength => Order?.Length ?? Def.Get("length", 4);
 
-        protected override string ModelName => "Keypad";
-        protected override float ModelYaw => Art.WallYaw(World, Def.X, Def.Y);
+        // tos-interactables.js riddle keypad: its four swatches show the colour order.
+        protected override string ModelName => "TOS_RiddleKeypad";
+        protected override string FallbackModelName => "Keypad";
+        protected override float ModelYaw => Art.WallYaw(World, Def.X, Def.Y, 180f);
         Renderer screen;
         bool wasSolved, seen;
 
         protected override void Build()
         {
+            if (Tos != null)
+            {
+                var order = Order;
+                for (int i = 0; i < 4; i++)
+                    Tos.SetSwatch(i, order != null && i < order.Length ? Palette.ForName(order[i]) : (Color?)null);
+                return;
+            }
             if (HasModel)
             {
                 screen = Art.Find(model, "Screen")?.GetComponent<Renderer>();
@@ -38,6 +47,16 @@ namespace EscapeOffice.Objects
         protected override void OnValue(JToken value)
         {
             bool solved = WorldState.Truthy(value);
+            if (Tos != null)
+            {
+                Tos.SetState(solved, instant: !Settled);           // the centre key dips
+                Tos.SetDisplay(solved ? new Color(0.25f, 0.85f, 0.45f) : new Color(0.18f, 0.05f, 0.05f));
+                if (seen && solved && !wasSolved && Settled && Tos.display != null)
+                    Fx3D.Shell(Tos.display.transform, new Color(0.4f, 1f, 0.55f), 0.8f);
+                seen = true;
+                wasSolved = solved;
+                return;
+            }
             if (led != null) led.color = solved ? new Color(0.2f, 1f, 0.3f) : new Color(1f, 0.2f, 0.2f);
             var mat = Art.Material(solved ? "M_Keypad_Unlocked" : "M_Keypad_Locked");
             if (screen != null && mat != null) screen.sharedMaterial = mat;

@@ -24,6 +24,7 @@ namespace EscapeOffice
         public Font codeFont;   // Chakra Petch Bold: codes, digits
         public Font titleFont;  // Chakra Petch SemiBold: headings, buttons
         public Font uiFont;     // Barlow SemiBold: body text
+        public List<Texture2D> symbols = new List<Texture2D>(); // Sym_<name>: the interactables' raised symbols
 
         Dictionary<string, GameObject> prefabIndex;
         Dictionary<string, Material> materialIndex;
@@ -34,6 +35,8 @@ namespace EscapeOffice
         public Material Material(string name) => Find(ref materialIndex, materials, name);
         public Sprite Sprite(string name) => Find(ref spriteIndex, sprites, name);
         public AudioClip Clip(string name) => Find(ref clipIndex, clips, name);
+        Dictionary<string, Texture2D> symbolIndex;
+        public Texture2D Symbol(string name) => name == null ? null : Find(ref symbolIndex, symbols, "Sym_" + name);
 
         public List<string> DecorFor(string theme)
         {
