@@ -6,13 +6,22 @@ namespace EscapeOffice.Objects
     // Wall on its tiles while on (key true). Toggled by a laser switch.
     public class LaserObject : Blocker
     {
+        static readonly int TintId = Shader.PropertyToID("_TintColor");
+
         SpriteRenderer[] beams;
+        // 3D: a post at every cell edge and a beam segment per cell.
+        GameObject[] beamModels;
+        Renderer[] beamRenderers;
+        MaterialPropertyBlock block;
+        Color beamTint;
 
         protected override bool SolidFor(JToken value) => WorldState.Truthy(value);
 
         protected override void Build()
         {
             base.Build();
+            if (Art.Available && BuildModels()) return;
+
             bool horizontal = Bounds.width >= Bounds.height;
             beams = new SpriteRenderer[3];
             for (int i = 0; i < beams.Length; i++)
@@ -25,21 +34,61 @@ namespace EscapeOffice.Objects
             }
         }
 
+        bool BuildModels()
+        {
+            float yaw = Art.SpanYaw(World, Def.X, Def.Y, Def.W, Def.H);
+            bool vertical = Mathf.Abs(yaw) > 45f;
+            int cells = Mathf.Max(1, vertical ? Def.H : Def.W);
+            var step = vertical ? Vector2.up : Vector2.right;
+            var start = -step * (cells * 0.5f);
+
+            beamModels = new GameObject[cells];
+            for (int i = 0; i < cells; i++)
+            {
+                beamModels[i] = Art.Spawn("Laser_Beams_1m", transform, start + step * (i + 0.5f), yaw);
+                if (beamModels[i] == null) return false;
+                // One red light for the whole run, at its centre.
+                if (i != cells / 2)
+                    foreach (var l in beamModels[i].GetComponentsInChildren<Light>(true)) l.enabled = false;
+            }
+            for (int i = 0; i <= cells; i++) Art.Spawn("Laser_Post", transform, start + step * i, yaw);
+
+            body.enabled = false;
+            beamRenderers = GetComponentsInChildren<Renderer>(true);
+            var mat = Art.Material("M_LaserBeam");
+            beamTint = mat != null && mat.HasProperty(TintId) ? mat.GetColor(TintId) : new Color(0.5f, 0.08f, 0.14f, 0.42f);
+            block = new MaterialPropertyBlock();
+            return true;
+        }
+
         protected override void UpdateVisual(bool isSolid)
         {
             SetBodyColor(new Color(1f, 0.1f, 0.1f, isSolid ? 0.18f : 0f));
-            foreach (var b in beams) b.enabled = isSolid;
+            if (beams != null) foreach (var b in beams) b.enabled = isSolid;
+            if (beamModels != null)
+                foreach (var m in beamModels)
+                    if (m != null) Art.Find(m, "Beams")?.gameObject.SetActive(isSolid);
         }
 
         protected override void Update()
         {
             base.Update();
             if (!IsSolid) return;
-            for (int i = 0; i < beams.Length; i++)
+            if (beams != null)
+                for (int i = 0; i < beams.Length; i++)
+                {
+                    var c = beams[i].color;
+                    c.a = 0.7f + 0.3f * Mathf.PerlinNoise(Time.time * 12f, i * 3.1f);
+                    beams[i].color = c;
+                }
+            if (beamRenderers != null)
             {
-                var c = beams[i].color;
-                c.a = 0.7f + 0.3f * Mathf.PerlinNoise(Time.time * 12f, i * 3.1f);
-                beams[i].color = c;
+                // Flicker opacity 0.75 ± 0.2 at ~6 Hz (palette.json M_LaserBeam).
+                var c = beamTint;
+                c.a *= (0.75f + 0.2f * Mathf.Sin(Time.time * 6f * Mathf.PI * 2f)) / 0.85f;
+                block.SetColor(TintId, c);
+                foreach (var r in beamRenderers)
+                    if (r != null && r.sharedMaterial != null && r.sharedMaterial.name == "M_LaserBeam") r.SetPropertyBlock(block);
             }
         }
     }

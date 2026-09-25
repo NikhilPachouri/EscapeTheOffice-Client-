@@ -26,6 +26,11 @@ namespace EscapeOffice.Objects
         CircleCollider2D col;
         SpriteRenderer[] eyes;
 
+        // 3D: Boss_Drone, facing where it flies; its Halo spins faster while chasing.
+        protected override string ModelName => "Boss_Drone";
+        Transform halo, hover;
+        float yaw, haloAngle;
+
         protected override void Build()
         {
             speed = Def.Get("speed", 2.5f);
@@ -39,15 +44,24 @@ namespace EscapeOffice.Objects
                     path.Add(World.TileCenter(p[0], p[1]));
             if (path.Count == 0) path.Add(Bounds.center);
 
-            body.sprite = SpriteFactory.Circle;
-            body.sortingOrder = Layers.Actor;
-            body.transform.localScale = Vector2.one * 0.9f;
-            SetBodyColor(new Color(0.55f, 0.1f, 0.12f));
-            eyes = new[]
+            if (HasModel)
             {
-                SpriteFactory.Child(transform, "Eye", SpriteFactory.Circle, Color.white, Layers.Actor + 1, new Vector2(-0.15f, 0.12f), Vector2.one * 0.16f),
-                SpriteFactory.Child(transform, "Eye", SpriteFactory.Circle, Color.white, Layers.Actor + 1, new Vector2(0.15f, 0.12f), Vector2.one * 0.16f),
-            };
+                halo = Art.Find(model, "Halo");
+                hover = Art.Find(model, "Hover");
+                eyes = new SpriteRenderer[0];
+            }
+            else
+            {
+                body.sprite = SpriteFactory.Circle;
+                body.sortingOrder = Layers.Actor;
+                body.transform.localScale = Vector2.one * 0.9f;
+                SetBodyColor(new Color(0.55f, 0.1f, 0.12f));
+                eyes = new[]
+                {
+                    SpriteFactory.Child(transform, "Eye", SpriteFactory.Circle, Color.white, Layers.Actor + 1, new Vector2(-0.15f, 0.12f), Vector2.one * 0.16f),
+                    SpriteFactory.Child(transform, "Eye", SpriteFactory.Circle, Color.white, Layers.Actor + 1, new Vector2(0.15f, 0.12f), Vector2.one * 0.16f),
+                };
+            }
 
             rb = gameObject.AddComponent<Rigidbody2D>();
             rb.gravityScale = 0f;
@@ -98,6 +112,14 @@ namespace EscapeOffice.Objects
             base.Update();
             var tint = chasing ? new Color(1f, 0.3f, 0.2f) : Color.white;
             foreach (var e in eyes) e.color = tint;
+            if (!HasModel) return;
+
+            var v = rb.linearVelocity;
+            if (v.sqrMagnitude > 0.01f) yaw = Mathf.LerpAngle(yaw, Art.YawFor(v), Art.Smooth(8f));
+            model.transform.localRotation = Art.Rotation(yaw);
+            haloAngle += (chasing ? 6f : 2f) * Mathf.Rad2Deg * Time.deltaTime;
+            if (halo != null) halo.localRotation = Quaternion.Euler(0f, haloAngle, 0f);
+            if (hover != null) hover.localPosition = new Vector3(0f, 0.75f + Mathf.Sin(Time.time * 2f) * 0.08f, 0f);
         }
     }
 }

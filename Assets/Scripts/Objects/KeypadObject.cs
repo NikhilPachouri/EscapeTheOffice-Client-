@@ -15,16 +15,30 @@ namespace EscapeOffice.Objects
         public override string Prompt => "enter code";
         public int CodeLength => Def.Get("length", 4);
 
+        protected override string ModelName => "Keypad";
+        protected override float ModelYaw => Art.WallYaw(World, Def.X, Def.Y);
+        Renderer screen;
+
         protected override void Build()
         {
+            if (HasModel)
+            {
+                screen = Art.Find(model, "Screen")?.GetComponent<Renderer>();
+                return;
+            }
             SetBodyColor(new Color(0.25f, 0.27f, 0.3f));
             body.transform.localScale = Bounds.size * 0.6f;
             led = SpriteFactory.Child(transform, "Led", SpriteFactory.Circle, Color.red, Layers.ObjectTop,
                 new Vector2(0, 0.18f), Vector2.one * 0.15f);
         }
 
-        protected override void OnValue(JToken value) =>
-            led.color = WorldState.Truthy(value) ? new Color(0.2f, 1f, 0.3f) : new Color(1f, 0.2f, 0.2f);
+        protected override void OnValue(JToken value)
+        {
+            bool solved = WorldState.Truthy(value);
+            if (led != null) led.color = solved ? new Color(0.2f, 1f, 0.3f) : new Color(1f, 0.2f, 0.2f);
+            var mat = Art.Material(solved ? "M_Keypad_Unlocked" : "M_Keypad_Locked");
+            if (screen != null && mat != null) screen.sharedMaterial = mat;
+        }
 
         public override void Interact() => GameManager.Instance.UI.OpenKeypad(this);
 

@@ -71,6 +71,7 @@ public class OtherSideImporter : AssetPostprocessor
         var mats = BuildMaterials((JObject)palette["materials"]);
         RemapModelMaterials(mats);
         int prefabs = BuildPrefabs((JArray)manifest["assets"]);
+        BuildCatalog((JArray)manifest["assets"]);
 
         AssetDatabase.SaveAssets();
         Debug.Log($"[OtherSide] {mats.Count} materials, {prefabs} prefabs built.");
@@ -276,6 +277,43 @@ public class OtherSideImporter : AssetPostprocessor
         return m;
     }
 
+    // The runtime index the game loads from Resources (EscapeOffice.Art).
+    static void BuildCatalog(JArray assets)
+    {
+        const string path = "Assets/Resources/ArtCatalog.asset";
+        var catalog = AssetDatabase.LoadAssetAtPath<EscapeOffice.ArtCatalog>(path);
+        if (catalog == null)
+        {
+            catalog = ScriptableObject.CreateInstance<EscapeOffice.ArtCatalog>();
+            EnsureFolder("Assets/Resources");
+            AssetDatabase.CreateAsset(catalog, path);
+        }
+
+        catalog.prefabs = Load<GameObject>("t:Prefab", PrefabsDir);
+        catalog.materials = Load<Material>("t:Material", MaterialsDir);
+        catalog.sprites = Load<Sprite>("t:Sprite", Root + "/Textures");
+        catalog.clips = Load<AudioClip>("t:AudioClip", Root + "/Audio");
+        catalog.codeFont = AssetDatabase.LoadAssetAtPath<Font>(Root + "/Fonts/ChakraPetch-Bold.ttf");
+
+        var byTheme = new SortedDictionary<string, List<string>>();
+        foreach (JObject a in assets)
+            foreach (var theme in a["themes"] ?? new JArray())
+            {
+                if (!byTheme.TryGetValue((string)theme, out var list)) byTheme[(string)theme] = list = new List<string>();
+                list.Add((string)a["name"]);
+            }
+        catalog.decor = byTheme.Select(kv => new EscapeOffice.ArtCatalog.ThemeDecor { theme = kv.Key, prefabs = kv.Value }).ToList();
+
+        EditorUtility.SetDirty(catalog);
+    }
+
+    static List<T> Load<T>(string filter, string folder) where T : Object =>
+        AssetDatabase.FindAssets(filter, new[] { folder })
+            .Select(g => AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(g)))
+            .Where(a => a != null)
+            .OrderBy(a => a.name)
+            .ToList();
+
     static void AddCollider(GameObject go, string name, JObject a)
     {
         if (name == "Wall_Full" || name == "BombableWall") Box(go, new Vector3(1f, 1.35f, 1f));
@@ -315,7 +353,8 @@ public class OtherSideImporter : AssetPostprocessor
         switch (name)
         {
             case "Player_A":
-            case "Player_B": Light(go.transform.Find("Lamp_Anchor") ?? go.transform, "#ffe2b8", 1.1f, 7.5f, 0f); break;
+            // 1.1 in the prototype; Unity's falloff burns out nearby wall tops at that.
+            case "Player_B": Light(go.transform.Find("Lamp_Anchor") ?? go.transform, "#ffe2b8", 0.6f, 7.5f, 0f); break;
             case "Boss_Drone": Light(go.transform.Find("Hover") ?? go.transform, "#ff3030", 0.9f, 3.2f, 0f); break;
             case "Pickup_Bomb": Light(go.transform, "#ffb030", 0.6f, 2.5f, 0.55f); break;
             case "Pickup_Key": Light(go.transform, "#ffe08a", 0.6f, 2.5f, 0.55f); break;

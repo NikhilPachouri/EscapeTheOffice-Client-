@@ -19,6 +19,7 @@ namespace EscapeOffice
         public readonly string Id;
         public readonly string LightsKey;
         public readonly string WaterKey;
+        public readonly string Theme;
         public readonly List<Rect> Rects = new List<Rect>();
 
         public bool IsDark { get; private set; }
@@ -28,11 +29,13 @@ namespace EscapeOffice
 
         readonly List<SpriteRenderer> darkOverlays = new List<SpriteRenderer>();
         readonly List<SpriteRenderer> waterOverlays = new List<SpriteRenderer>();
+        readonly List<GameObject> waterModels = new List<GameObject>();
         readonly List<Collider2D> waterColliders = new List<Collider2D>();
 
-        public Room(string id, string lightsKey, string waterKey)
+        public Room(string id, string lightsKey, string waterKey, string theme = null)
         {
             Id = id;
+            Theme = string.IsNullOrEmpty(theme) ? GuessTheme(id) : theme.ToLowerInvariant();
             LightsKey = string.IsNullOrEmpty(lightsKey) ? null : lightsKey;
             WaterKey = string.IsNullOrEmpty(waterKey) ? null : waterKey;
         }
@@ -58,6 +61,7 @@ namespace EscapeOffice
 
             var dark = SpriteFactory.Child(go.transform, "Dark", SpriteFactory.Square, new Color(0, 0, 0, 0.6f),
                 Layers.RoomOverlay, scale: rect.size);
+            if (Art.Available) dark.transform.localPosition = new Vector3(0, 0, -1.4f); // over the models, under wall tops
             dark.enabled = false;
             darkOverlays.Add(dark);
 
@@ -71,6 +75,42 @@ namespace EscapeOffice
             solid.size = Vector2.one;
             solid.enabled = false;
             waterColliders.Add(solid);
+
+            if (Art.Available)
+            {
+                water.color = Color.clear; // the tiles below replace the flat overlay
+                var tiles = new GameObject("Water3D");
+                tiles.transform.SetParent(go.transform, false);
+                for (int x = 0; x < rect.width; x++)
+                for (int y = 0; y < rect.height; y++)
+                    Art.Spawn("Water_Tile", tiles.transform, new Vector3(x + 0.5f - rect.width * 0.5f, y + 0.5f - rect.height * 0.5f, 0f));
+                tiles.SetActive(false);
+                waterModels.Add(tiles);
+            }
+        }
+
+        // The server may omit themes; pick one from the room's id so floors still vary.
+        static string GuessTheme(string id)
+        {
+            var n = (id ?? "").ToLowerInvariant();
+            string[][] table =
+            {
+                new[] { "hallway", "corridor", "hallway", "wing", "passage", "bay" },
+                new[] { "lobby", "lobby", "reception", "entrance" },
+                new[] { "office", "office", "hall", "desk", "security" },
+                new[] { "archive", "archive", "record", "library", "file" },
+                new[] { "workshop", "workshop", "garage", "maint" },
+                new[] { "vault", "vault", "safe", "storage" },
+                new[] { "lab", "lab", "laser", "science" },
+                new[] { "server", "server", "data", "rack" },
+                new[] { "boiler", "boiler", "furnace", "engine" },
+                new[] { "cafe", "cafe", "kitchen", "canteen", "break" },
+                new[] { "final", "final", "roof", "stair", "exit" },
+            };
+            foreach (var row in table)
+                for (int i = 1; i < row.Length; i++)
+                    if (n.Contains(row[i])) return row[0];
+            return "office";
         }
 
         public void Register(WorldState state)
@@ -90,6 +130,7 @@ namespace EscapeOffice
         {
             IsFlooded = flooded;
             foreach (var o in waterOverlays) o.enabled = flooded;
+            foreach (var m in waterModels) m.SetActive(flooded);
             foreach (var c in waterColliders) c.enabled = flooded;
             Changed?.Invoke(this);
         }

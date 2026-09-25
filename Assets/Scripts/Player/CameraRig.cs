@@ -5,10 +5,15 @@ namespace EscapeOffice
     // Follows the player. A mask darkens everything beyond the vision radius, which shrinks to
     // the dark-room radius when the lights are off and further while the boss debuff lasts.
     // Burning fire punches extra holes so it is visible from further away.
+    //
+    // With the 3D asset pack the camera is the prototype's: perspective, 22 m above and 8 m
+    // behind the player (scaled with the vision radius), and the mask becomes a quad hovering
+    // over the level that the shader projects onto the floor.
     [RequireComponent(typeof(Camera))]
     public class CameraRig : MonoBehaviour
     {
         const int MaxLights = 16;
+        const float Height = 22f, Behind = 8f, Fov = 40f, MaskHeight = 3f;
         public float follow = 10f;
         public float radiusLerp = 4f;
         public float softness = 1.2f;
@@ -23,11 +28,21 @@ namespace EscapeOffice
         static readonly int LightsId = Shader.PropertyToID("_Lights");
         static readonly int LightCountId = Shader.PropertyToID("_LightCount");
         static readonly int ColorId = Shader.PropertyToID("_Color");
+        static readonly int ProjectId = Shader.PropertyToID("_Project");
+
+        bool perspective;
 
         void Awake()
         {
             cam = GetComponent<Camera>();
-            cam.orthographic = true;
+            perspective = Art.Available;
+            cam.orthographic = !perspective;
+            if (perspective)
+            {
+                cam.fieldOfView = Fov;
+                cam.nearClipPlane = 0.5f;
+                cam.farClipPlane = 200f;
+            }
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = Color.black;
 
@@ -39,6 +54,7 @@ namespace EscapeOffice
             }
             maskMaterial = new Material(shader);
             maskMaterial.SetColor(ColorId, Palette.Darkness);
+            maskMaterial.SetFloat(ProjectId, perspective ? 1f : 0f);
             mask = SpriteFactory.Child(transform, "VisionMask", SpriteFactory.Square, Color.white, Layers.Vision);
             mask.transform.localPosition = new Vector3(0, 0, 1f); // just past the near plane
             mask.sharedMaterial = maskMaterial;
@@ -62,16 +78,36 @@ namespace EscapeOffice
             float target = (dark ? settings.DarkRadius : settings.Radius) * player.RadiusFactor;
             radius = Mathf.Lerp(radius, target, 1f - Mathf.Exp(-radiusLerp * Time.deltaTime));
 
-            cam.orthographicSize = settings.Radius + 0.5f;
             var p = (Vector3)player.Position;
-            var pos = Vector3.Lerp(transform.position, new Vector3(p.x, p.y, -10f), 1f - Mathf.Exp(-follow * Time.deltaTime));
-            pos.z = -10f;
-            transform.position = pos;
+            if (perspective)
+            {
+                // "Up" is -Z and "behind" is -Y (south) in the game plane.
+                float scale = settings.Radius / 8f;
+                var offset = new Vector3(0f, -Behind * scale, -Height * scale);
+                transform.position = Vector3.Lerp(transform.position, p + offset, 1f - Mathf.Exp(-follow * Time.deltaTime));
+                transform.rotation = Quaternion.LookRotation(-offset, Vector3.up);
+            }
+            else
+            {
+                cam.orthographicSize = settings.Radius + 0.5f;
+                var pos = Vector3.Lerp(transform.position, new Vector3(p.x, p.y, -10f), 1f - Mathf.Exp(-follow * Time.deltaTime));
+                pos.z = -10f;
+                transform.position = pos;
+            }
 
             if (mask == null) return;
             mask.enabled = !gm.DebugNoFog;
-            float h = cam.orthographicSize * 2f + 2f;
-            mask.transform.localScale = new Vector3(h * cam.aspect + 2f, h, 1f);
+            if (perspective)
+            {
+                // Over everything (walls, models, floating icons); the shader measures on the floor.
+                mask.transform.SetPositionAndRotation(new Vector3(p.x, p.y, -MaskHeight), Quaternion.identity);
+                mask.transform.localScale = new Vector3(400f, 400f, 1f);
+            }
+            else
+            {
+                float h = cam.orthographicSize * 2f + 2f;
+                mask.transform.localScale = new Vector3(h * cam.aspect + 2f, h, 1f);
+            }
 
             maskMaterial.SetVector(CenterId, new Vector4(p.x, p.y, radius, softness));
             int n = 0;
@@ -83,6 +119,15 @@ namespace EscapeOffice
             for (int i = n; i < MaxLights; i++) lights[i] = Vector4.zero;
             maskMaterial.SetVectorArray(LightsId, lights);
             maskMaterial.SetInt(LightCountId, n);
+        }
+
+        // Jump straight to a spawn point instead of gliding across the map.
+        public void SnapTo(Vector2 p)
+        {
+            float scale = GameManager.Instance.World != null ? GameManager.Instance.World.Camera.Radius / 8f : 1f;
+            var offset = perspective ? new Vector3(0f, -Behind * scale, -Height * scale) : new Vector3(0f, 0f, -10f);
+            transform.position = (Vector3)p + offset;
+            if (perspective) transform.rotation = Quaternion.LookRotation(-offset, Vector3.up);
         }
 
         // Is a world point outside the visible area? Used for edge-of-screen cue indicators.

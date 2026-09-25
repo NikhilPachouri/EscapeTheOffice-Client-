@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace EscapeOffice
 {
-    // Looks for Resources/Sfx/<name>; falls back to a synthesized placeholder so every cue is
-    // audible before real audio exists.
+    // Looks for Resources/Sfx/<name>, then the asset pack's recorded effects, and falls back to
+    // a synthesized placeholder so every cue is audible.
     public static class Sfx
     {
         const int Rate = 44100;
@@ -14,9 +14,32 @@ namespace EscapeOffice
         {
             name = string.IsNullOrEmpty(name) ? "blip" : name;
             if (cache.TryGetValue(name, out var clip)) return clip;
-            clip = Resources.Load<AudioClip>("Sfx/" + name) ?? Synthesize(name);
+            clip = Resources.Load<AudioClip>("Sfx/" + name) ?? Packed(name) ?? Synthesize(name);
             cache[name] = clip;
             return clip;
+        }
+
+        // Server cue names → the pack's SFX_* clips (see the pack's manifest.json "audio").
+        static AudioClip Packed(string name)
+        {
+            var catalog = Art.Catalog;
+            if (catalog == null) return null;
+            string n = name.ToLowerInvariant();
+            string clip =
+                n.Contains("denied") || n.Contains("locked") ? "SFX_denied" :
+                n.Contains("buzz") || n.Contains("wrong") || n.Contains("deny") ? "SFX_buzz" :
+                n.Contains("explo") || n.Contains("boom") ? "SFX_boom" :
+                n.Contains("laser") || n.Contains("zap") ? "SFX_zap" :
+                n.Contains("fire") || n.Contains("extinguish") || n.Contains("hiss") || n.Contains("steam") ? "SFX_hiss" :
+                n.Contains("water") || n.Contains("drain") ? "SFX_drain" :
+                n.Contains("alarm") || n.Contains("caught") || n.Contains("boss") ? "SFX_alarm" :
+                n.Contains("pickup") || n.Contains("item") ? "SFX_pickup" :
+                n.Contains("unlock") || n.Contains("chime") || n.Contains("exit") || n.Contains("win") || n.Contains("complete") ? "SFX_chime" :
+                n.Contains("door") || n.Contains("clunk") || n.Contains("thud") || n.Contains("latch") || n.Contains("open") ? "SFX_clunk" :
+                n.Contains("switch") || n.Contains("press") || n.Contains("button") || n.Contains("toggle") || n.Contains("thunk") ? "SFX_thunk" :
+                n.Contains("click") || n.Contains("light") || n.Contains("blip") ? "SFX_click" :
+                null;
+            return clip != null ? catalog.Clip(clip) : null;
         }
 
         static AudioClip Synthesize(string name)

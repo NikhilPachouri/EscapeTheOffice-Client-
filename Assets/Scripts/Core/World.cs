@@ -43,6 +43,8 @@ namespace EscapeOffice
         public bool IsWall(int x, int y) =>
             y < 0 || y >= Height || x < 0 || x >= grid[y].Length || grid[y][x] == '#';
 
+        public bool IsFloor(int x, int y) => !IsWall(x, y) && grid[y][x] != ' ';
+
         public void Clear()
         {
             if (root != null) Destroy(root.gameObject);
@@ -73,7 +75,7 @@ namespace EscapeOffice
                 if (string.IsNullOrEmpty(def.Id)) continue;
                 if (!Rooms.TryGetValue(def.Id, out var room))
                 {
-                    Rooms[def.Id] = room = new Room(def.Id, def.Lights, def.WaterKey);
+                    Rooms[def.Id] = room = new Room(def.Id, def.Lights, def.WaterKey, def.Theme);
                     room.Register(state);
                     room.Changed += OnRoomChanged;
                 }
@@ -98,6 +100,7 @@ namespace EscapeOffice
                 if (!string.IsNullOrEmpty(def.Key)) state.Register(def.Key, obj);
             }
 
+            BuildArt(data);
             state.ApplyAll();
         }
 
@@ -154,6 +157,127 @@ namespace EscapeOffice
             var composite = wallMap.gameObject.AddComponent<CompositeCollider2D>();
             composite.geometryType = CompositeCollider2D.GeometryType.Polygons;
         }
+
+        // ---------------------------------------------------------------- 3D art
+        // The tilemaps above stay as the colliders; with the asset pack present they are hidden
+        // and the floor is drawn with themed tiles, walls, corner decor and a key light.
+
+        void BuildArt(WorldData data)
+        {
+            if (!Art.Available) return;
+            foreach (var r in root.GetComponentsInChildren<TilemapRenderer>()) r.enabled = false;
+
+            var tiles = new GameObject("Tiles3D");
+            tiles.transform.SetParent(root, false);
+            for (int y = 0; y < Height; y++)
+            for (int x = 0; x < Width; x++)
+            {
+                char c = grid[y][x];
+                if (c == ' ') continue;
+                var p = TileCenter(x, y);
+                if (c == '#')
+                {
+                    Art.Spawn(TouchesFloor(x, y) ? "Wall_Full" : "Wall_Low", tiles.transform, p);
+                    continue;
+                }
+                var floor = new Vector3(p.x, p.y, Art.FloorDepth);
+                string checker = ((x + y) & 1) == 1 ? "A" : "B";
+                if (Art.Spawn($"Floor_{Capitalise(ThemeAt(p))}_{checker}", tiles.transform, floor) == null)
+                    Art.Spawn($"Floor_Office_{checker}", tiles.transform, floor);
+                Art.Spawn("Floor_Grout", tiles.transform, floor);
+            }
+
+            BuildDecor(data, tiles.transform);
+            StaticBatchingUtility.Combine(tiles);
+
+            var sun = new GameObject("Sun").AddComponent<Light>();
+            sun.transform.SetParent(root, false);
+            sun.type = LightType.Directional;
+            // From the south and a little west, so shadows fall away from the camera.
+            sun.transform.rotation = Quaternion.LookRotation(new Vector3(0.35f, 0.55f, 1f));
+            sun.color = new Color(1f, 0.96f, 0.9f);
+            sun.intensity = 0.6f;
+            sun.shadows = LightShadows.Soft;
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight = new Color(0.3f, 0.32f, 0.36f);
+        }
+
+        string ThemeAt(Vector2 p)
+        {
+            foreach (var r in Rooms.Values)
+                if (r.Contains(p)) return r.Theme;
+            return "hallway"; // doorways and cells outside every room
+        }
+
+        bool TouchesFloor(int x, int y)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                int nx = x + dx, ny = y + dy;
+                if (ny < 0 || ny >= Height || nx < 0 || nx >= Width) continue;
+                char c = grid[ny][nx];
+                if (c != '#' && c != ' ') return true;
+            }
+            return false;
+        }
+
+        // One themed prop in each free corner of every room big enough to spare it. A corner
+        // cell never cuts a room in two, and corners near objects, doorways or the spawn stay
+        // empty so no puzzle is ever blocked.
+        void BuildDecor(WorldData data, Transform parent)
+        {
+            var taken = new HashSet<Vector2Int>();
+            foreach (var o in data.Objects ?? new List<ObjectDef>())
+                for (int x = o.X - 1; x <= o.X + Mathf.Max(1, o.W); x++)
+                for (int y = o.Y - 1; y <= o.Y + Mathf.Max(1, o.H); y++)
+                    taken.Add(new Vector2Int(x, y));
+            if (data.Spawn != null && data.Spawn.Length >= 2)
+                for (int dx = -1; dx <= 1; dx++)
+                for (int dy = -1; dy <= 1; dy++)
+                    taken.Add(new Vector2Int(data.Spawn[0] + dx, data.Spawn[1] + dy));
+
+            foreach (var def in data.Rooms ?? new List<RoomDef>())
+            {
+                if (def.W < 4 || def.H < 4 || !Rooms.TryGetValue(def.Id ?? "", out var room)) continue;
+                var props = Art.Catalog.DecorFor(room.Theme);
+                if (props == null || props.Count == 0) continue;
+
+                var corners = new[]
+                {
+                    new Vector2Int(def.X, def.Y), new Vector2Int(def.X + def.W - 1, def.Y),
+                    new Vector2Int(def.X, def.Y + def.H - 1), new Vector2Int(def.X + def.W - 1, def.Y + def.H - 1),
+                };
+                foreach (var c in corners)
+                {
+                    if (taken.Contains(c) || IsWall(c.x, c.y) || NearDoorway(c, def)) continue;
+                    string prefab = props[Mathf.Abs(c.x * 73856093 ^ c.y * 19349663) % props.Count];
+                    var p = TileCenter(c.x, c.y);
+                    if (Art.Spawn(prefab, parent, p, Art.WallYaw(this, c.x, c.y)) == null) continue;
+                    taken.Add(c);
+                    if (prefab == "Decor_CafeTable") continue; // walkable around, per the pack
+                    var block = new GameObject($"DecorBlock {c.x},{c.y}");
+                    block.transform.SetParent(root, false);
+                    block.transform.position = p;
+                    block.AddComponent<BoxCollider2D>().size = Vector2.one * 0.9f;
+                }
+            }
+        }
+
+        // Any floor next to the corner that lies outside the room is a doorway.
+        bool NearDoorway(Vector2Int c, RoomDef room)
+        {
+            for (int dx = -1; dx <= 1; dx++)
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                int x = c.x + dx, y = c.y + dy;
+                bool inside = x >= room.X && x < room.X + room.W && y >= room.Y && y < room.Y + room.H;
+                if (!inside && !IsWall(x, y) && grid[y][x] != ' ') return true;
+            }
+            return false;
+        }
+
+        static string Capitalise(string s) => string.IsNullOrEmpty(s) ? s : char.ToUpperInvariant(s[0]) + s.Substring(1);
 
         static Tilemap MakeTilemap(Transform parent, string name, int order)
         {

@@ -13,6 +13,11 @@ namespace EscapeOffice.Objects
 
         Collider2D pickupArea;
 
+        protected override string ModelName => Type == "bomb" ? "Pickup_Bomb" : "Pickup_Key";
+        Transform item;
+        Vector3 itemRest;
+        float bobPhase;
+
         static bool OnFloor(JToken value)
         {
             if (value == null || value.Type == JTokenType.Null) return true;
@@ -22,7 +27,13 @@ namespace EscapeOffice.Objects
 
         protected override void Build()
         {
-            if (Type == "bomb")
+            if (HasModel)
+            {
+                item = Art.Find(model, Type == "bomb" ? "Bomb" : "Key");
+                if (item != null) itemRest = item.localPosition;
+                bobPhase = Random.value * 6f;
+            }
+            else if (Type == "bomb")
             {
                 body.sprite = SpriteFactory.Circle;
                 SetBodyColor(new Color(0.12f, 0.12f, 0.14f));
@@ -47,8 +58,19 @@ namespace EscapeOffice.Objects
         void Show(bool visible)
         {
             foreach (var r in GetComponentsInChildren<SpriteRenderer>(true))
-                if (r != glow && r != icon) r.enabled = visible;
+                if (r != glow && r != icon && !(HasModel && r == body)) r.enabled = visible;
+            if (HasModel) model.SetActive(visible);
             pickupArea.enabled = visible;
+        }
+
+        // Pack: bob y 0.55 ± 0.08 at 2.5 rad/s and spin 1.5 rad/s while waiting to be picked up.
+        protected override void Update()
+        {
+            base.Update();
+            if (item == null || !model.activeSelf) return;
+            float t = Time.time + bobPhase;
+            item.localPosition = itemRest + new Vector3(0f, Mathf.Sin(t * 2.5f) * 0.08f, 0f);
+            item.localRotation = Quaternion.Euler(0f, t * 1.5f * Mathf.Rad2Deg, 0f);
         }
 
         public override void Interact()

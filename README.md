@@ -41,11 +41,24 @@ Two clients side by side: build a standalone player and run it next to the edito
 
 ## Art
 
-Everything is procedural placeholder art. To replace an object's look, create
+The game draws the 3D models from the Other Side asset pack (`Assets/OtherSide`, see its
+README). Gameplay and physics stay 2D on the XY plane; `Scripts/Core/Art.cs` lays the Y-up
+models onto that plane, and the camera is the prototype's tilted perspective (22 m up, 8 m back).
+
+- `Assets/Resources/ArtCatalog.asset` is what the game loads at runtime. It is generated: after
+  changing `palette.json` or a model, run **Tools → Other Side → Build Assets**.
+- Floors use the room's `theme` (guessed from the room id when the server omits it), walls are
+  `Wall_Full`/`Wall_Low`, and each large room gets a themed prop in its free corners.
+- Each object class picks its model (`ModelName`) and animates it from its key: door leaves and
+  lamp, lever angle, button cap, valve wheel, laser beams, fire flames, pickups bobbing.
+- Without the catalog the client falls back to the procedural sprites and the orthographic camera.
+
+To replace an object's look with your own prefab instead, create
 `Assets/Resources/ObjectCatalog.asset` (Create → Escape Office → Object Catalog) and map a
 `type` to a prefab. Assign the prefab's `body` SpriteRenderer, or give it an Animator with an
-`Active` bool that follows the object's key. Sounds: drop clips in `Assets/Resources/Sfx/<effect>`
-(e.g. `door_clunk.wav`) to replace the synthesized ones.
+`Active` bool that follows the object's key. Sounds: the pack's `SFX_*` clips play for the
+server's cue names; drop clips in `Assets/Resources/Sfx/<effect>` (e.g. `door_clunk.wav`) to
+override one.
 
 ## Git
 

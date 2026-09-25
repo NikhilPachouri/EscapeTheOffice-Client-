@@ -27,6 +27,9 @@ namespace EscapeOffice
         float debuffUntil;
         SpriteRenderer bodyRenderer;
         Transform facing;
+        // 3D: Player_A / Player_B from the asset pack, turned toward the walking direction.
+        Transform model;
+        float yaw;
 
         public static PlayerController Spawn(Vector2 at, string side, Transform parent)
         {
@@ -50,6 +53,14 @@ namespace EscapeOffice
             pc.facing = SpriteFactory.Child(go.transform, "Facing", SpriteFactory.Circle, Color.white, Layers.Actor + 1,
                 new Vector2(0, Radius * 0.6f), Vector2.one * 0.14f).transform;
             go.AddComponent<RoomTracker>();
+
+            var model = Art.Spawn(side == "B" ? "Player_B" : "Player_A", go.transform, Vector3.zero);
+            if (model != null)
+            {
+                pc.model = model.transform;
+                pc.bodyRenderer.enabled = false;
+                pc.facing.GetComponent<SpriteRenderer>().enabled = false;
+            }
             return pc;
         }
 
@@ -95,6 +106,15 @@ namespace EscapeOffice
             Focus = FindFocus(gm.World);
             if (canAct && Focus != null && (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Space)))
                 Focus.Interact();
+
+            if (model != null)
+            {
+                if (input.sqrMagnitude > 0.01f) yaw = Mathf.LerpAngle(yaw, Art.YawFor(input), Art.Smooth(14f));
+                model.localRotation = Art.Rotation(yaw);
+                // Debuffed: a sluggish wobble instead of the sprite tint.
+                float wobble = Debuffed ? Mathf.Sin(Time.time * 8f) * 0.06f : 0f;
+                model.localScale = new Vector3(1f + wobble, 1f - wobble, 1f + wobble);
+            }
 
             bodyRenderer.color = Debuffed
                 ? Color.Lerp(Palette.ForSide(gm.Side), Color.gray, 0.5f + 0.2f * Mathf.Sin(Time.time * 8f))

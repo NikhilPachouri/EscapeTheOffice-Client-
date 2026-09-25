@@ -6,10 +6,11 @@ namespace EscapeOffice
     // ("the orange lever affects you").
     public static class Palette
     {
-        public static readonly Color SideA = new Color(1.00f, 0.55f, 0.10f); // orange
-        public static readonly Color SideB = new Color(0.18f, 0.66f, 1.00f); // blue
-        public static readonly Color Both = new Color(0.74f, 0.38f, 1.00f);  // purple
-        public static readonly Color Info = new Color(1.00f, 0.92f, 0.45f);  // pale yellow, code panels
+        // The asset pack's glow colours (palette.json), so rings, icons and HUD agree.
+        public static readonly Color SideA = new Color(1.00f, 0.62f, 0.26f); // orange #ff9f43
+        public static readonly Color SideB = new Color(0.24f, 0.81f, 0.85f); // cyan #3ecfd8
+        public static readonly Color Both = new Color(0.77f, 0.61f, 1.00f);  // purple #c49bff
+        public static readonly Color Info = new Color(0.56f, 0.94f, 0.69f);  // green #8ef0b0, code panels
 
         public static readonly Color Floor = new Color(0.20f, 0.21f, 0.24f);
         public static readonly Color Wall = new Color(0.46f, 0.47f, 0.52f);
@@ -45,9 +46,11 @@ namespace EscapeOffice
 
         public static Color ForSide(string side) => side == "B" ? SideB : SideA;
 
-        // Colorblind support: each glow colour also gets a shape.
+        // Colorblind support: each glow colour also gets a shape (▲ ● ◆ ✱ in the asset pack).
         public static Sprite IconFor(Tag tag)
         {
+            var packed = tag == Tag.None ? null : Art.Sprite("Icon_" + tag);
+            if (packed != null) return packed;
             switch (tag)
             {
                 case Tag.A: return SpriteFactory.Triangle;

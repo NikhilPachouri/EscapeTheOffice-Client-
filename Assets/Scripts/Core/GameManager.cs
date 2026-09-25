@@ -215,7 +215,7 @@ namespace EscapeOffice
             var spawn = World.Spawn;
             if (reconnect && !World.IsWall(Mathf.FloorToInt(keep.x), World.Height - 1 - Mathf.FloorToInt(keep.y))) spawn = keep;
             Player = PlayerController.Spawn(spawn, Side, World.transform);
-            CameraRig.transform.position = new Vector3(spawn.x, spawn.y, -10);
+            CameraRig.SnapTo(spawn);
             Current = Phase.Playing;
             Status = "";
         }

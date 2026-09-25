@@ -10,9 +10,12 @@ namespace EscapeOffice.Objects
     //
     // Prefab authors: assign `body` to your own art and it replaces the placeholder square.
     // If the prefab has an Animator, its "Active" bool follows the key's truthiness.
+    // With the Other Side pack imported, types that name a ModelName get its 3D model instead
+    // (`model`), and the placeholder sprite is hidden.
     public abstract class WorldObject : MonoBehaviour, IStateListener
     {
         [SerializeField] protected SpriteRenderer body;
+        protected GameObject model;
 
         public ObjectDef Def { get; private set; }
         public World World { get; private set; }
@@ -43,6 +46,14 @@ namespace EscapeOffice.Objects
         protected virtual bool IsDim => Def.Dim;
         protected virtual Palette.Tag DefaultTag => Palette.Tag.None;
 
+        // 3D model ------------------------------------------------------------------------
+        // Pack prefab for this object, or null to keep the sprite. Multi-tile objects spawn
+        // their own models in Build() instead.
+        protected virtual string ModelName => null;
+        protected virtual float ModelYaw => 0f;
+        protected bool HasModel => model != null;
+        GameObject ring;
+
         Animator animator;
         float pendingUntil = -1f;
         float glowPhase;
@@ -62,6 +73,11 @@ namespace EscapeOffice.Objects
             if (body == null)
                 body = SpriteFactory.Child(transform, "Body", SpriteFactory.Square, Color.white, Layers.Object,
                     scale: Bounds.size);
+            if (Art.Available && ModelName != null)
+            {
+                model = Art.Spawn(ModelName, transform, Vector3.zero, ModelYaw);
+                if (model != null) body.enabled = false;
+            }
             Build();
             if (Interactable) BuildGlow();
             OnValue(null); // defaults until state arrives
@@ -81,6 +97,29 @@ namespace EscapeOffice.Objects
             {
                 icon = SpriteFactory.Child(transform, "Icon", iconSprite, color, Layers.ObjectTop,
                     new Vector2(Bounds.width * 0.5f, Bounds.height * 0.5f), Vector2.one * 0.35f);
+            }
+            if (!Art.Available) return;
+
+            // 3D: a glow ring on the floor and the icon floating 1.55 m above the object.
+            glow.transform.localPosition = new Vector3(0, 0, -0.01f);
+            string ringName = Tag switch
+            {
+                Palette.Tag.A => "GlowRing_A",
+                Palette.Tag.B => "GlowRing_B",
+                Palette.Tag.Both => "GlowRing_Both",
+                Palette.Tag.Info => "GlowRing_Info",
+                _ => null,
+            };
+            if (ringName != null)
+            {
+                ring = Art.Spawn(ringName, transform, new Vector3(0, 0, -0.005f));
+                if (ring != null) ring.transform.localScale = Vector3.one * Mathf.Max(Bounds.width, Bounds.height);
+            }
+            if (icon != null)
+            {
+                icon.transform.localPosition = new Vector3(0, 0, -1.55f);
+                icon.transform.localScale = Vector3.one * (0.45f / Mathf.Max(0.01f, iconSprite.bounds.size.x));
+                if (Tag != Palette.Tag.None && Art.Sprite(IconName(Tag)) != null) icon.color = Color.white; // pack icons are pre-coloured
             }
         }
 
@@ -102,6 +141,7 @@ namespace EscapeOffice.Objects
             bool visible = ShowGlow && !World.IsDarkAt(this);
             glow.enabled = visible;
             if (icon != null) icon.enabled = visible;
+            if (ring != null) ring.SetActive(visible);
         }
 
         // Responsive feel: play the cosmetic part now; OnValue(Value) snaps it back if no patch
@@ -126,6 +166,8 @@ namespace EscapeOffice.Objects
                 glow.color = c;
             }
         }
+
+        static string IconName(Palette.Tag tag) => tag == Palette.Tag.None ? null : "Icon_" + tag;
 
         public float DistanceTo(Vector2 p)
         {

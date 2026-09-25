@@ -132,6 +132,8 @@ namespace EscapeOffice.Net
         [JsonProperty("lights")] public string Lights;
         [JsonProperty("water")] public string Water;
         [JsonProperty("flooded")] public string Flooded;
+        // Floor/decor look (lobby, office, archive, ...). Optional; guessed from the id when absent.
+        [JsonProperty("theme")] public string Theme;
 
         public string WaterKey => !string.IsNullOrEmpty(Water) ? Water : Flooded;
     }
