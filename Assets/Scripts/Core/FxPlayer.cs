@@ -75,7 +75,15 @@ namespace EscapeOffice
             if (at == null || at.Type == JTokenType.Null) return null;
             var gm = GameManager.Instance;
             if (at.Type == JTokenType.String)
-                return gm.World.Objects.TryGetValue(at.Value<string>(), out var obj) ? obj.Bounds.center : (Vector2?)null;
+            {
+                if (gm.World.Objects.TryGetValue(at.Value<string>(), out var obj)) return obj.Bounds.center;
+                // The source is on the other side (their button opened our door): use the object
+                // here whose key the patch just before this cue changed.
+                if (Time.time - gm.LastPatchTime < 0.5f)
+                    foreach (var o in gm.World.Objects.Values)
+                        if (o.Def.Key != null && gm.LastPatchKeys.Contains(o.Def.Key)) return o.Bounds.center;
+                return null;
+            }
             if (at is JArray || at is JObject) return gm.World.TileCenter(at);
             return null;
         }

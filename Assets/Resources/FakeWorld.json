@@ -1,5 +1,5 @@
 {
- "_comment": "Offline test world for the Unity client (one side of a `world` message plus rules). Not used by the server.",
+ "_comment": "Offline test world for the Unity client, in the same shape the deployed server sends (colors map, latch_button, patrol). Not used by the server.",
  "side": "A",
  "codes": [
   "code_A1"
@@ -244,8 +244,7 @@
     "type": "button",
     "x": 7,
     "y": 1,
-    "key": "door_A1",
-    "color": "A"
+    "key": "door_A1"
    },
    {
     "id": "door_A1",
@@ -259,8 +258,7 @@
     "type": "code_panel",
     "x": 1,
     "y": 12,
-    "key": "code_A1",
-    "color": "info"
+    "key": "code_A1"
    },
    {
     "id": "keypad_A1",
@@ -268,8 +266,7 @@
     "x": 18,
     "y": 2,
     "key": "door_A2",
-    "interact": "submit",
-    "color": "A"
+    "interact": "submit"
    },
    {
     "id": "door_A2",
@@ -283,8 +280,7 @@
     "type": "light_switch",
     "x": 20,
     "y": 2,
-    "key": "A.archive.lights",
-    "color": "A"
+    "key": "A.archive.lights"
    },
    {
     "id": "key_A",
@@ -298,8 +294,7 @@
     "type": "laser_switch",
     "x": 29,
     "y": 1,
-    "key": "lasers_A1",
-    "color": "A"
+    "key": "lasers_A1"
    },
    {
     "id": "lasers_A1",
@@ -313,16 +308,14 @@
     "type": "key_door",
     "x": 14,
     "y": 9,
-    "key": "keydoor_A1",
-    "color": "A"
+    "key": "keydoor_A1"
    },
    {
     "id": "valve_A1",
     "type": "valve",
     "x": 12,
     "y": 14,
-    "key": "A.basement.flooded",
-    "color": "A"
+    "key": "A.basement.flooded"
    },
    {
     "id": "bomb_A",
@@ -336,8 +329,7 @@
     "type": "button",
     "x": 21,
     "y": 15,
-    "key": "fire_A1",
-    "color": "A"
+    "key": "fire_A1"
    },
    {
     "id": "fire_A1",
@@ -351,7 +343,11 @@
     "type": "boss",
     "x": 32,
     "y": 11,
-    "path": [
+    "chaseRadius": 4,
+    "speed": 2.2,
+    "chaseSpeed": 3.4,
+    "debuff": 15,
+    "patrol": [
      [
       32,
       11
@@ -368,27 +364,21 @@
       32,
       15
      ]
-    ],
-    "chaseRadius": 4,
-    "speed": 2.2,
-    "chaseSpeed": 3.4,
-    "debuff": 15
+    ]
    },
    {
     "id": "final_A",
-    "type": "final_button",
+    "type": "latch_button",
     "x": 37,
     "y": 13,
-    "key": "final_A",
-    "color": "both"
+    "key": "final_A"
    },
    {
     "id": "wall_A3",
     "type": "bombable_wall",
     "x": 35,
     "y": 6,
-    "key": "wall_A3.broken",
-    "color": "A"
+    "key": "wall_A3.broken"
    },
    {
     "id": "exit_A",
@@ -422,6 +412,17 @@
    "bomb_A": "home",
    "key_A": "home",
    "inv_A": []
+  },
+  "colors": {
+   "button_A1": "A",
+   "keypad_A1": "A",
+   "light_A1": "A",
+   "laser_switch_A1": "A",
+   "keydoor_A1": "A",
+   "valve_A1": "A",
+   "extinguisher_A1": "A",
+   "final_A": "both",
+   "wall_A3": "A"
   }
  }
 }

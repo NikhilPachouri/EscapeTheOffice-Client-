@@ -34,6 +34,9 @@ namespace EscapeOffice
         public bool DebugNoFog { get; set; }
 
         public readonly List<string> MessageLog = new List<string>();
+        // Keys from the most recent patch; a cue sourced on the other side is placed on what changed here.
+        public readonly HashSet<string> LastPatchKeys = new HashSet<string>();
+        public float LastPatchTime { get; private set; } = -10f;
         const int MessageLogSize = 14;
 
         IServerLink link;
@@ -161,7 +164,13 @@ namespace EscapeOffice
                     break;
 
                 case MsgType.Patch:
-                    if (data is JObject patch) State.Patch(patch);
+                    if (data is JObject patch)
+                    {
+                        LastPatchKeys.Clear();
+                        foreach (var p in patch.Properties()) LastPatchKeys.Add(p.Name);
+                        LastPatchTime = Time.time;
+                        State.Patch(patch);
+                    }
                     break;
 
                 case MsgType.Fx:
@@ -175,7 +184,7 @@ namespace EscapeOffice
                     break;
 
                 case MsgType.Error:
-                    Status = data?["message"]?.ToString() ?? data?.ToString() ?? "Server error";
+                    Status = data?["reason"]?.ToString() ?? data?["message"]?.ToString() ?? "Server error";
                     if (Current != Phase.Playing) { link?.Disconnect(); Current = Phase.Join; }
                     break;
 

@@ -24,6 +24,7 @@ namespace EscapeOffice.Objects
 
             { "button", typeof(ButtonObject) },
             { "final_button", typeof(ButtonObject) },
+            { "latch_button", typeof(ButtonObject) },
             { "lever", typeof(ButtonObject) },
             { "switch", typeof(ButtonObject) },
             { "light_switch", typeof(ButtonObject) },

@@ -21,7 +21,7 @@ namespace EscapeOffice.Net
         public const string Patch = "patch";
         public const string Fx = "fx";
         public const string GameComplete = "game_complete";
-        public const string Error = "error"; // not in the contract table; handled if the server sends one (e.g. room full)
+        public const string Error = "error"; // { reason }, e.g. "room full"; not in the contract table
     }
 
     public class Envelope
@@ -89,6 +89,9 @@ namespace EscapeOffice.Net
         [JsonProperty("side")] public string Side;
         [JsonProperty("tileSize")] public int TileSize = 32;
         [JsonProperty("camera")] public CameraSettings Camera = new CameraSettings();
+        // Glow colour per object id, derived by the server from the keys its rules write:
+        // "A", "B" or "both". Objects not listed get no side colour.
+        [JsonProperty("colors")] public Dictionary<string, string> Colors = new Dictionary<string, string>();
     }
 
     public class ObjectDef
@@ -101,7 +104,7 @@ namespace EscapeOffice.Net
         [JsonProperty("h")] public int H = 1;
         [JsonProperty("key")] public string Key;
         [JsonProperty("interact")] public string Interact;
-        // Glow colour derived by the server: "A", "B", "both" or "info".
+        // Glow colour; filled from WorldData.Colors when the server sends it there.
         [JsonProperty("color")] public string Color;
         [JsonProperty("dim")] public bool Dim;
 

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace EscapeOffice.Objects
 {
-    // button, lever, light/laser switches, final_button. Shows its key's value; the lever
+    // button, lever, light/laser switches, final_button / latch_button. Shows its key's value; the lever
     // flips immediately on interact and snaps back if the server does not agree.
     public class ButtonObject : WorldObject
     {
@@ -17,7 +17,7 @@ namespace EscapeOffice.Objects
 
         protected override void Build()
         {
-            latching = Type == "final_button" || Def.Get("latching", false);
+            latching = Type == "final_button" || Type == "latch_button" || Def.Get("latching", false);
             SetBodyColor(new Color(0.3f, 0.3f, 0.34f));
             body.transform.localScale = Bounds.size * 0.7f;
             knob = SpriteFactory.Child(transform, "Knob", SpriteFactory.Circle, Color.gray, Layers.ObjectTop,

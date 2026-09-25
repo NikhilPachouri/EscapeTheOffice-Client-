@@ -87,6 +87,8 @@ namespace EscapeOffice
                 if (string.IsNullOrEmpty(def.Id)) { Debug.LogWarning($"[world] object without id ({def.Type}) skipped"); continue; }
                 if (Objects.ContainsKey(def.Id)) { Debug.LogWarning($"[world] duplicate object id {def.Id}"); continue; }
 
+                if (string.IsNullOrEmpty(def.Color) && data.Colors != null && data.Colors.TryGetValue(def.Id, out var color))
+                    def.Color = color;
                 var obj = ObjectFactory.Create(def, objectsRoot);
                 var center = TileRect(def.X, def.Y, def.W, def.H).center;
                 obj.Rooms.AddRange(Rooms.Values.Where(r => r.Contains(center)));

@@ -9,7 +9,7 @@ namespace EscapeOffice.Objects
     // file and chases the player within a radius while they are in its room. Catching the
     // player applies a temporary debuff; nothing the boss does is permanent.
     //
-    // World file: { "type": "boss", "x":.., "y":.., "path": [[x,y], ...],
+    // World file: { "type": "boss", "x":.., "y":.., "patrol": [[x,y], ...],
     //               "chaseRadius": 4, "speed": 2.5, "chaseSpeed": 3.5, "debuff": 15 }
     public class BossController : WorldObject
     {
@@ -33,7 +33,7 @@ namespace EscapeOffice.Objects
             chaseRadius = Def.Get("chaseRadius", 4f);
             debuffSeconds = Def.Get("debuff", 15f);
 
-            var points = Def.Get<int[][]>("path");
+            var points = Def.Get<int[][]>("patrol") ?? Def.Get<int[][]>("path");
             if (points != null)
                 foreach (var p in points.Where(p => p != null && p.Length >= 2))
                     path.Add(World.TileCenter(p[0], p[1]));
