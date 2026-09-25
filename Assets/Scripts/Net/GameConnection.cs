@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Threading.Tasks;
 using NativeWebSocket;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -132,6 +133,27 @@ namespace EscapeOffice.Net
             if (!IsOnline) return;
             var json = JsonConvert.SerializeObject(new { type, data = data ?? new object() });
             _ = ws.SendText(json);
+        }
+
+        // Leave for good: tell the server (which ends the game for the partner and frees the room),
+        // then close. Returns false when there was no live game to leave.
+        public bool LeaveRoom()
+        {
+            wantConnected = false;
+            retryAt = -1f;
+            var socket = ws;
+            ws = null; // detach so OnClose / OnDestroy leave this socket alone while the send flushes
+            if (socket == null || socket.State != WebSocketState.Open) return false;
+            if (Finished) { _ = socket.Close(); return false; }
+            Finished = true;
+            _ = SendThenClose(socket, JsonConvert.SerializeObject(new { type = MsgType.Leave, data = new object() }));
+            return true;
+        }
+
+        static async Task SendThenClose(WebSocket socket, string json)
+        {
+            try { await socket.SendText(json); } catch (Exception e) { Debug.LogWarning($"[net] leave send failed: {e.Message}"); }
+            try { await socket.Close(); } catch { /* already closed */ }
         }
 
         public void Disconnect()

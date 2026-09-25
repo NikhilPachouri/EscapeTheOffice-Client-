@@ -3,7 +3,9 @@ using UnityEngine;
 namespace EscapeOffice.UI
 {
     // Gear button (top-right, every screen) and the settings panel: music and SFX switches
-    // (saved), exit game (with confirm) and close. Android's back button toggles it.
+    // (saved), exit/leave (with confirm) and close. Android's back button toggles it.
+    // On the menu the button quits the app; inside a game it becomes "Leave game", which ends the
+    // game for both players (the server frees the room) and returns to the menu.
     // Music plays Resources/Music/theme if present, otherwise a generated ambient loop.
     public class SettingsMenu : MonoBehaviour
     {
@@ -104,14 +106,24 @@ namespace EscapeOffice.UI
             if (Switch(new Rect(p.x + 28, y, p.width - 56, 64), "Sound effects", SfxOn, side)) SetSfx(!SfxOn);
             y += 96;
 
+            var gm = GameManager.Instance;
+            bool inGame = gm != null && gm.Current != GameManager.Phase.Join;
             if (confirmExit)
             {
-                GUI.Label(new Rect(p.x, y, p.width, 30), "Exit the game?", new GUIStyle(rowLabel) { alignment = TextAnchor.MiddleCenter });
+                string question = !inGame ? "Exit the game?"
+                    : gm.Offline || gm.Current == GameManager.Phase.Complete ? "Leave and return to the menu?"
+                    : "Leave? This ends the game for your partner too.";
+                GUI.Label(new Rect(p.x, y, p.width, 30), question, new GUIStyle(rowLabel) { alignment = TextAnchor.MiddleCenter });
                 if (GUI.Button(new Rect(p.x + 40, y + 40, 180, 52), "Cancel", button)) confirmExit = false;
-                if (GUI.Button(new Rect(p.xMax - 220, y + 40, 180, 52), "Exit", button)) Quit();
+                if (GUI.Button(new Rect(p.xMax - 220, y + 40, 180, 52), inGame ? "Leave" : "Exit", button))
+                {
+                    confirmExit = false;
+                    if (inGame) { IsOpen = false; gm.Leave(); }
+                    else Quit();
+                }
                 return;
             }
-            if (GUI.Button(new Rect(p.x + 28, y, p.width - 56, 52), "Exit game", button)) confirmExit = true;
+            if (GUI.Button(new Rect(p.x + 28, y, p.width - 56, 52), inGame ? "Leave game" : "Exit game", button)) confirmExit = true;
         }
 
         static void Quit()

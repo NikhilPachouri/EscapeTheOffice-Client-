@@ -15,6 +15,7 @@ namespace EscapeOffice.Net
         public const string Interact = "interact";
         public const string Enter = "enter";
         public const string Room = "room";
+        public const string Leave = "leave"; // { } — ends the game for both players
 
         // Server -> client
         public const string Assigned = "assigned";
@@ -23,6 +24,7 @@ namespace EscapeOffice.Net
         public const string Patch = "patch";
         public const string Fx = "fx";
         public const string GameComplete = "game_complete";
+        public const string GameOver = "game_over"; // { reason: partner_left | partner_timeout }; socket closes after
         public const string Error = "error"; // { reason }, e.g. "room full"; not in the contract table
     }
 

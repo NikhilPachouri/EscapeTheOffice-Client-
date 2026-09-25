@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using EscapeOffice.Net;
@@ -147,6 +148,8 @@ namespace EscapeOffice
             link.StatusChanged += s => Status = s;
         }
 
+        // Back to the menu. Online, this also tells the server we left, which ends the game for the
+        // partner and frees the room, so the saved rejoin slot is dropped too.
         public void Leave()
         {
             Voice.Stop();
@@ -154,7 +157,8 @@ namespace EscapeOffice
             if (link != null)
             {
                 link.MessageReceived -= OnMessage;
-                link.Disconnect();
+                if (connection != null && connection.LeaveRoom()) ForgetRejoin();
+                else link.Disconnect();
                 Destroy((MonoBehaviour)link);
             }
             link = null;
@@ -163,6 +167,24 @@ namespace EscapeOffice
             ClearWorld();
             Current = Phase.Join;
             Status = "";
+        }
+
+        static void ForgetRejoin()
+        {
+            PlayerPrefs.DeleteKey(PrefLastToken);
+            PlayerPrefs.Save();
+        }
+
+        // The partner left or timed out: the server has closed the room. Handled a frame later so the
+        // socket is not torn down from inside its own message dispatch.
+        IEnumerator EndByServer(string reason)
+        {
+            yield return null;
+            ForgetRejoin();
+            Leave(); // Finished is set, so this only closes locally
+            Status = reason == "partner_timeout"
+                ? "Your partner lost connection. The game has ended."
+                : "Your partner left the game.";
         }
 
         void ClearWorld()
@@ -223,6 +245,11 @@ namespace EscapeOffice
                     Current = Phase.Complete;
                     Fx.PlayAt("complete", null);
                     PlayerPrefs.DeleteKey(PrefLastToken);
+                    break;
+
+                case MsgType.GameOver:
+                    if (connection != null) connection.Finished = true; // no reconnect: the room is gone
+                    StartCoroutine(EndByServer(data?["reason"]?.ToString()));
                     break;
 
                 case MsgType.Error:
