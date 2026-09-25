@@ -15,13 +15,11 @@ namespace EscapeOffice
     {
         const int MaxLights = 16;
         const float MaskHeight = 3f;
-        // Framing from ArtDirection.json "camera" (the prototype used 22 m up, 8 m behind).
-        static float Height => ArtDirection.Current.camera.height;
-        static float Behind => ArtDirection.Current.camera.behind;
-        static float Fov => ArtDirection.Current.camera.fov;
-        public float follow = 10f;
+        // Framing from ArtDirection.json "camera" (the prototype used 22 m up, 8 m behind),
+        // live-tunable from the View panel (ViewTuning).
+        static float Height => ViewTuning.Height * ViewTuning.Distance;
+        static float Behind => ViewTuning.Behind * ViewTuning.Distance;
         public float radiusLerp = 4f;
-        public float softness = 1.2f;
 
         Camera cam;
         SpriteRenderer mask;
@@ -37,6 +35,7 @@ namespace EscapeOffice
         static readonly int ReachId = Shader.PropertyToID("_Reach");
 
         bool perspective;
+        ColorGrading grading;
         // Level editor zoom; 1 = the prototype's framing.
         public float Zoom { get; set; } = 1f;
 
@@ -55,14 +54,15 @@ namespace EscapeOffice
         void Awake()
         {
             cam = GetComponent<Camera>();
+            ViewTuning.EnsureLoaded();
             perspective = Art.Available;
             cam.orthographic = !perspective;
             if (perspective)
             {
-                cam.fieldOfView = Fov;
+                cam.fieldOfView = ViewTuning.Fov;
                 cam.nearClipPlane = 0.5f;
                 cam.farClipPlane = 200f;
-                var grading = GetComponent<ColorGrading>();
+                grading = GetComponent<ColorGrading>();
                 if (grading == null) grading = gameObject.AddComponent<ColorGrading>();
                 grading.Apply(ArtDirection.Current.grading);
             }
@@ -78,7 +78,7 @@ namespace EscapeOffice
             maskMaterial = new Material(shader);
             var look = ArtDirection.Current.world;
             var fog = perspective ? ArtDirection.Hex(look.fog, Palette.Darkness) : Palette.Darkness;
-            if (perspective) fog.a = look.fogAlpha;
+            fog.a = ViewTuning.FogAlpha;
             maskMaterial.SetColor(ColorId, fog);
             maskMaterial.SetFloat(ProjectId, perspective ? 1f : 0f);
             mask = SpriteFactory.Child(transform, "VisionMask", SpriteFactory.Square, Color.white, Layers.Vision);
@@ -101,14 +101,17 @@ namespace EscapeOffice
             var settings = world.Camera;
             var room = player.GetComponent<RoomTracker>().Current;
             bool dark = room != null && room.IsDark;
-            float target = dark ? settings.DarkRadius : settings.Radius;
+            float target = dark ? settings.DarkRadius * ViewTuning.DarkScale : settings.Radius * ViewTuning.VisionScale;
             if (player.Debuffed) target = Mathf.Min(target, world.Debuff.Radius);
             radius = Mathf.Lerp(radius, target, 1f - Mathf.Exp(-radiusLerp * Time.deltaTime));
 
             transform.position -= shakeOffset; // follow from the steady position
             var p = (Vector3)player.Position;
+            float follow = ViewTuning.Follow;
             if (perspective)
             {
+                cam.fieldOfView = ViewTuning.Fov;
+                if (grading != null) { grading.vignette = ViewTuning.Vignette; grading.vignetteStart = ViewTuning.VignetteStart; }
                 // "Up" is -Z and "behind" is -Y (south) in the game plane.
                 float scale = settings.Radius / 8f * Zoom;
                 var offset = new Vector3(0f, -Behind * scale, -Height * scale);
@@ -117,7 +120,7 @@ namespace EscapeOffice
             }
             else
             {
-                cam.orthographicSize = settings.Radius + 0.5f;
+                cam.orthographicSize = (settings.Radius + 0.5f) * ViewTuning.Distance * Zoom;
                 var pos = Vector3.Lerp(transform.position, new Vector3(p.x, p.y, -10f), 1f - Mathf.Exp(-follow * Time.deltaTime));
                 pos.z = -10f;
                 transform.position = pos;
@@ -144,8 +147,11 @@ namespace EscapeOffice
                 mask.transform.localScale = new Vector3(h * cam.aspect + 2f, h, 1f);
             }
 
-            maskMaterial.SetVector(CenterId, new Vector4(p.x, p.y, radius, softness));
-            maskMaterial.SetFloat(ReachId, settings.Radius);
+            var fog = maskMaterial.GetColor(ColorId);
+            fog.a = ViewTuning.FogAlpha;
+            maskMaterial.SetColor(ColorId, fog);
+            maskMaterial.SetVector(CenterId, new Vector4(p.x, p.y, radius, ViewTuning.Softness));
+            maskMaterial.SetFloat(ReachId, settings.Radius * ViewTuning.VisionScale);
             int n = 0;
             foreach (var l in world.Lights)
             {
