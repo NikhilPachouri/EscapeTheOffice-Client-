@@ -9,6 +9,7 @@ namespace EscapeOffice.Net
     public static class MsgType
     {
         // Client -> server
+        public const string Create = "create"; // { } — server makes the room, code comes back in `assigned`
         public const string Join = "join";
         public const string Interact = "interact";
         public const string Enter = "enter";
@@ -59,6 +60,7 @@ namespace EscapeOffice.Net
 
     public class AssignedData
     {
+        [JsonProperty("code")] public string Code;
         [JsonProperty("side")] public string Side;
         [JsonProperty("token")] public string Token;
     }

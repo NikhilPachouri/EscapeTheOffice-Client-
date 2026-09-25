@@ -7,8 +7,9 @@ using UnityEngine;
 
 namespace EscapeOffice.Net
 {
-    // Plain WebSocket + JSON envelope. Reconnects with the room code and token for as long as
-    // the server holds the slot (2 minutes), then gives up.
+    // Plain WebSocket + JSON envelope. With no code it asks the server to create a room and learns
+    // the code from `assigned`. Reconnects with the room code and token for as long as the server
+    // holds the slot (2 minutes), then gives up.
     public class GameConnection : MonoBehaviour, IServerLink
     {
         const float RetryInterval = 2f;
@@ -33,10 +34,11 @@ namespace EscapeOffice.Net
         float retryAt = -1f;
         float lostAt = -1f;
 
+        // code == null: create a new room. Otherwise join (or, with a token, rejoin) that room.
         public void Connect(string serverUrl, string code, string token = null)
         {
             url = serverUrl;
-            Code = code;
+            Code = string.IsNullOrEmpty(code) ? null : code;
             Token = string.IsNullOrEmpty(token) ? null : token;
             wantConnected = true;
             Finished = false;
@@ -59,7 +61,8 @@ namespace EscapeOffice.Net
                 lostAt = -1f;
                 Session++;
                 StatusChanged?.Invoke("Connected");
-                Send(MsgType.Join, new JoinData { Code = Code, Token = Token });
+                if (Code == null) Send(MsgType.Create, null);
+                else Send(MsgType.Join, new JoinData { Code = Code, Token = Token });
             };
             socket.OnMessage += bytes => Receive(Encoding.UTF8.GetString(bytes));
             socket.OnError += err => Debug.LogWarning($"[net] socket error: {err}");
@@ -114,6 +117,7 @@ namespace EscapeOffice.Net
             if (env.Type == MsgType.Assigned)
             {
                 var a = env.Data?.ToObject<AssignedData>();
+                if (!string.IsNullOrEmpty(a?.Code)) Code = a.Code;
                 if (!string.IsNullOrEmpty(a?.Token)) Token = a.Token;
             }
             else if (env.Type == MsgType.GameComplete)

@@ -17,10 +17,22 @@ namespace EscapeOffice.Objects
         const float CatchCooldown = 4f;
 
         readonly List<Vector2> path = new List<Vector2>();
-        int waypoint;
         float speed, chaseSpeed, chaseRadius, debuffSeconds;
         float cooldownUntil;
-        bool chasing;
+        bool chasing, wasChasing;
+
+        // Patrol is deliberately erratic: waypoints in random order, detours to random floor
+        // tiles in its room, short pauses, speed that varies per leg, the odd mid-leg swerve.
+        Vector2 target;
+        float legSpeed;
+        float loiterUntil;
+        float swerveUntil;
+        Vector2 swerveDir;
+        Vector2 lastPos;
+        float stuckTime;
+        const float WanderChance = 0.45f;   // pick a random tile instead of a waypoint
+        const float LoiterChance = 0.35f;   // pause on arrival
+        const float SwervePerStep = 0.006f; // chance per FixedUpdate to veer for a moment
 
         Rigidbody2D rb;
         CircleCollider2D col;
@@ -44,6 +56,9 @@ namespace EscapeOffice.Objects
                 foreach (var p in points.Where(p => p != null && p.Length >= 2))
                     path.Add(World.TileCenter(p[0], p[1]));
             if (path.Count == 0) path.Add(Bounds.center);
+            target = Bounds.center;
+            lastPos = target;
+            PickTarget();
 
             if (HasModel)
             {
@@ -104,11 +119,80 @@ namespace EscapeOffice.Objects
             }
             else
             {
-                var wp = path[waypoint];
-                if (Vector2.Distance(pos, wp) < 0.1f) waypoint = (waypoint + 1) % path.Count;
-                var dir = path[waypoint] - pos;
-                rb.linearVelocity = dir.magnitude < 0.05f ? Vector2.zero : dir.normalized * speed;
+                if (wasChasing) PickTarget(); // lost the player: head somewhere new, not straight back
+                Patrol(pos);
             }
+            wasChasing = chasing;
+        }
+
+        void Patrol(Vector2 pos)
+        {
+            if (Time.time < loiterUntil)
+            {
+                rb.linearVelocity = Vector2.zero;
+                stuckTime = 0f;
+                return;
+            }
+            if (Vector2.Distance(pos, target) < 0.15f)
+            {
+                PickTarget();
+                if (Random.value < LoiterChance)
+                {
+                    loiterUntil = Time.time + Random.Range(0.3f, 1.6f);
+                    rb.linearVelocity = Vector2.zero;
+                    return;
+                }
+            }
+
+            // Stuck against a wall or furniture: give up on this target.
+            if ((pos - lastPos).sqrMagnitude < 0.0004f) stuckTime += Time.fixedDeltaTime;
+            else stuckTime = 0f;
+            lastPos = pos;
+            if (stuckTime > 0.6f) { PickTarget(); stuckTime = 0f; }
+
+            if (Time.time > swerveUntil && Random.value < SwervePerStep)
+            {
+                swerveUntil = Time.time + Random.Range(0.25f, 0.6f);
+                var d = (target - pos).normalized;
+                swerveDir = new Vector2(-d.y, d.x) * (Random.value < 0.5f ? 1f : -1f);
+            }
+
+            var dir = (target - pos).normalized;
+            if (Time.time < swerveUntil) dir = (dir + swerveDir * 0.9f).normalized;
+            rb.linearVelocity = dir * legSpeed;
+        }
+
+        // Next destination: a random patrol waypoint (never the one we're at) or a random floor
+        // tile inside one of the boss's rooms. Each leg gets its own speed.
+        void PickTarget()
+        {
+            legSpeed = speed * Random.Range(0.7f, 1.35f);
+            Vector2 pos = rb != null ? rb.position : (Vector2)transform.position;
+
+            if (Rooms.Count > 0 && Random.value < WanderChance)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    var room = Rooms[Random.Range(0, Rooms.Count)];
+                    if (room.Rects.Count == 0) continue;
+                    var r = room.Rects[Random.Range(0, room.Rects.Count)];
+                    int tx = Mathf.FloorToInt(Random.Range(r.xMin, r.xMax));
+                    int ty = World.Height - 1 - Mathf.FloorToInt(Random.Range(r.yMin, r.yMax));
+                    if (!World.IsFloor(tx, ty)) continue;
+                    var p = World.TileCenter(tx, ty);
+                    if (Vector2.Distance(p, pos) < 1f) continue;
+                    target = p;
+                    return;
+                }
+            }
+
+            if (path.Count == 1) { target = path[0]; return; }
+            for (int i = 0; i < 6; i++)
+            {
+                var wp = path[Random.Range(0, path.Count)];
+                if (Vector2.Distance(wp, pos) > 0.5f) { target = wp; return; }
+            }
+            target = path[0];
         }
 
         protected override void Update()

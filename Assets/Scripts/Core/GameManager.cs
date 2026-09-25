@@ -94,15 +94,20 @@ namespace EscapeOffice
 
         // ---------------------------------------------------------------- connecting
 
-        public void Join(string url, string code, string token = null)
+        // Open a new room; the server picks the code and it arrives in `assigned`.
+        public void Create(string url) => Open(url, null, null);
+
+        public void Join(string url, string code, string token = null) => Open(url, code.Trim().ToUpperInvariant(), token);
+
+        void Open(string url, string code, string token)
         {
             Leave();
-            RoomCode = code.Trim().ToUpperInvariant();
+            RoomCode = code ?? "";
 
             connection = gameObject.AddComponent<GameConnection>();
             Attach(connection);
             Current = Phase.Connecting;
-            connection.Connect(url, RoomCode, token);
+            connection.Connect(url, code, token);
         }
 
         public void StartOffline() => StartOffline(null);
@@ -158,6 +163,7 @@ namespace EscapeOffice
             {
                 case MsgType.Assigned:
                     var a = data.ToObject<AssignedData>();
+                    if (!string.IsNullOrEmpty(a.Code)) RoomCode = a.Code;
                     Side = string.IsNullOrEmpty(a.Side) ? Side : a.Side;
                     if (!Offline && !string.IsNullOrEmpty(a.Token))
                     {
