@@ -1,0 +1,1472 @@
+{
+ "units": "1 unit = 1 tile = 1 m",
+ "pivot": "tile centre, floor level (y=0)",
+ "front": "+Z (wall-mounted objects have their back at -Z)",
+ "objectTypeToPrefab": {
+  "button_door": [
+   "Door_Button"
+  ],
+  "code_door": [
+   "Door_Code"
+  ],
+  "key_door": [
+   "Door_Key"
+  ],
+  "exit_door": [
+   "Door_Exit"
+  ],
+  "lasers": [
+   "Laser_Post",
+   "Laser_Beams_1m"
+  ],
+  "fire": [
+   "Fire_Tile"
+  ],
+  "button": [
+   "Button"
+  ],
+  "final_button": [
+   "FinalButton"
+  ],
+  "switch": [
+   "LeverSwitch"
+  ],
+  "light_switch": [
+   "LightSwitch"
+  ],
+  "valve": [
+   "Valve"
+  ],
+  "keypad": [
+   "Keypad"
+  ],
+  "code_panel": [
+   "CodePanel"
+  ],
+  "bomb": [
+   "Pickup_Bomb"
+  ],
+  "key": [
+   "Pickup_Key"
+  ],
+  "bombable_wall": [
+   "BombableWall"
+  ]
+ },
+ "assets": [
+  {
+   "name": "Wall_Full",
+   "folder": "Environment",
+   "glb": "Models/GLB/Environment/Wall_Full.glb",
+   "fbx": "Models/FBX/Environment/Wall_Full.fbx",
+   "use": "'#' cell that touches a floor cell (8-neighbourhood)",
+   "collider": "BoxCollider 1 x 1.35 x 1",
+   "nodes": [
+    "Wall_Full"
+   ],
+   "triangles": 24,
+   "materials": [
+    "M_Wall",
+    "M_WallCap"
+   ]
+  },
+  {
+   "name": "Wall_Low",
+   "folder": "Environment",
+   "glb": "Models/GLB/Environment/Wall_Low.glb",
+   "fbx": "Models/FBX/Environment/Wall_Low.fbx",
+   "use": "'#' cell fully surrounded by walls (outside the building)",
+   "nodes": [
+    "Wall_Low"
+   ],
+   "triangles": 24,
+   "materials": [
+    "M_WallVoid"
+   ]
+  },
+  {
+   "name": "Floor_Grout",
+   "folder": "Environment",
+   "glb": "Models/GLB/Environment/Floor_Grout.glb",
+   "fbx": "Models/FBX/Environment/Floor_Grout.fbx",
+   "use": "One per floor cell (or one plane scaled to the map) under the tiles \u2014 shows as the dark grout lines",
+   "nodes": [
+    "Floor_Grout"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_FloorGrout"
+   ]
+  },
+  {
+   "name": "Floor_Lobby_A",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Lobby_A.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Lobby_A.fbx",
+   "use": "Floor cell in a 'lobby' room where (x+y) is odd",
+   "top": 0,
+   "nodes": [
+    "Floor_Lobby_A"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Lobby_A"
+   ]
+  },
+  {
+   "name": "Floor_Lobby_B",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Lobby_B.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Lobby_B.fbx",
+   "use": "Floor cell in a 'lobby' room where (x+y) is even (checker)",
+   "top": 0,
+   "nodes": [
+    "Floor_Lobby_B"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Lobby_B"
+   ]
+  },
+  {
+   "name": "Floor_Office_A",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Office_A.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Office_A.fbx",
+   "use": "Floor cell in a 'office' room where (x+y) is odd",
+   "top": 0,
+   "nodes": [
+    "Floor_Office_A"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Office_A"
+   ]
+  },
+  {
+   "name": "Floor_Office_B",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Office_B.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Office_B.fbx",
+   "use": "Floor cell in a 'office' room where (x+y) is even (checker)",
+   "top": 0,
+   "nodes": [
+    "Floor_Office_B"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Office_B"
+   ]
+  },
+  {
+   "name": "Floor_Archive_A",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Archive_A.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Archive_A.fbx",
+   "use": "Floor cell in a 'archive' room where (x+y) is odd",
+   "top": 0,
+   "nodes": [
+    "Floor_Archive_A"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Archive_A"
+   ]
+  },
+  {
+   "name": "Floor_Archive_B",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Archive_B.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Archive_B.fbx",
+   "use": "Floor cell in a 'archive' room where (x+y) is even (checker)",
+   "top": 0,
+   "nodes": [
+    "Floor_Archive_B"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Archive_B"
+   ]
+  },
+  {
+   "name": "Floor_Workshop_A",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Workshop_A.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Workshop_A.fbx",
+   "use": "Floor cell in a 'workshop' room where (x+y) is odd",
+   "top": 0,
+   "nodes": [
+    "Floor_Workshop_A"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Workshop_A"
+   ]
+  },
+  {
+   "name": "Floor_Workshop_B",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Workshop_B.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Workshop_B.fbx",
+   "use": "Floor cell in a 'workshop' room where (x+y) is even (checker)",
+   "top": 0,
+   "nodes": [
+    "Floor_Workshop_B"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Workshop_B"
+   ]
+  },
+  {
+   "name": "Floor_Vault_A",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Vault_A.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Vault_A.fbx",
+   "use": "Floor cell in a 'vault' room where (x+y) is odd",
+   "top": 0,
+   "nodes": [
+    "Floor_Vault_A"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Vault_A"
+   ]
+  },
+  {
+   "name": "Floor_Vault_B",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Vault_B.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Vault_B.fbx",
+   "use": "Floor cell in a 'vault' room where (x+y) is even (checker)",
+   "top": 0,
+   "nodes": [
+    "Floor_Vault_B"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Vault_B"
+   ]
+  },
+  {
+   "name": "Floor_Lab_A",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Lab_A.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Lab_A.fbx",
+   "use": "Floor cell in a 'lab' room where (x+y) is odd",
+   "top": 0,
+   "nodes": [
+    "Floor_Lab_A"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Lab_A"
+   ]
+  },
+  {
+   "name": "Floor_Lab_B",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Lab_B.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Lab_B.fbx",
+   "use": "Floor cell in a 'lab' room where (x+y) is even (checker)",
+   "top": 0,
+   "nodes": [
+    "Floor_Lab_B"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Lab_B"
+   ]
+  },
+  {
+   "name": "Floor_Server_A",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Server_A.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Server_A.fbx",
+   "use": "Floor cell in a 'server' room where (x+y) is odd",
+   "top": 0,
+   "nodes": [
+    "Floor_Server_A"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Server_A"
+   ]
+  },
+  {
+   "name": "Floor_Server_B",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Server_B.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Server_B.fbx",
+   "use": "Floor cell in a 'server' room where (x+y) is even (checker)",
+   "top": 0,
+   "nodes": [
+    "Floor_Server_B"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Server_B"
+   ]
+  },
+  {
+   "name": "Floor_Boiler_A",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Boiler_A.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Boiler_A.fbx",
+   "use": "Floor cell in a 'boiler' room where (x+y) is odd",
+   "top": 0,
+   "nodes": [
+    "Floor_Boiler_A"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Boiler_A"
+   ]
+  },
+  {
+   "name": "Floor_Boiler_B",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Boiler_B.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Boiler_B.fbx",
+   "use": "Floor cell in a 'boiler' room where (x+y) is even (checker)",
+   "top": 0,
+   "nodes": [
+    "Floor_Boiler_B"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Boiler_B"
+   ]
+  },
+  {
+   "name": "Floor_Cafe_A",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Cafe_A.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Cafe_A.fbx",
+   "use": "Floor cell in a 'cafe' room where (x+y) is odd",
+   "top": 0,
+   "nodes": [
+    "Floor_Cafe_A"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Cafe_A"
+   ]
+  },
+  {
+   "name": "Floor_Cafe_B",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Cafe_B.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Cafe_B.fbx",
+   "use": "Floor cell in a 'cafe' room where (x+y) is even (checker)",
+   "top": 0,
+   "nodes": [
+    "Floor_Cafe_B"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Cafe_B"
+   ]
+  },
+  {
+   "name": "Floor_Hallway_A",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Hallway_A.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Hallway_A.fbx",
+   "use": "Floor cell in a 'hallway' room where (x+y) is odd",
+   "top": 0,
+   "nodes": [
+    "Floor_Hallway_A"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Hallway_A"
+   ]
+  },
+  {
+   "name": "Floor_Hallway_B",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Hallway_B.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Hallway_B.fbx",
+   "use": "Floor cell in a 'hallway' room where (x+y) is even (checker)",
+   "top": 0,
+   "nodes": [
+    "Floor_Hallway_B"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Hallway_B"
+   ]
+  },
+  {
+   "name": "Floor_Final_A",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Final_A.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Final_A.fbx",
+   "use": "Floor cell in a 'final' room where (x+y) is odd",
+   "top": 0,
+   "nodes": [
+    "Floor_Final_A"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Final_A"
+   ]
+  },
+  {
+   "name": "Floor_Final_B",
+   "folder": "Environment/Floors",
+   "glb": "Models/GLB/Environment/Floors/Floor_Final_B.glb",
+   "fbx": "Models/FBX/Environment/Floors/Floor_Final_B.fbx",
+   "use": "Floor cell in a 'final' room where (x+y) is even (checker)",
+   "top": 0,
+   "nodes": [
+    "Floor_Final_B"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Floor_Final_B"
+   ]
+  },
+  {
+   "name": "Water_Tile",
+   "folder": "Environment",
+   "glb": "Models/GLB/Environment/Water_Tile.glb",
+   "fbx": "Models/FBX/Environment/Water_Tile.fbx",
+   "use": "Fill every cell of a room while its `flooded` key is true",
+   "nodes": [
+    "Water_Tile"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_Water"
+   ]
+  },
+  {
+   "name": "Decor_Desk",
+   "folder": "Decor",
+   "glb": "Models/GLB/Decor/Decor_Desk.glb",
+   "fbx": "Models/FBX/Decor/Decor_Desk.fbx",
+   "collider": "BoxCollider ~0.9 x h x 0.9 (blocks the cell)",
+   "themes": [
+    "office"
+   ],
+   "nodes": [
+    "Decor_Desk"
+   ],
+   "triangles": 140,
+   "materials": [
+    "M_Chair",
+    "M_MetalDark",
+    "M_MonitorBody",
+    "M_MonitorScreen",
+    "M_Wood"
+   ]
+  },
+  {
+   "name": "Decor_Plant",
+   "folder": "Decor",
+   "glb": "Models/GLB/Decor/Decor_Plant.glb",
+   "fbx": "Models/FBX/Decor/Decor_Plant.fbx",
+   "collider": "BoxCollider ~0.9 x h x 0.9 (blocks the cell)",
+   "themes": [
+    "office",
+    "lobby",
+    "hallway",
+    "final"
+   ],
+   "nodes": [
+    "Decor_Plant"
+   ],
+   "triangles": 240,
+   "materials": [
+    "M_Leaf",
+    "M_LeafLight",
+    "M_Terracotta"
+   ]
+  },
+  {
+   "name": "Decor_Cabinet",
+   "folder": "Decor",
+   "glb": "Models/GLB/Decor/Decor_Cabinet.glb",
+   "fbx": "Models/FBX/Decor/Decor_Cabinet.fbx",
+   "collider": "BoxCollider ~0.9 x h x 0.9 (blocks the cell)",
+   "themes": [
+    "office",
+    "lab"
+   ],
+   "placement": "against wall, back at -Z",
+   "nodes": [
+    "Decor_Cabinet"
+   ],
+   "triangles": 36,
+   "materials": [
+    "M_MetalGrey",
+    "M_MetalTrim"
+   ]
+  },
+  {
+   "name": "Decor_ServerRack",
+   "folder": "Decor",
+   "glb": "Models/GLB/Decor/Decor_ServerRack.glb",
+   "fbx": "Models/FBX/Decor/Decor_ServerRack.fbx",
+   "collider": "BoxCollider ~0.9 x h x 0.9 (blocks the cell)",
+   "themes": [
+    "server"
+   ],
+   "note": "LED materials can blink via emission intensity",
+   "nodes": [
+    "Decor_ServerRack"
+   ],
+   "triangles": 72,
+   "materials": [
+    "M_LED_Amber",
+    "M_LED_Blue",
+    "M_LED_Green",
+    "M_RackBody"
+   ]
+  },
+  {
+   "name": "Decor_Tank",
+   "folder": "Decor",
+   "glb": "Models/GLB/Decor/Decor_Tank.glb",
+   "fbx": "Models/FBX/Decor/Decor_Tank.fbx",
+   "collider": "BoxCollider ~0.9 x h x 0.9 (blocks the cell)",
+   "themes": [
+    "boiler"
+   ],
+   "nodes": [
+    "Decor_Tank"
+   ],
+   "triangles": 680,
+   "materials": [
+    "M_Brass",
+    "M_Copper"
+   ]
+  },
+  {
+   "name": "Decor_Pipes",
+   "folder": "Decor",
+   "glb": "Models/GLB/Decor/Decor_Pipes.glb",
+   "fbx": "Models/FBX/Decor/Decor_Pipes.fbx",
+   "collider": "BoxCollider ~0.9 x h x 0.9 (blocks the cell)",
+   "themes": [
+    "boiler"
+   ],
+   "placement": "against wall, back at -Z",
+   "nodes": [
+    "Decor_Pipes"
+   ],
+   "triangles": 252,
+   "materials": [
+    "M_PaintRed",
+    "M_Pipe"
+   ]
+  },
+  {
+   "name": "Decor_Vending",
+   "folder": "Decor",
+   "glb": "Models/GLB/Decor/Decor_Vending.glb",
+   "fbx": "Models/FBX/Decor/Decor_Vending.fbx",
+   "collider": "BoxCollider ~0.9 x h x 0.9 (blocks the cell)",
+   "themes": [
+    "cafe"
+   ],
+   "placement": "against wall",
+   "nodes": [
+    "Decor_Vending"
+   ],
+   "triangles": 24,
+   "materials": [
+    "M_VendingBody",
+    "M_VendingGlass"
+   ]
+  },
+  {
+   "name": "Decor_Bookshelf",
+   "folder": "Decor",
+   "glb": "Models/GLB/Decor/Decor_Bookshelf.glb",
+   "fbx": "Models/FBX/Decor/Decor_Bookshelf.fbx",
+   "collider": "BoxCollider ~0.9 x h x 0.9 (blocks the cell)",
+   "themes": [
+    "archive"
+   ],
+   "nodes": [
+    "Decor_Bookshelf"
+   ],
+   "triangles": 192,
+   "materials": [
+    "M_Book_1",
+    "M_Book_2",
+    "M_Book_3",
+    "M_Book_4",
+    "M_Book_5",
+    "M_WoodDark"
+   ]
+  },
+  {
+   "name": "Decor_LabBench",
+   "folder": "Decor",
+   "glb": "Models/GLB/Decor/Decor_LabBench.glb",
+   "fbx": "Models/FBX/Decor/Decor_LabBench.fbx",
+   "collider": "BoxCollider ~0.9 x h x 0.9 (blocks the cell)",
+   "themes": [
+    "lab"
+   ],
+   "nodes": [
+    "Decor_LabBench"
+   ],
+   "triangles": 184,
+   "materials": [
+    "M_FlaskGreen",
+    "M_FlaskPink",
+    "M_LabBase",
+    "M_LabTop"
+   ]
+  },
+  {
+   "name": "Decor_Couch",
+   "folder": "Decor",
+   "glb": "Models/GLB/Decor/Decor_Couch.glb",
+   "fbx": "Models/FBX/Decor/Decor_Couch.fbx",
+   "collider": "BoxCollider ~0.9 x h x 0.9 (blocks the cell)",
+   "themes": [
+    "lobby"
+   ],
+   "placement": "back against wall",
+   "nodes": [
+    "Decor_Couch"
+   ],
+   "triangles": 24,
+   "materials": [
+    "M_Fabric",
+    "M_FabricDark"
+   ]
+  },
+  {
+   "name": "Decor_Crate",
+   "folder": "Decor",
+   "glb": "Models/GLB/Decor/Decor_Crate.glb",
+   "fbx": "Models/FBX/Decor/Decor_Crate.fbx",
+   "collider": "BoxCollider ~0.9 x h x 0.9 (blocks the cell)",
+   "themes": [
+    "workshop",
+    "vault",
+    "hallway"
+   ],
+   "note": "Prototype randomises size 0.65\u20130.9 and Y rotation",
+   "nodes": [
+    "Decor_Crate"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_CrateWood"
+   ]
+  },
+  {
+   "name": "Decor_CafeTable",
+   "folder": "Decor",
+   "glb": "Models/GLB/Decor/Decor_CafeTable.glb",
+   "fbx": "Models/FBX/Decor/Decor_CafeTable.fbx",
+   "collider": "none \u2014 walkable around (does not block)",
+   "themes": [
+    "cafe"
+   ],
+   "nodes": [
+    "Decor_CafeTable"
+   ],
+   "triangles": 400,
+   "materials": [
+    "M_MetalGrey2",
+    "M_Stool",
+    "M_TableTop"
+   ]
+  },
+  {
+   "name": "Door_Button",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/Door_Button.glb",
+   "fbx": "Models/FBX/Interactive/Door_Button.fbx",
+   "type": "button_door",
+   "axis": "Leaves slide along local X; rotate the prefab 90\u00b0 when the doorway runs along the map Y axis (walls at x-1 and x+1 \u2192 no rotation)",
+   "animate": {
+    "LeafL": "localPosition.x  -0.25 (closed) \u2192 -0.71 (open)",
+    "LeafR": "localPosition.x  +0.25 \u2192 +0.71",
+    "Lamp": "material M_Lamp_Red (closed) \u2194 M_Lamp_Green (open)"
+   },
+   "lerp": "exp smoothing k=5 /s",
+   "collider": "BoxCollider 1 x 1.35 x 0.3, enabled while closed",
+   "states": "open when state[key] true",
+   "nodes": [
+    "Door_Button",
+    "LeafL",
+    "LeafR",
+    "Lamp"
+   ],
+   "triangles": 568,
+   "materials": [
+    "M_DoorButton_Panel",
+    "M_DoorButton_Trim",
+    "M_Lamp_Red"
+   ]
+  },
+  {
+   "name": "Door_Code",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/Door_Code.glb",
+   "fbx": "Models/FBX/Interactive/Door_Code.fbx",
+   "type": "code_door",
+   "axis": "Leaves slide along local X; rotate the prefab 90\u00b0 when the doorway runs along the map Y axis (walls at x-1 and x+1 \u2192 no rotation)",
+   "animate": {
+    "LeafL": "localPosition.x  -0.25 (closed) \u2192 -0.71 (open)",
+    "LeafR": "localPosition.x  +0.25 \u2192 +0.71",
+    "Lamp": "material M_Lamp_Red (closed) \u2194 M_Lamp_Green (open)"
+   },
+   "lerp": "exp smoothing k=5 /s",
+   "collider": "BoxCollider 1 x 1.35 x 0.3, enabled while closed",
+   "states": "open when state[key] true",
+   "nodes": [
+    "Door_Code",
+    "LeafL",
+    "LeafR",
+    "Lamp"
+   ],
+   "triangles": 568,
+   "materials": [
+    "M_DoorCode_Panel",
+    "M_DoorCode_Trim",
+    "M_Lamp_Red"
+   ]
+  },
+  {
+   "name": "Door_Key",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/Door_Key.glb",
+   "fbx": "Models/FBX/Interactive/Door_Key.fbx",
+   "type": "key_door",
+   "axis": "Leaves slide along local X; rotate the prefab 90\u00b0 when the doorway runs along the map Y axis (walls at x-1 and x+1 \u2192 no rotation)",
+   "animate": {
+    "LeafL": "localPosition.x  -0.25 (closed) \u2192 -0.71 (open)",
+    "LeafR": "localPosition.x  +0.25 \u2192 +0.71",
+    "Lamp": "material M_Lamp_Red (closed) \u2194 M_Lamp_Green (open)"
+   },
+   "lerp": "exp smoothing k=5 /s",
+   "collider": "BoxCollider 1 x 1.35 x 0.3, enabled while closed",
+   "states": "open when state[key] true (use_key consumes the key)",
+   "nodes": [
+    "Door_Key",
+    "LeafL",
+    "LeafR",
+    "Lamp"
+   ],
+   "triangles": 568,
+   "materials": [
+    "M_DoorKey_Panel",
+    "M_DoorKey_Trim",
+    "M_Lamp_Red"
+   ]
+  },
+  {
+   "name": "Door_Exit",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/Door_Exit.glb",
+   "fbx": "Models/FBX/Interactive/Door_Exit.fbx",
+   "type": "exit_door",
+   "axis": "Leaves slide along local X; rotate the prefab 90\u00b0 when the doorway runs along the map Y axis (walls at x-1 and x+1 \u2192 no rotation)",
+   "animate": {
+    "LeafL": "localPosition.x  -0.25 (closed) \u2192 -0.71 (open)",
+    "LeafR": "localPosition.x  +0.25 \u2192 +0.71",
+    "Lamp": "material M_Lamp_Red (closed) \u2194 M_Lamp_Green (open)"
+   },
+   "lerp": "exp smoothing k=5 /s",
+   "collider": "BoxCollider 1 x 1.35 x 0.3, enabled while closed",
+   "states": "open when state[key] true",
+   "nodes": [
+    "Door_Exit",
+    "LeafL",
+    "LeafR",
+    "Lamp",
+    "ExitSign_Floor"
+   ],
+   "triangles": 570,
+   "materials": [
+    "M_DoorExit_Panel",
+    "M_DoorExit_Trim",
+    "M_ExitSign",
+    "M_Lamp_Red"
+   ]
+  },
+  {
+   "name": "Laser_Post",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/Laser_Post.glb",
+   "fbx": "Models/FBX/Interactive/Laser_Post.fbx",
+   "type": "lasers",
+   "use": "Place at every cell boundary of the laser run (len+1 posts)",
+   "nodes": [
+    "Laser_Post"
+   ],
+   "triangles": 12,
+   "materials": [
+    "M_LaserPost"
+   ]
+  },
+  {
+   "name": "Laser_Beams_1m",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/Laser_Beams_1m.glb",
+   "fbx": "Models/FBX/Interactive/Laser_Beams_1m.fbx",
+   "type": "lasers",
+   "use": "One per laser cell, along local X (rotate 90\u00b0 for runs along map Y). Hide Beams + collider when state[key] is false.",
+   "light": "Point light #ff2a4a, intensity 0.8, range 3.5 at run centre, y 0.6",
+   "collider": "BoxCollider 1 x 1 x 0.3 while on",
+   "nodes": [
+    "Laser_Beams_1m",
+    "Beams"
+   ],
+   "triangles": 72,
+   "materials": [
+    "M_LaserBeam",
+    "M_LaserHalo"
+   ]
+  },
+  {
+   "name": "Fire_Tile",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/Fire_Tile.glb",
+   "fbx": "Models/FBX/Interactive/Fire_Tile.fbx",
+   "type": "fire",
+   "use": "One per fire cell. Flames = placeholder meshes; replace with a URP particle system for production.",
+   "animate": {
+    "Flame_": "scale.y 0.8 + sin(t*9+ph)*0.2 + sin(t*23+ph)*0.08; x wobble sin(t*5)*0.04"
+   },
+   "extinguish": "Scale Flames \u2192 0 over ~0.7 s, spawn steam puffs (FX_SteamPuff), keep Scorch",
+   "light": "Point light #ff8a2a, intensity 2.2 flicker, range size/2+4, y 1.1",
+   "collider": "BoxCollider per cell while burning",
+   "nodes": [
+    "Fire_Tile",
+    "Scorch",
+    "Flames",
+    "Flame_Outer",
+    "Flame_Mid",
+    "Flame_Core"
+   ],
+   "triangles": 102,
+   "materials": [
+    "M_FireCore",
+    "M_FireMid",
+    "M_FireOuter",
+    "M_Scorch"
+   ]
+  },
+  {
+   "name": "FX_SteamPuff",
+   "folder": "FX",
+   "glb": "Models/GLB/FX/FX_SteamPuff.glb",
+   "fbx": "Models/FBX/FX/FX_SteamPuff.fbx",
+   "use": "Particle mesh: rise 0.6\u20131.4 m/s, grow to ~2.5x, fade opacity 0.5\u21920 over 2.3 s",
+   "nodes": [
+    "FX_SteamPuff"
+   ],
+   "triangles": 520,
+   "materials": [
+    "M_Steam"
+   ]
+  },
+  {
+   "name": "Button",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/Button.glb",
+   "fbx": "Models/FBX/Interactive/Button.fbx",
+   "type": "button",
+   "animate": {
+    "Cap": "localPosition.y -0.08 when pressed (k=14)"
+   },
+   "materials": [
+    "M_ButtonBase",
+    "M_ButtonCap_Neutral"
+   ],
+   "oneShot": true,
+   "nodes": [
+    "Button",
+    "Base",
+    "Cap"
+   ],
+   "triangles": 160
+  },
+  {
+   "name": "FinalButton",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/FinalButton.glb",
+   "fbx": "Models/FBX/Interactive/FinalButton.fbx",
+   "type": "final_button",
+   "animate": {
+    "Cap": "localPosition.y -0.08 when pressed (k=14)"
+   },
+   "materials": [
+    "M_ButtonBase",
+    "M_ButtonCap_Neutral",
+    "M_Gold"
+   ],
+   "oneShot": true,
+   "nodes": [
+    "FinalButton",
+    "Base",
+    "Cap"
+   ],
+   "triangles": 544
+  },
+  {
+   "name": "LeverSwitch",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/LeverSwitch.glb",
+   "fbx": "Models/FBX/Interactive/LeverSwitch.fbx",
+   "type": "switch",
+   "placement": "wall-mounted: back (-Z) toward the adjacent wall",
+   "animate": {
+    "Lever": "localRotation.x = -0.6 rad (off) \u2192 +0.6 rad (on), k=12"
+   },
+   "note": "Latching switches (latch:true) stop accepting input once on",
+   "nodes": [
+    "LeverSwitch",
+    "Plate",
+    "Lever"
+   ],
+   "triangles": 544,
+   "materials": [
+    "M_KnobBlack",
+    "M_Lever_Neutral",
+    "M_PanelDark"
+   ]
+  },
+  {
+   "name": "LightSwitch",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/LightSwitch.glb",
+   "fbx": "Models/FBX/Interactive/LightSwitch.fbx",
+   "type": "light_switch",
+   "placement": "wall-mounted: back (-Z) toward the adjacent wall",
+   "animate": {
+    "Lever": "localRotation.x = -0.6 rad (off) \u2192 +0.6 rad (on), k=12"
+   },
+   "note": "",
+   "nodes": [
+    "LightSwitch",
+    "Plate",
+    "Lever"
+   ],
+   "triangles": 24,
+   "materials": [
+    "M_PanelDark",
+    "M_SwitchToggle"
+   ]
+  },
+  {
+   "name": "Valve",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/Valve.glb",
+   "fbx": "Models/FBX/Interactive/Valve.fbx",
+   "type": "valve",
+   "placement": "wall-mounted",
+   "animate": {
+    "Wheel": "spin about local Z: 6 rad/s for 1.2 s on press, then 4 rad/s until ~6 rad total when on"
+   },
+   "latch": true,
+   "nodes": [
+    "Valve",
+    "Pipework",
+    "Wheel"
+   ],
+   "triangles": 544,
+   "materials": [
+    "M_Pipe",
+    "M_ValveWheel"
+   ]
+  },
+  {
+   "name": "Keypad",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/Keypad.glb",
+   "fbx": "Models/FBX/Interactive/Keypad.fbx",
+   "type": "keypad",
+   "materials": [
+    "M_Keypad_Locked",
+    "M_PanelDark"
+   ],
+   "ui": "Opens the 4-digit keypad UI; send interact{action:\"submit\", value}",
+   "nodes": [
+    "Keypad",
+    "Post",
+    "Screen"
+   ],
+   "triangles": 24
+  },
+  {
+   "name": "CodePanel",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/CodePanel.glb",
+   "fbx": "Models/FBX/Interactive/CodePanel.fbx",
+   "type": "code_panel",
+   "placement": "wall-mounted",
+   "ui": "Put a TextMeshPro (Chakra Petch Bold, #8ef0b0) on CodeText_Anchor; text = object.display from the world message (server-generated code)",
+   "nodes": [
+    "CodePanel",
+    "Kiosk",
+    "Screen",
+    "CodeText_Anchor"
+   ],
+   "triangles": 26,
+   "materials": [
+    "M_Bezel",
+    "M_CodePanel_Screen",
+    "M_PanelDark"
+   ]
+  },
+  {
+   "name": "Pickup_Bomb",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/Pickup_Bomb.glb",
+   "fbx": "Models/FBX/Interactive/Pickup_Bomb.fbx",
+   "type": "bomb",
+   "animate": {
+    "Bomb": "bob y 0.55 \u00b1 0.08 (2.5 rad/s), spin 1.5 rad/s; on pickup rise + shrink over 0.33 s"
+   },
+   "light": "Point #ffb030 0.6, range 2.5",
+   "nodes": [
+    "Pickup_Bomb",
+    "Bomb"
+   ],
+   "triangles": 1120,
+   "materials": [
+    "M_BombBody",
+    "M_Fuse",
+    "M_Spark"
+   ]
+  },
+  {
+   "name": "Pickup_Key",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/Pickup_Key.glb",
+   "fbx": "Models/FBX/Interactive/Pickup_Key.fbx",
+   "type": "key",
+   "animate": {
+    "Key": "same bob/spin as bomb"
+   },
+   "light": "Point #ffe08a 0.6, range 2.5",
+   "nodes": [
+    "Pickup_Key",
+    "Key"
+   ],
+   "triangles": 408,
+   "materials": [
+    "M_KeyGold"
+   ]
+  },
+  {
+   "name": "BombableWall",
+   "folder": "Interactive",
+   "glb": "Models/GLB/Interactive/BombableWall.glb",
+   "fbx": "Models/FBX/Interactive/BombableWall.fbx",
+   "type": "bombable_wall",
+   "states": "false: Intact on, Rubble OFF (disable Rubble in the prefab!), collider on. true: Intact off, Rubble on, collider off",
+   "fx": "On break: fx boom \u2192 camera shake + FX_SteamPuff-style dust",
+   "nodes": [
+    "BombableWall",
+    "Intact",
+    "Rubble"
+   ],
+   "triangles": 120,
+   "materials": [
+    "M_CrackedWall",
+    "M_Rubble"
+   ]
+  },
+  {
+   "name": "Player_A",
+   "folder": "Characters",
+   "glb": "Models/GLB/Characters/Player_A.glb",
+   "fbx": "Models/FBX/Characters/Player_A.fbx",
+   "facing": "+Z (visor)",
+   "collider": "CapsuleCollider / CharacterController radius 0.28, height 1.1",
+   "light": "Point light on Lamp_Anchor: #ffe2b8, intensity 1.1, range 7.5",
+   "speed": "Prototype: 4.4 tiles/s (x0.55 while debuffed)",
+   "nodes": [
+    "Player_A",
+    "Body",
+    "SideRing",
+    "Lamp_Anchor"
+   ],
+   "triangles": 1212,
+   "materials": [
+    "M_PlayerA_Suit",
+    "M_PlayerRing_A",
+    "M_Skin",
+    "M_Visor"
+   ]
+  },
+  {
+   "name": "Player_B",
+   "folder": "Characters",
+   "glb": "Models/GLB/Characters/Player_B.glb",
+   "fbx": "Models/FBX/Characters/Player_B.fbx",
+   "facing": "+Z (visor)",
+   "collider": "CapsuleCollider / CharacterController radius 0.28, height 1.1",
+   "light": "Point light on Lamp_Anchor: #ffe2b8, intensity 1.1, range 7.5",
+   "speed": "Prototype: 4.4 tiles/s (x0.55 while debuffed)",
+   "nodes": [
+    "Player_B",
+    "Body",
+    "SideRing",
+    "Lamp_Anchor"
+   ],
+   "triangles": 1212,
+   "materials": [
+    "M_PlayerB_Suit",
+    "M_PlayerRing_B",
+    "M_Skin",
+    "M_Visor"
+   ]
+  },
+  {
+   "name": "Boss_Drone",
+   "folder": "Characters",
+   "glb": "Models/GLB/Characters/Boss_Drone.glb",
+   "fbx": "Models/FBX/Characters/Boss_Drone.fbx",
+   "facing": "+Z (eye)",
+   "note": "Pivot on floor; Hover child sits at 0.75 m \u2014 bob it \u00b10.08",
+   "animate": {
+    "Halo": "spin about Y ~2 rad/s (faster when chasing)",
+    "Eye": "emission pulse when chasing"
+   },
+   "light": "Point #ff3030 0.9, range 3.2 on Hover",
+   "ai": "patrol waypoints from world.json boss.path; chase when player within ~4 tiles; catch \u2192 15 s debuff",
+   "nodes": [
+    "Boss_Drone",
+    "Hover",
+    "Shell",
+    "Eye",
+    "Halo"
+   ],
+   "triangles": 1504,
+   "materials": [
+    "M_DroneEye",
+    "M_DroneHalo",
+    "M_DroneShell",
+    "M_MetalLight"
+   ]
+  },
+  {
+   "name": "GlowRing_A",
+   "folder": "FX",
+   "glb": "Models/GLB/FX/GlowRing_A.glb",
+   "fbx": "Models/FBX/FX/GlowRing_A.fbx",
+   "use": "Under every object whose colour is 'A'. Pulse opacity 0.45\u20130.75. Hidden inside dark rooms.",
+   "nodes": [
+    "GlowRing_A"
+   ],
+   "triangles": 80,
+   "materials": [
+    "M_Glow_A"
+   ]
+  },
+  {
+   "name": "GlowRing_B",
+   "folder": "FX",
+   "glb": "Models/GLB/FX/GlowRing_B.glb",
+   "fbx": "Models/FBX/FX/GlowRing_B.fbx",
+   "use": "Under every object whose colour is 'B'. Pulse opacity 0.45\u20130.75. Hidden inside dark rooms.",
+   "nodes": [
+    "GlowRing_B"
+   ],
+   "triangles": 80,
+   "materials": [
+    "M_Glow_B"
+   ]
+  },
+  {
+   "name": "GlowRing_Both",
+   "folder": "FX",
+   "glb": "Models/GLB/FX/GlowRing_Both.glb",
+   "fbx": "Models/FBX/FX/GlowRing_Both.fbx",
+   "use": "Under every object whose colour is 'both'. Pulse opacity 0.45\u20130.75. Hidden inside dark rooms.",
+   "nodes": [
+    "GlowRing_Both"
+   ],
+   "triangles": 80,
+   "materials": [
+    "M_Glow_Both"
+   ]
+  },
+  {
+   "name": "GlowRing_Info",
+   "folder": "FX",
+   "glb": "Models/GLB/FX/GlowRing_Info.glb",
+   "fbx": "Models/FBX/FX/GlowRing_Info.fbx",
+   "use": "Under every object whose colour is 'info'. Pulse opacity 0.45\u20130.75. Hidden inside dark rooms.",
+   "nodes": [
+    "GlowRing_Info"
+   ],
+   "triangles": 80,
+   "materials": [
+    "M_Glow_Info"
+   ]
+  },
+  {
+   "name": "MaterialLibrary",
+   "folder": "Materials",
+   "glb": "Models/GLB/Materials/MaterialLibrary.glb",
+   "fbx": "Models/FBX/Materials/MaterialLibrary.fbx",
+   "use": "Import once; extract materials (Model import settings \u2192 Materials \u2192 Extract) to get every material incl. state variants",
+   "nodes": [
+    "MaterialLibrary",
+    "Swatch_M_Wall",
+    "Swatch_M_WallCap",
+    "Swatch_M_WallVoid",
+    "Swatch_M_FloorGrout",
+    "Swatch_M_Floor_Lobby_A",
+    "Swatch_M_Floor_Lobby_B",
+    "Swatch_M_Floor_Office_A",
+    "Swatch_M_Floor_Office_B",
+    "Swatch_M_Floor_Archive_A",
+    "Swatch_M_Floor_Archive_B",
+    "Swatch_M_Floor_Workshop_A",
+    "Swatch_M_Floor_Workshop_B",
+    "Swatch_M_Floor_Vault_A",
+    "Swatch_M_Floor_Vault_B",
+    "Swatch_M_Floor_Lab_A",
+    "Swatch_M_Floor_Lab_B",
+    "Swatch_M_Floor_Server_A",
+    "Swatch_M_Floor_Server_B",
+    "Swatch_M_Floor_Boiler_A",
+    "Swatch_M_Floor_Boiler_B",
+    "Swatch_M_Floor_Cafe_A",
+    "Swatch_M_Floor_Cafe_B",
+    "Swatch_M_Floor_Hallway_A",
+    "Swatch_M_Floor_Hallway_B",
+    "Swatch_M_Floor_Final_A",
+    "Swatch_M_Floor_Final_B",
+    "Swatch_M_Water",
+    "Swatch_M_Wood",
+    "Swatch_M_MetalDark",
+    "Swatch_M_MonitorBody",
+    "Swatch_M_MonitorScreen",
+    "Swatch_M_Chair",
+    "Swatch_M_Terracotta",
+    "Swatch_M_Leaf",
+    "Swatch_M_LeafLight",
+    "Swatch_M_MetalGrey",
+    "Swatch_M_MetalTrim",
+    "Swatch_M_LED_Green",
+    "Swatch_M_LED_Blue",
+    "Swatch_M_LED_Amber",
+    "Swatch_M_RackBody",
+    "Swatch_M_Copper",
+    "Swatch_M_Brass",
+    "Swatch_M_Pipe",
+    "Swatch_M_PaintRed",
+    "Swatch_M_VendingBody",
+    "Swatch_M_VendingGlass",
+    "Swatch_M_Book_1",
+    "Swatch_M_Book_2",
+    "Swatch_M_Book_3",
+    "Swatch_M_Book_4",
+    "Swatch_M_Book_5",
+    "Swatch_M_WoodDark",
+    "Swatch_M_LabTop",
+    "Swatch_M_LabBase",
+    "Swatch_M_FlaskGreen",
+    "Swatch_M_FlaskPink",
+    "Swatch_M_Fabric",
+    "Swatch_M_FabricDark",
+    "Swatch_M_CrateWood",
+    "Swatch_M_TableTop",
+    "Swatch_M_MetalGrey2",
+    "Swatch_M_Stool",
+    "Swatch_M_Lamp_Red",
+    "Swatch_M_Lamp_Green",
+    "Swatch_M_DoorButton_Panel",
+    "Swatch_M_DoorButton_Trim",
+    "Swatch_M_DoorCode_Panel",
+    "Swatch_M_DoorCode_Trim",
+    "Swatch_M_DoorKey_Panel",
+    "Swatch_M_DoorKey_Trim",
+    "Swatch_M_DoorExit_Panel",
+    "Swatch_M_DoorExit_Trim",
+    "Swatch_M_ExitSign",
+    "Swatch_M_LaserPost",
+    "Swatch_M_LaserBeam",
+    "Swatch_M_LaserHalo",
+    "Swatch_M_FireOuter",
+    "Swatch_M_FireMid",
+    "Swatch_M_FireCore",
+    "Swatch_M_Scorch",
+    "Swatch_M_Steam",
+    "Swatch_M_ButtonBase",
+    "Swatch_M_ButtonCap_Neutral",
+    "Swatch_M_Gold",
+    "Swatch_M_ButtonCap_Pressed",
+    "Swatch_M_PanelDark",
+    "Swatch_M_Lever_Neutral",
+    "Swatch_M_KnobBlack",
+    "Swatch_M_SwitchToggle",
+    "Swatch_M_ValveWheel",
+    "Swatch_M_Keypad_Locked",
+    "Swatch_M_Keypad_Unlocked",
+    "Swatch_M_Bezel",
+    "Swatch_M_CodePanel_Screen",
+    "Swatch_M_BombBody",
+    "Swatch_M_Fuse",
+    "Swatch_M_Spark",
+    "Swatch_M_KeyGold",
+    "Swatch_M_CrackedWall",
+    "Swatch_M_Rubble",
+    "Swatch_M_PlayerA_Suit",
+    "Swatch_M_Skin",
+    "Swatch_M_Visor",
+    "Swatch_M_PlayerRing_A",
+    "Swatch_M_PlayerB_Suit",
+    "Swatch_M_PlayerRing_B",
+    "Swatch_M_DroneShell",
+    "Swatch_M_MetalLight",
+    "Swatch_M_DroneEye",
+    "Swatch_M_DroneHalo",
+    "Swatch_M_Glow_A",
+    "Swatch_M_Glow_B",
+    "Swatch_M_Glow_Both",
+    "Swatch_M_Glow_Info"
+   ],
+   "triangles": 33120,
+   "materials": [
+    "M_Bezel",
+    "M_BombBody",
+    "M_Book_1",
+    "M_Book_2",
+    "M_Book_3",
+    "M_Book_4",
+    "M_Book_5",
+    "M_Brass",
+    "M_ButtonBase",
+    "M_ButtonCap_Neutral",
+    "M_ButtonCap_Pressed",
+    "M_Chair",
+    "M_CodePanel_Screen",
+    "M_Copper",
+    "M_CrackedWall",
+    "M_CrateWood",
+    "M_DoorButton_Panel",
+    "M_DoorButton_Trim",
+    "M_DoorCode_Panel",
+    "M_DoorCode_Trim",
+    "M_DoorExit_Panel",
+    "M_DoorExit_Trim",
+    "M_DoorKey_Panel",
+    "M_DoorKey_Trim",
+    "M_DroneEye",
+    "M_DroneHalo",
+    "M_DroneShell",
+    "M_ExitSign",
+    "M_Fabric",
+    "M_FabricDark",
+    "M_FireCore",
+    "M_FireMid",
+    "M_FireOuter",
+    "M_FlaskGreen",
+    "M_FlaskPink",
+    "M_FloorGrout",
+    "M_Floor_Archive_A",
+    "M_Floor_Archive_B",
+    "M_Floor_Boiler_A",
+    "M_Floor_Boiler_B",
+    "M_Floor_Cafe_A",
+    "M_Floor_Cafe_B",
+    "M_Floor_Final_A",
+    "M_Floor_Final_B",
+    "M_Floor_Hallway_A",
+    "M_Floor_Hallway_B",
+    "M_Floor_Lab_A",
+    "M_Floor_Lab_B",
+    "M_Floor_Lobby_A",
+    "M_Floor_Lobby_B",
+    "M_Floor_Office_A",
+    "M_Floor_Office_B",
+    "M_Floor_Server_A",
+    "M_Floor_Server_B",
+    "M_Floor_Vault_A",
+    "M_Floor_Vault_B",
+    "M_Floor_Workshop_A",
+    "M_Floor_Workshop_B",
+    "M_Fuse",
+    "M_Glow_A",
+    "M_Glow_B",
+    "M_Glow_Both",
+    "M_Glow_Info",
+    "M_Gold",
+    "M_KeyGold",
+    "M_Keypad_Locked",
+    "M_Keypad_Unlocked",
+    "M_KnobBlack",
+    "M_LED_Amber",
+    "M_LED_Blue",
+    "M_LED_Green",
+    "M_LabBase",
+    "M_LabTop",
+    "M_Lamp_Green",
+    "M_Lamp_Red",
+    "M_LaserBeam",
+    "M_LaserHalo",
+    "M_LaserPost",
+    "M_Leaf",
+    "M_LeafLight",
+    "M_Lever_Neutral",
+    "M_MetalDark",
+    "M_MetalGrey",
+    "M_MetalGrey2",
+    "M_MetalLight",
+    "M_MetalTrim",
+    "M_MonitorBody",
+    "M_MonitorScreen",
+    "M_PaintRed",
+    "M_PanelDark",
+    "M_Pipe",
+    "M_PlayerA_Suit",
+    "M_PlayerB_Suit",
+    "M_PlayerRing_A",
+    "M_PlayerRing_B",
+    "M_RackBody",
+    "M_Rubble",
+    "M_Scorch",
+    "M_Skin",
+    "M_Spark",
+    "M_Steam",
+    "M_Stool",
+    "M_SwitchToggle",
+    "M_TableTop",
+    "M_Terracotta",
+    "M_ValveWheel",
+    "M_VendingBody",
+    "M_VendingGlass",
+    "M_Visor",
+    "M_Wall",
+    "M_WallCap",
+    "M_WallVoid",
+    "M_Water",
+    "M_Wood",
+    "M_WoodDark"
+   ]
+  }
+ ],
+ "audio": {
+  "SFX_click": "UI tap / keypad digit",
+  "SFX_clunk": "Door open/close, heavy latch",
+  "SFX_thunk": "Button press / switch toggle",
+  "SFX_buzz": "Wrong code / denied (keypad)",
+  "SFX_denied": "Locked / cannot interact",
+  "SFX_zap": "Lasers switching",
+  "SFX_hiss": "Fire extinguished (steam)",
+  "SFX_drain": "Water draining",
+  "SFX_boom": "Bombable wall explodes",
+  "SFX_chime": "Success: door unlocked / exit open",
+  "SFX_pickup": "Item picked up",
+  "SFX_alarm": "Boss drone caught you"
+ }
+}
