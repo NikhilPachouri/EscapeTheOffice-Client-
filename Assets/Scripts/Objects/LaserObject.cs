@@ -1,3 +1,4 @@
+using System.Linq;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
@@ -14,6 +15,8 @@ namespace EscapeOffice.Objects
         Renderer[] beamRenderers;
         MaterialPropertyBlock block;
         Color beamTint;
+        ParticleSystem[] sparks = new ParticleSystem[0];
+        bool wasOn, seen;
 
         protected override bool SolidFor(JToken value) => WorldState.Truthy(value);
 
@@ -52,6 +55,12 @@ namespace EscapeOffice.Objects
                     foreach (var l in beamModels[i].GetComponentsInChildren<Light>(true)) l.enabled = false;
             }
             for (int i = 0; i <= cells; i++) Art.Spawn("Laser_Post", transform, start + step * i, yaw);
+            var red = new Color(1f, 0.25f, 0.3f);
+            sparks = new[]
+            {
+                Fx3D.Sparks(transform, (Vector3)(start) + new Vector3(0f, 0f, -0.55f), red),
+                Fx3D.Sparks(transform, (Vector3)(start + step * cells) + new Vector3(0f, 0f, -0.55f), red),
+            }.Where(s => s != null).ToArray();
 
             body.enabled = false;
             beamRenderers = GetComponentsInChildren<Renderer>(true);
@@ -68,6 +77,16 @@ namespace EscapeOffice.Objects
             if (beamModels != null)
                 foreach (var m in beamModels)
                     if (m != null) Art.Find(m, "Beams")?.gameObject.SetActive(isSolid);
+            foreach (var s in sparks)
+            {
+                if (isSolid && !s.isPlaying) s.Play();
+                else if (!isSolid) s.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            }
+            // Switched off: a zap along the run.
+            if (seen && wasOn && !isSolid && Settled && sparks.Length > 0)
+                Fx3D.Burst(FxPoint(0.55f), new Color(1f, 0.3f, 0.35f), count: 10 + 4 * Mathf.Max(Def.W, Def.H), speed: 2.5f, size: 0.15f, life: 0.45f);
+            seen = true;
+            wasOn = isSolid;
         }
 
         protected override void Update()

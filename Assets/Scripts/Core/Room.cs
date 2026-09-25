@@ -126,8 +126,20 @@ namespace EscapeOffice
             Changed?.Invoke(this);
         }
 
+        bool waterSeen;
+
         void SetFlooded(bool flooded)
         {
+            // Drained (not on load): splashes and spray over the room.
+            if (waterSeen && IsFlooded && !flooded)
+                foreach (var r in Rects)
+                {
+                    var c = new Vector3(r.center.x, r.center.y, -0.2f);
+                    int n = Mathf.Clamp(Mathf.RoundToInt(r.width * r.height * 0.6f), 12, 60);
+                    Fx3D.Burst(c, new Color(0.45f, 0.75f, 1f), count: n, speed: Mathf.Max(r.width, r.height) * 0.6f, size: 0.2f, life: 0.9f);
+                    Fx3D.Puff(c, new Color(0.8f, 0.9f, 1f, 0.35f), count: n / 2, radius: Mathf.Min(r.width, r.height) * 0.4f, size: 0.8f, life: 1.5f, rise: 0.6f);
+                }
+            waterSeen = true;
             IsFlooded = flooded;
             foreach (var o in waterOverlays) o.enabled = flooded;
             foreach (var m in waterModels) m.SetActive(flooded);

@@ -34,6 +34,18 @@ namespace EscapeOffice
         // Level editor zoom; 1 = the prototype's framing.
         public float Zoom { get; set; } = 1f;
 
+        // Screen shake (explosions, getting caught). Applied on top of the follow position.
+        float shakeAmount, shakeUntil, shakeLength = 1f;
+        Vector3 shakeOffset;
+
+        public void Shake(float amount, float seconds)
+        {
+            if (Time.time < shakeUntil && amount < shakeAmount) return;
+            shakeAmount = amount;
+            shakeLength = Mathf.Max(0.01f, seconds);
+            shakeUntil = Time.time + seconds;
+        }
+
         void Awake()
         {
             cam = GetComponent<Camera>();
@@ -81,6 +93,7 @@ namespace EscapeOffice
             if (player.Debuffed) target = Mathf.Min(target, world.Debuff.Radius);
             radius = Mathf.Lerp(radius, target, 1f - Mathf.Exp(-radiusLerp * Time.deltaTime));
 
+            transform.position -= shakeOffset; // follow from the steady position
             var p = (Vector3)player.Position;
             if (perspective)
             {
@@ -97,6 +110,13 @@ namespace EscapeOffice
                 pos.z = -10f;
                 transform.position = pos;
             }
+
+            float left = shakeUntil - Time.time;
+            shakeOffset = left > 0f
+                ? new Vector3(Mathf.PerlinNoise(Time.time * 25f, 0f) - 0.5f, Mathf.PerlinNoise(0f, Time.time * 25f) - 0.5f, 0f)
+                  * (2f * shakeAmount * (left / shakeLength))
+                : Vector3.zero;
+            transform.position += shakeOffset;
 
             if (mask == null) return;
             mask.enabled = !gm.DebugNoFog;
@@ -129,6 +149,7 @@ namespace EscapeOffice
         {
             float scale = (GameManager.Instance.World != null ? GameManager.Instance.World.Camera.Radius / 8f : 1f) * Zoom;
             var offset = perspective ? new Vector3(0f, -Behind * scale, -Height * scale) : new Vector3(0f, 0f, -10f);
+            shakeOffset = Vector3.zero;
             transform.position = (Vector3)p + offset;
             if (perspective) transform.rotation = Quaternion.LookRotation(-offset, Vector3.up);
         }

@@ -26,7 +26,8 @@ namespace EscapeOffice
         Transform facing;
         // 3D: Player_A / Player_B from the asset pack, turned toward the walking direction.
         Transform model;
-        float yaw;
+        float yaw, walkPhase, lean;
+        int lastStep;
 
         public static PlayerController Spawn(Vector2 at, string side, Transform parent)
         {
@@ -57,6 +58,7 @@ namespace EscapeOffice
                 pc.model = model.transform;
                 pc.bodyRenderer.enabled = false;
                 pc.facing.GetComponent<SpriteRenderer>().enabled = false;
+                Fx3D.Motes(go.transform)?.Play(); // dust hanging in the air around you
             }
             return pc;
         }
@@ -104,18 +106,37 @@ namespace EscapeOffice
             if (canAct && Focus != null && (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Space) || UI.TouchControls.InteractPressed))
                 Focus.Interact();
 
-            if (model != null)
-            {
-                if (input.sqrMagnitude > 0.01f) yaw = Mathf.LerpAngle(yaw, Art.YawFor(input), Art.Smooth(14f));
-                model.localRotation = Art.Rotation(yaw);
-                // Debuffed: a sluggish wobble instead of the sprite tint.
-                float wobble = Debuffed ? Mathf.Sin(Time.time * 8f) * 0.06f : 0f;
-                model.localScale = new Vector3(1f + wobble, 1f - wobble, 1f + wobble);
-            }
+            if (model != null) AnimateModel();
 
             bodyRenderer.color = Debuffed
                 ? Color.Lerp(Palette.ForSide(gm.Side), Color.gray, 0.5f + 0.2f * Mathf.Sin(Time.time * 8f))
                 : Palette.ForSide(gm.Side);
+        }
+
+        // Walk cycle for the pack's static character: hop, lean into the move, dust at each step.
+        void AnimateModel()
+        {
+            bool moving = rb.linearVelocity.sqrMagnitude > 0.3f;
+            if (input.sqrMagnitude > 0.01f) yaw = Mathf.LerpAngle(yaw, Art.YawFor(input), Art.Smooth(14f));
+
+            float stepRate = 11f * (Debuffed ? debuffSpeedFactor : 1f);
+            if (moving) walkPhase += Time.deltaTime * stepRate;
+            else walkPhase = Mathf.Lerp(walkPhase, Mathf.Round(walkPhase / Mathf.PI) * Mathf.PI, Art.Smooth(12f));
+            lean = Mathf.Lerp(lean, moving ? 9f : 0f, Art.Smooth(8f));
+
+            float hop = Mathf.Abs(Mathf.Sin(walkPhase)) * 0.07f;
+            model.localPosition = new Vector3(0f, 0f, -hop); // up is -Z
+            model.localRotation = Art.Rotation(yaw) * Quaternion.Euler(lean, 0f, Mathf.Sin(walkPhase) * 3f);
+
+            // Debuffed: a sluggish wobble instead of the sprite tint.
+            float wobble = Debuffed ? Mathf.Sin(Time.time * 8f) * 0.06f : 0f;
+            model.localScale = new Vector3(1f + wobble, 1f - wobble, 1f + wobble);
+
+            int step = Mathf.FloorToInt(walkPhase / Mathf.PI);
+            if (moving && step != lastStep)
+                Fx3D.Puff(new Vector3(rb.position.x, rb.position.y, -0.05f), new Color(0.7f, 0.68f, 0.64f, 0.3f),
+                    count: 2, radius: 0.08f, size: 0.22f, life: 0.5f, rise: 0.15f);
+            lastStep = step;
         }
 
         WorldObject FindFocus(World world)

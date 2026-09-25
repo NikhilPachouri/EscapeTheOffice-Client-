@@ -12,6 +12,7 @@ namespace EscapeOffice.Objects
         public override string Prompt => "use bomb";
 
         protected override string ModelName => "BombableWall";
+        bool wasSolid, seen;
 
         protected override bool SolidFor(JToken value) => !WorldState.Truthy(value);
 
@@ -34,6 +35,18 @@ namespace EscapeOffice.Objects
             if (!HasModel) return;
             Art.Find(model, "Intact")?.gameObject.SetActive(isSolid);
             Art.Find(model, "Rubble")?.gameObject.SetActive(!isSolid);
+
+            // Blown up: fireball, a cloud of dust and grit, and the camera shakes.
+            if (seen && wasSolid && !isSolid && Settled)
+            {
+                Fx3D.Burst(FxPoint(0.6f), new Color(1f, 0.6f, 0.2f), count: 30, speed: 4.5f, size: 0.22f, life: 0.5f);
+                Fx3D.Burst(FxPoint(0.6f), new Color(1f, 0.9f, 0.6f), count: 12, speed: 2f, size: 0.35f, life: 0.25f);
+                Fx3D.Puff(FxPoint(0.4f), new Color(0.55f, 0.53f, 0.5f, 0.7f), count: 22, radius: 0.5f, size: 0.9f, life: 2f, rise: 0.7f);
+                Fx3D.Burst(FxPoint(0.5f), new Color(0.35f, 0.33f, 0.3f), count: 18, speed: 3.5f, size: 0.16f, life: 0.9f, additive: false);
+                GameManager.Instance.CameraRig.Shake(0.35f, 0.6f);
+            }
+            seen = true;
+            wasSolid = isSolid;
         }
 
         public override void Interact()

@@ -22,6 +22,7 @@ namespace EscapeOffice.Objects
         Transform leafL, leafR;
         Renderer lamp;
         float leafTarget = LeafClosed;
+        bool wasSolid, seen;
 
         protected override bool SolidFor(JToken value) => !WorldState.Truthy(value);
 
@@ -49,6 +50,18 @@ namespace EscapeOffice.Objects
             leafTarget = isSolid ? LeafClosed : LeafOpen;
             var lampMat = Art.Material(isSolid ? "M_Lamp_Red" : "M_Lamp_Green");
             if (lamp != null && lampMat != null) lamp.sharedMaterial = lampMat;
+
+            if (seen && wasSolid != isSolid && Settled && HasModel) OnDoorMoved(opened: !isSolid);
+            seen = true;
+            wasSolid = isSolid;
+        }
+
+        // Dust kicked up at the threshold, and a flash of the lamp's new colour.
+        protected virtual void OnDoorMoved(bool opened)
+        {
+            Fx3D.Puff(FxPoint(0.1f), new Color(0.75f, 0.72f, 0.68f, 0.45f), count: 8, radius: 0.4f, size: 0.35f, life: 0.9f, rise: 0.4f);
+            if (lamp != null)
+                Fx3D.Burst(lamp.transform.position, opened ? new Color(0.35f, 1f, 0.5f) : new Color(1f, 0.3f, 0.25f), count: 8, speed: 1.2f, size: 0.13f, life: 0.4f);
         }
 
         protected override void Update()

@@ -20,6 +20,7 @@ namespace EscapeOffice.Objects
         readonly List<Transform> flameParts = new List<Transform>();
         readonly List<Light> fireLights = new List<Light>();
         float flameScale = 1f;
+        ParticleSystem embers, smoke;
         bool wasBurning, visualInitialised;
 
         protected override bool SolidFor(JToken value) => WorldState.Truthy(value);
@@ -63,6 +64,8 @@ namespace EscapeOffice.Objects
                 }
             }
             body.enabled = false;
+            embers = Fx3D.Embers(transform, new Vector3(0f, 0f, -0.25f), Bounds.size);
+            smoke = Fx3D.Smoke(transform, new Vector3(0f, 0f, -0.9f), Bounds.size);
             return true;
         }
 
@@ -78,6 +81,12 @@ namespace EscapeOffice.Objects
                 else if (wasBurning && !isSolid) PuffSteam();
                 visualInitialised = true;
                 wasBurning = isSolid;
+                foreach (var ps in new[] { embers, smoke })
+                {
+                    if (ps == null) continue;
+                    if (isSolid && !ps.isPlaying) ps.Play();
+                    else if (!isSolid) ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+                }
             }
 
             if (isSolid && lightIndex < 0)
@@ -98,6 +107,8 @@ namespace EscapeOffice.Objects
             {
                 var puff = Art.Spawn("FX_SteamPuff", transform, (Vector2)g.parent.localPosition);
                 if (puff != null) StartCoroutine(Rise(puff.transform));
+                var at = transform.position + (Vector3)(Vector2)g.parent.localPosition + new Vector3(0f, 0f, -0.3f);
+                Fx3D.Puff(at, new Color(0.9f, 0.93f, 0.95f, 0.55f), count: 6, radius: 0.35f, size: 0.7f, life: 1.6f, rise: 1.2f);
             }
         }
 

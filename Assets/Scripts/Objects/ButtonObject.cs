@@ -105,6 +105,10 @@ namespace EscapeOffice.Objects
         public override void Interact()
         {
             GameManager.Instance.PlayLocal("click", transform.position);
+            // Sparks in the object's glow colour; the final button gets a bigger, golden one.
+            var at = cap != null ? cap.position : lever != null ? lever.position : wheel != null ? wheel.position : FxPoint(0.5f);
+            bool final = ModelName == "FinalButton";
+            Fx3D.Burst(at, final ? new Color(1f, 0.85f, 0.35f) : GlowColor, count: final ? 24 : 10, speed: final ? 2.5f : 1.5f, size: 0.15f, life: 0.5f);
             Show(!WorldState.Truthy(Value));
             Predict();
             SendInteract();

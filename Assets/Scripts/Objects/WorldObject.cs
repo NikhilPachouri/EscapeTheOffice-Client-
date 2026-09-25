@@ -54,6 +54,13 @@ namespace EscapeOffice.Objects
         protected bool HasModel => model != null;
         GameObject ring;
 
+        // Effects play only for changes after the world has loaded, not for the initial state.
+        float builtAt;
+        protected bool Settled => Time.time - builtAt > 0.4f;
+        protected Color GlowColor => Tag == Palette.Tag.None ? Color.white : Palette.ForTag(Tag);
+        // World point a little above the object's centre, for bursts.
+        protected Vector3 FxPoint(float height = 0.5f) => new Vector3(Bounds.center.x, Bounds.center.y, -height);
+
         Animator animator;
         float pendingUntil = -1f;
         float glowPhase;
@@ -69,6 +76,7 @@ namespace EscapeOffice.Objects
             if (Tag == Palette.Tag.None) Tag = DefaultTag;
             animator = GetComponentInChildren<Animator>();
             glowPhase = Random.value * 10f;
+            builtAt = Time.time;
 
             if (body == null)
                 body = SpriteFactory.Child(transform, "Body", SpriteFactory.Square, Color.white, Layers.Object,
@@ -164,6 +172,14 @@ namespace EscapeOffice.Objects
                 var c = glow.color;
                 c.a = (IsDim ? 0.25f : 0.8f) * pulse;
                 glow.color = c;
+            }
+
+            // Glow ring: slow turn and breathe.
+            if (ring != null && ring.activeSelf)
+            {
+                float t = Time.time + glowPhase;
+                ring.transform.localRotation = Art.Rotation(t * 25f);
+                ring.transform.localScale = Vector3.one * Mathf.Max(Bounds.width, Bounds.height) * (1f + Mathf.Sin(t * 2.5f) * 0.05f);
             }
         }
 

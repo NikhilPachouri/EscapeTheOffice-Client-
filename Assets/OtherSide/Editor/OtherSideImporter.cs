@@ -70,6 +70,7 @@ public class OtherSideImporter : AssetPostprocessor
 
         var mats = BuildMaterials((JObject)palette["materials"]);
         RemapModelMaterials(mats);
+        BuildFxMaterials();
         int prefabs = BuildPrefabs((JArray)manifest["assets"]);
         BuildCatalog((JArray)manifest["assets"]);
 
@@ -98,6 +99,27 @@ public class OtherSideImporter : AssetPostprocessor
             result[p.Name] = mat;
         }
         return result;
+    }
+
+    // Particle materials for EscapeOffice.Fx3D (soft dot, tinted by particle colour). Made here
+    // so their shaders ship with builds.
+    static void BuildFxMaterials()
+    {
+        var dot = AssetDatabase.LoadAssetAtPath<Texture2D>(Root + "/Textures/FX_SoftDot.png");
+        foreach (var (name, shader) in new[] { ("FX_Additive", "Legacy Shaders/Particles/Additive"), ("FX_Alpha", "Legacy Shaders/Particles/Alpha Blended") })
+        {
+            var path = $"{MaterialsDir}/{name}.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(Shader.Find(shader));
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.shader = Shader.Find(shader);
+            mat.mainTexture = dot;
+            mat.SetColor("_TintColor", new Color(0.5f, 0.5f, 0.5f, 0.5f)); // 2 × tint = particle colour as-is
+            EditorUtility.SetDirty(mat);
+        }
     }
 
     static Shader ShaderFor(string kind, bool textured)

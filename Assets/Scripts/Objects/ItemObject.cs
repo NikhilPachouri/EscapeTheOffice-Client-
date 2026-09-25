@@ -53,7 +53,39 @@ namespace EscapeOffice.Objects
             pickupArea = area;
         }
 
-        protected override void OnValue(JToken value) => Show(OnFloor(value));
+        Coroutine pickup;
+
+        protected override void OnValue(JToken value)
+        {
+            bool onFloor = OnFloor(value);
+            if (pickup != null)
+            {
+                if (!onFloor) return; // the animation hides it when done
+                StopCoroutine(pickup); // the server said no: put it back
+                pickup = null;
+                if (item != null) item.localScale = Vector3.one;
+            }
+            Show(onFloor);
+        }
+
+        // Pack: on pickup, rise and shrink over ~0.33 s, then hide.
+        System.Collections.IEnumerator PickUp()
+        {
+            var start = item.localPosition;
+            Fx3D.Burst(item.position, Type == "bomb" ? new Color(1f, 0.7f, 0.3f) : new Color(1f, 0.88f, 0.4f), count: 18, speed: 1.6f, size: 0.15f, life: 0.6f);
+            for (float t = 0f; t < 0.33f; t += Time.deltaTime)
+            {
+                float k = t / 0.33f;
+                item.localPosition = start + new Vector3(0f, 0.6f * k, 0f);
+                item.localScale = Vector3.one * (1f - k * k);
+                yield return null;
+            }
+            item.localScale = Vector3.one;
+            item.localPosition = itemRest;
+            pickup = null;
+            Show(false);
+            RefreshGlow();
+        }
 
         void Show(bool visible)
         {
@@ -67,7 +99,7 @@ namespace EscapeOffice.Objects
         protected override void Update()
         {
             base.Update();
-            if (item == null || !model.activeSelf) return;
+            if (item == null || !model.activeSelf || pickup != null) return;
             float t = Time.time + bobPhase;
             item.localPosition = itemRest + new Vector3(0f, Mathf.Sin(t * 2.5f) * 0.08f, 0f);
             item.localRotation = Quaternion.Euler(0f, t * 1.5f * Mathf.Rad2Deg, 0f);
@@ -76,7 +108,8 @@ namespace EscapeOffice.Objects
         public override void Interact()
         {
             GameManager.Instance.PlayLocal("pickup", transform.position);
-            Show(false);
+            if (item != null && model.activeSelf) pickup = StartCoroutine(PickUp());
+            else Show(false);
             Predict(1f);
             RefreshGlow();
             SendInteract();

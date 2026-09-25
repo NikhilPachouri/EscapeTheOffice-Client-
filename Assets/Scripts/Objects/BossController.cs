@@ -29,6 +29,7 @@ namespace EscapeOffice.Objects
         // 3D: Boss_Drone, facing where it flies; its Halo spins faster while chasing.
         protected override string ModelName => "Boss_Drone";
         Transform halo, hover;
+        Light eyeLight;
         float yaw, haloAngle;
 
         protected override void Build()
@@ -48,6 +49,7 @@ namespace EscapeOffice.Objects
             {
                 halo = Art.Find(model, "Halo");
                 hover = Art.Find(model, "Hover");
+                eyeLight = hover != null ? hover.GetComponentInChildren<Light>() : null;
                 eyes = new SpriteRenderer[0];
             }
             else
@@ -94,6 +96,8 @@ namespace EscapeOffice.Objects
                     cooldownUntil = Time.time + CatchCooldown;
                     player.ApplyDebuff(debuffSeconds);
                     GameManager.Instance.PlayLocal("caught", pos);
+                    Fx3D.Burst(new Vector3(target.x, target.y, -0.6f), new Color(1f, 0.25f, 0.2f), count: 26, speed: 3f, size: 0.18f, life: 0.6f);
+                    GameManager.Instance.CameraRig.Shake(0.25f, 0.45f);
                     GameManager.Instance.Toast("The boss caught you! You feel sluggish…");
                 }
                 rb.linearVelocity = (target - pos).normalized * chaseSpeed;
@@ -120,6 +124,8 @@ namespace EscapeOffice.Objects
             haloAngle += (chasing ? 6f : 2f) * Mathf.Rad2Deg * Time.deltaTime;
             if (halo != null) halo.localRotation = Quaternion.Euler(0f, haloAngle, 0f);
             if (hover != null) hover.localPosition = new Vector3(0f, 0.75f + Mathf.Sin(Time.time * 2f) * 0.08f, 0f);
+            // Eye light pulses red while chasing.
+            if (eyeLight != null) eyeLight.intensity = chasing ? 1.2f + Mathf.Sin(Time.time * 12f) * 0.7f : 0.9f;
         }
     }
 }

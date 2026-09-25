@@ -20,6 +20,7 @@ namespace EscapeOffice.Objects
         protected override string ModelName => "Keypad";
         protected override float ModelYaw => Art.WallYaw(World, Def.X, Def.Y);
         Renderer screen;
+        bool wasSolved, seen;
 
         protected override void Build()
         {
@@ -40,6 +41,10 @@ namespace EscapeOffice.Objects
             if (led != null) led.color = solved ? new Color(0.2f, 1f, 0.3f) : new Color(1f, 0.2f, 0.2f);
             var mat = Art.Material(solved ? "M_Keypad_Unlocked" : "M_Keypad_Locked");
             if (screen != null && mat != null) screen.sharedMaterial = mat;
+            if (seen && solved && !wasSolved && Settled && screen != null)
+                Fx3D.Burst(screen.bounds.center, new Color(0.4f, 1f, 0.55f), count: 16, speed: 1.8f, size: 0.13f, life: 0.6f);
+            seen = true;
+            wasSolved = solved;
         }
 
         public override void Interact() => GameManager.Instance.UI.OpenKeypad(this);
