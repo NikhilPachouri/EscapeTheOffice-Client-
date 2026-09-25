@@ -8,9 +8,10 @@
     "fogAlpha": 0.965
   },
   "camera": {
-    "height": 20,
-    "behind": 9,
-    "fov": 40
+    "height": 12.325,
+    "behind": 8.374,
+    "fov": 40,
+    "yaw": 0
   },
   "grading": {
     "saturation": 1.0,
