@@ -15,9 +15,11 @@ namespace EscapeOffice.Objects
         {
             get
             {
-                var fromData = Def.Get<string>("code");
-                if (!string.IsNullOrEmpty(fromData)) return fromData;
-                return Value != null && Value.Type != JTokenType.Null && Value.Type != JTokenType.Boolean ? Value.ToString() : "????";
+                // The live value of the key we read (state["code_A1"] = "4821"); `code` in the
+                // object data names a state key, so it is looked up too, never shown as-is.
+                var state = GameManager.Instance.State;
+                var v = Value ?? state.Get(Def.Get<string>("code"));
+                return v != null && v.Type != JTokenType.Null && v.Type != JTokenType.Boolean ? v.ToString() : "????";
             }
         }
 
