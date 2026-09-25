@@ -29,6 +29,8 @@ namespace EscapeOffice
         public CameraRig CameraRig { get; private set; }
         public FxPlayer Fx { get; private set; }
         public GameUI UI { get; private set; }
+        public VoiceChat Voice { get; private set; }
+        string serverUrl;
 
         public bool InputEnabled => Current == Phase.Playing && !UI.IsModal && !(EditorOpen && GUIUtility.keyboardControl != 0);
         // Level editor: open (no fog, no clip) and "keep the player where they are on the next world".
@@ -79,6 +81,7 @@ namespace EscapeOffice
             gameObject.AddComponent<DebugOverlay>();
             gameObject.AddComponent<LevelEditor>();
             gameObject.AddComponent<TouchControls>();
+            Voice = gameObject.AddComponent<VoiceChat>();
 
             var cam = Camera.main;
             if (cam == null)
@@ -98,6 +101,7 @@ namespace EscapeOffice
         {
             Leave();
             RoomCode = code.Trim().ToUpperInvariant();
+            serverUrl = url;
 
             connection = gameObject.AddComponent<GameConnection>();
             Attach(connection);
@@ -126,6 +130,7 @@ namespace EscapeOffice
 
         public void Leave()
         {
+            Voice.Stop();
             if (link != null)
             {
                 link.MessageReceived -= OnMessage;
@@ -164,6 +169,7 @@ namespace EscapeOffice
                         PlayerPrefs.SetString(PrefLastCode, RoomCode);
                         PlayerPrefs.SetString(PrefLastToken, a.Token);
                         PlayerPrefs.Save();
+                        Voice.Begin(serverUrl, RoomCode, a.Token); // no-op if already on this slot
                     }
                     if (Current != Phase.Playing) Current = Phase.Waiting;
                     break;
