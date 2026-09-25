@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace EscapeOffice.UI
 {
-    // F1: current state keys and the last few messages. F2: toggle the vision mask.
+    // Three-finger tap (F1): state keys and the last few messages. Four-finger tap (F2): vision mask.
     // Offline, clicking a boolean key flips it locally (online the server owns state).
     public class DebugOverlay : MonoBehaviour
     {
@@ -15,6 +15,9 @@ namespace EscapeOffice.UI
 
         void Update()
         {
+            // Phones: three-finger tap toggles the overlay, four-finger tap the vision mask.
+            if (Input.touchCount == 3 && Input.GetTouch(2).phase == TouchPhase.Began) visible = !visible;
+            if (Input.touchCount == 4 && Input.GetTouch(3).phase == TouchPhase.Began) GameManager.Instance.DebugNoFog = !GameManager.Instance.DebugNoFog;
             if (Input.GetKeyDown(KeyCode.F1)) visible = !visible;
             if (Input.GetKeyDown(KeyCode.F2)) GameManager.Instance.DebugNoFog = !GameManager.Instance.DebugNoFog;
         }
@@ -33,7 +36,7 @@ namespace EscapeOffice.UI
 
             GUILayout.BeginArea(new Rect(area.x + 8, area.y + 6, area.width - 16, area.height - 12));
             var room = gm.Player != null ? gm.Player.GetComponent<RoomTracker>().Current : null;
-            GUILayout.Label($"<b>side</b> {gm.Side}   <b>phase</b> {gm.Current}   <b>room</b> {room?.Id ?? "-"}   <b>fog</b> {(gm.DebugNoFog ? "off" : "on")} (F2)", mono);
+            GUILayout.Label($"<b>side</b> {gm.Side}   <b>phase</b> {gm.Current}   <b>room</b> {room?.Id ?? "-"}   <b>fog</b> {(gm.DebugNoFog ? "off" : "on")} (4-finger tap)", mono);
             if (gm.Player != null)
                 GUILayout.Label($"<b>pos</b> tile {Mathf.FloorToInt(gm.Player.Position.x)},{gm.World.Height - 1 - Mathf.FloorToInt(gm.Player.Position.y)}   <b>focus</b> {gm.Player.Focus?.Id ?? "-"}", mono);
 

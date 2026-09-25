@@ -65,6 +65,12 @@ namespace EscapeOffice
             Instance = this;
             Application.runInBackground = true; // two clients side by side on one machine
             Application.targetFrameRate = 60;
+            // Landscape only, either way up (also set in Player Settings; this survives settings churn).
+            Screen.autorotateToPortrait = false;
+            Screen.autorotateToPortraitUpsideDown = false;
+            Screen.autorotateToLandscapeLeft = true;
+            Screen.autorotateToLandscapeRight = true;
+            Screen.orientation = ScreenOrientation.AutoRotation;
 
             World = new GameObject("WorldRoot").AddComponent<World>();
             World.transform.SetParent(transform, false);
@@ -72,6 +78,7 @@ namespace EscapeOffice
             UI = gameObject.AddComponent<GameUI>();
             gameObject.AddComponent<DebugOverlay>();
             gameObject.AddComponent<LevelEditor>();
+            gameObject.AddComponent<TouchControls>();
 
             var cam = Camera.main;
             if (cam == null)

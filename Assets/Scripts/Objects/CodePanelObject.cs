@@ -3,13 +3,12 @@ using UnityEngine;
 
 namespace EscapeOffice.Objects
 {
-    // Shows a generated 4-digit code that the other player needs. The code is either in the
-    // object's data (`code`) or in the state key it reads. Reading it is purely client-side.
+    // Wall plaque: one digit (state[key]) on a plate in its `color` (red/green/blue/yellow).
+    // Not interactable; self-lit so it stays readable in a dark room. Older levels put a whole
+    // code under the key, which shows too.
     public class CodePanelObject : WorldObject
     {
-        public override bool Interactable => true;
-        protected override Palette.Tag DefaultTag => Palette.Tag.Info;
-        public override string Prompt => "read";
+        Color Plate => Palette.ForName(Def.Color);
 
         public string Code
         {
@@ -17,9 +16,9 @@ namespace EscapeOffice.Objects
             {
                 // The live value of the key we read (state["code_A1"] = "4821"); `code` in the
                 // object data names a state key, so it is looked up too, never shown as-is.
-                var state = GameManager.Instance.State;
-                var v = Value ?? state.Get(Def.Get<string>("code"));
-                return v != null && v.Type != JTokenType.Null && v.Type != JTokenType.Boolean ? v.ToString() : "????";
+                var v = Value ?? GameManager.Instance.State.Get(Def.Get<string>("code"));
+                if (v != null && v.Type != JTokenType.Null && v.Type != JTokenType.Boolean) return v.ToString();
+                return Def.Get<string>("digit") ?? "?"; // authored offline fallback
             }
         }
 
@@ -29,15 +28,25 @@ namespace EscapeOffice.Objects
 
         protected override void Build()
         {
+            World.Lights.Add(new Vector3(Bounds.center.x, Bounds.center.y, 1.2f)); // self-lit
             if (HasModel)
             {
                 BuildScreenText();
                 return;
             }
-            SetBodyColor(new Color(0.1f, 0.2f, 0.15f));
-            body.transform.localScale = Bounds.size * 0.8f;
-            SpriteFactory.Child(transform, "Screen", SpriteFactory.Square, new Color(0.3f, 1f, 0.5f, 0.8f), Layers.ObjectTop,
-                scale: Bounds.size * 0.55f);
+            SetBodyColor(Plate);
+            body.transform.localScale = Bounds.size * 0.85f;
+            var go = new GameObject("CodeText");
+            go.transform.SetParent(transform, false);
+            text = go.AddComponent<TextMesh>();
+            text.font = Art.Catalog != null && Art.Catalog.codeFont != null ? Art.Catalog.codeFont : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.fontSize = 64;
+            text.characterSize = 0.1f;
+            text.anchor = TextAnchor.MiddleCenter;
+            text.color = Plate.grayscale > 0.6f ? Color.black : Color.white;
+            var mr = go.GetComponent<MeshRenderer>();
+            mr.sharedMaterial = text.font.material;
+            mr.sortingOrder = Layers.ObjectTop;
         }
 
         // Pack: text on CodeText_Anchor in Chakra Petch Bold, #8ef0b0.
@@ -57,7 +66,7 @@ namespace EscapeOffice.Objects
             text.characterSize = 0.02f;
             text.anchor = TextAnchor.MiddleCenter;
             text.alignment = TextAlignment.Center;
-            text.color = Palette.Info;
+            text.color = Plate; // digit glows in the plate colour
             go.GetComponent<MeshRenderer>().sharedMaterial = font.material;
         }
 
@@ -66,7 +75,5 @@ namespace EscapeOffice.Objects
             base.Update();
             if (text != null && text.text != Code) text.text = Code;
         }
-
-        public override void Interact() => GameManager.Instance.UI.ShowCode(this);
     }
 }

@@ -13,7 +13,9 @@ namespace EscapeOffice.Objects
         public override bool CanInteractNow => !WorldState.Truthy(Value);
         protected override string DefaultAction => "submit";
         public override string Prompt => "enter code";
-        public int CodeLength => Def.Get("length", 4);
+        // Colour sequence to read the partner's panels in (server-derived); never the digits.
+        public string[] Order => Def.Get<string[]>("order");
+        public int CodeLength => Order?.Length ?? Def.Get("length", 4);
 
         protected override string ModelName => "Keypad";
         protected override float ModelYaw => Art.WallYaw(World, Def.X, Def.Y);

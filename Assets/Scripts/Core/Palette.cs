@@ -44,6 +44,19 @@ namespace EscapeOffice
             }
         }
 
+        // Code panel plate colours.
+        public static Color ForName(string name)
+        {
+            switch ((name ?? "").ToLowerInvariant())
+            {
+                case "red": return new Color(0.9f, 0.2f, 0.2f);
+                case "green": return new Color(0.2f, 0.8f, 0.3f);
+                case "blue": return new Color(0.2f, 0.45f, 1f);
+                case "yellow": return new Color(1f, 0.85f, 0.2f);
+                default: return Info;
+            }
+        }
+
         public static Color ForSide(string side) => side == "B" ? SideB : SideA;
 
         // Colorblind support: each glow colour also gets a shape (▲ ● ◆ ✱ in the asset pack).

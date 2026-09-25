@@ -99,12 +99,12 @@ namespace EscapeOffice
             var gm = GameManager.Instance;
             bool canAct = gm.InputEnabled;
 
-            input = canAct ? new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")) : Vector2.zero;
+            input = canAct ? new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")) + UI.TouchControls.Move : Vector2.zero;
             if (input.sqrMagnitude > 1f) input.Normalize();
             if (input.sqrMagnitude > 0.01f) facing.localPosition = input.normalized * Radius * 0.6f;
 
             Focus = FindFocus(gm.World);
-            if (canAct && Focus != null && (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Space)))
+            if (canAct && Focus != null && (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Space) || UI.TouchControls.InteractPressed))
                 Focus.Interact();
 
             if (model != null)

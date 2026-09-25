@@ -167,15 +167,6 @@ namespace EscapeOffice.UI
             if (!string.IsNullOrEmpty(gm.Status) && !gm.Offline)
                 GUI.Label(new Rect(w - 412, 12, 400, 26), gm.Status, new GUIStyle(small) { alignment = TextAnchor.UpperRight, normal = { textColor = new Color(1f, 0.7f, 0.4f) } });
 
-            // Interaction prompt.
-            if (gm.Current == GameManager.Phase.Playing && !IsModal && player != null && player.Focus != null)
-            {
-                var f = player.Focus;
-                string text = $"[E]  {f.Prompt}";
-                Fill(new Rect(w / 2 - 160, h - 110, 320, 40), new Color(0, 0, 0, 0.6f));
-                GUI.Label(new Rect(w / 2 - 160, h - 110, 320, 40), text, new GUIStyle(label) { alignment = TextAnchor.MiddleCenter });
-            }
-
             if (toast != null && Time.time < toastUntil)
             {
                 var c = GUI.color;
@@ -227,16 +218,31 @@ namespace EscapeOffice.UI
             Fill(new Rect(r.x + 20, r.y + 46, r.width - 40, 80), new Color(0.05f, 0.1f, 0.06f));
             GUI.Label(new Rect(r.x + 20, r.y + 46, r.width - 40, 80), typed.PadRight(length, '_'), new GUIStyle(digits) { normal = { textColor = new Color(0.4f, 1f, 0.5f) } });
 
+            var order = keypad.Order;
+            if (order != null && order.Length > 0)
+            {
+                float sw = (r.width - 40) / order.Length;
+                GUI.Label(new Rect(r.x, r.y - 72, r.width, 20), "ENTER IN ORDER", new GUIStyle(small) { alignment = TextAnchor.MiddleCenter });
+                Fill(new Rect(r.x, r.y - 52, r.width, 52), new Color(0.12f, 0.13f, 0.15f, 0.97f));
+                for (int i = 0; i < order.Length; i++)
+                {
+                    var cell = new Rect(r.x + 20 + i * sw + 3, r.y - 48, sw - 6, 22);
+                    Fill(cell, Palette.ForName(order[i]));
+                    GUI.Label(new Rect(cell.x, cell.yMax, cell.width, 22), order[i], new GUIStyle(small) { alignment = TextAnchor.MiddleCenter });
+                }
+            }
+
             float bx = r.x + 30, by = r.y + 140, bw = 90, bh = 58, gap = 5;
             for (int i = 0; i < 9; i++)
                 if (GUI.Button(new Rect(bx + (i % 3) * (bw + gap), by + (i / 3) * (bh + gap), bw, bh), (i + 1).ToString(), button) && typed.Length < length)
                     typed += (i + 1);
-            if (GUI.Button(new Rect(bx, by + 3 * (bh + gap), bw, bh), "C", button)) typed = "";
+            if (GUI.Button(new Rect(bx, by + 3 * (bh + gap), bw, bh), "DEL", button) && typed.Length > 0) typed = typed.Substring(0, typed.Length - 1);
             if (GUI.Button(new Rect(bx + bw + gap, by + 3 * (bh + gap), bw, bh), "0", button) && typed.Length < length) typed += "0";
             GUI.enabled = typed.Length == length;
             if (GUI.Button(new Rect(bx + 2 * (bw + gap), by + 3 * (bh + gap), bw, bh), "OK", button)) SubmitKeypad();
             GUI.enabled = true;
-            GUI.Label(new Rect(r.x, r.yMax - 32, r.width, 24), "digits · Enter submit · Esc close", new GUIStyle(small) { alignment = TextAnchor.MiddleCenter });
+            GUI.Label(new Rect(r.x, r.yMax - 32, r.width, 24), "Tap the digits, then OK", new GUIStyle(small) { alignment = TextAnchor.MiddleCenter });
+            if (GUI.Button(new Rect(r.xMax - 46, r.y + 8, 38, 34), "X", button)) keypad = null;
         }
 
         void SubmitKeypad()
