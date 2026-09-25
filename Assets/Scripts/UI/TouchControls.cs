@@ -30,6 +30,8 @@ namespace EscapeOffice.UI
         float ButtonRadius => Screen.height * ButtonFraction;
         Vector2 StickHome => new Vector2(StickRadius * 1.7f, StickRadius * 1.7f);
         Vector2 ButtonCenter => new Vector2(Screen.width - ButtonRadius * 1.9f, ButtonRadius * 1.9f);
+        Vector2 TalkCenter => ButtonCenter + new Vector2(0f, ButtonRadius * 2.5f);
+        bool OnTalk(Vector2 p) => Vector2.Distance(p, TalkCenter) < ButtonRadius * 0.9f * 1.3f;
 
         void Awake()
         {
@@ -58,11 +60,19 @@ namespace EscapeOffice.UI
             if (!enabledHere) return;
 
             var gm = GameManager.Instance;
+            Net.VoiceChat.TalkHeld = false;
             if (gm == null || !gm.InputEnabled) { stickFinger = -1; return; }
+            bool voice = gm.Voice != null && gm.Voice.Active;
 
             for (int i = 0; i < Input.touchCount + (MouseTouch(out _) ? 1 : 0); i++)
             {
                 var t = i < Input.touchCount ? Input.GetTouch(i) : Mouse();
+                // Hold to talk: any finger resting on the TALK button.
+                if (voice && t.fingerId != stickFinger && OnTalk(t.position) && t.phase != TouchPhase.Ended && t.phase != TouchPhase.Canceled)
+                {
+                    Net.VoiceChat.TalkHeld = true;
+                    continue;
+                }
                 switch (t.phase)
                 {
                     case TouchPhase.Began:
@@ -109,6 +119,7 @@ namespace EscapeOffice.UI
             var side = Palette.ForSide(gm.Side);
             DrawStick(side);
             DrawButton(gm, side);
+            if (gm.Voice != null && gm.Voice.Active) DrawTalk(gm, side);
         }
 
         void DrawStick(Color side)
@@ -140,6 +151,23 @@ namespace EscapeOffice.UI
             Draw(shadow, knobPos + new Vector2(0, -kr * 0.18f), kr * 1.4f, new Color(0, 0, 0, 0.6f * alpha));
             Draw(knob, knobPos, kr, new Color(side.r, side.g, side.b, alpha));
             Draw(ring, knobPos, kr, new Color(1, 1, 1, 0.35f * alpha));
+        }
+
+        void DrawTalk(GameManager gm, Color side)
+        {
+            var v = gm.Voice;
+            bool live = v.Talking;
+            var c = TalkCenter;
+            float r = ButtonRadius * 0.9f * (live ? 1.08f : 1f);
+            var accent = v.Connected ? side : new Color(1, 1, 1, 0.3f);
+            if (live) Draw(SpriteFactory.Glow.texture, c, r * 1.9f, new Color(side.r, side.g, side.b, 0.55f));
+            Draw(shadow, c + new Vector2(0, -r * 0.08f), r * 1.25f, new Color(0, 0, 0, 0.5f));
+            Draw(disc, c, r, new Color(Base.r, Base.g, Base.b, live ? 0.9f : 0.6f));
+            if (live) Draw(disc, c, r, new Color(side.r, side.g, side.b, 0.35f));
+            Draw(ring, c, r, new Color(accent.r, accent.g, accent.b, live ? 1f : 0.6f));
+            label.fontSize = Mathf.RoundToInt(r * 0.3f);
+            label.normal.textColor = v.Connected ? Ink : new Color(1, 1, 1, 0.4f);
+            GUI.Label(ScreenRect(c, r * 0.85f), live ? "LIVE" : v.Connected ? "TALK" : "…", label);
         }
 
         void DrawButton(GameManager gm, Color side)

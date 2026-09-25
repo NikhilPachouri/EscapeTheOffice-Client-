@@ -165,6 +165,20 @@ namespace EscapeOffice.UI
                 GUI.Button(new Rect(270, 12, 150, 44), $"Play side {(gm.Side == "A" ? "B" : "A")}", button))
                 gm.SwitchSide();
 
+            // Voice: partner speaking indicator and mute for incoming audio, top-right.
+            var voice = gm.Voice;
+            if (voice != null && voice.Active)
+            {
+                var vr = new Rect(w - 232, 44, 220, 44);
+                Fill(vr, new Color(0, 0, 0, 0.55f));
+                bool speaking = voice.PartnerSpeaking && !voice.MuteIncoming;
+                var dot = new Rect(vr.x + 12, vr.y + 16, 12, 12);
+                Fill(dot, speaking ? Palette.ForSide(gm.Side == "A" ? "B" : "A") * (0.7f + 0.3f * Mathf.Sin(Time.time * 12f)) : new Color(1, 1, 1, 0.2f));
+                GUI.Label(new Rect(vr.x + 30, vr.y, 110, vr.height), voice.Connected ? (speaking ? "Partner speaking" : "Voice on") : voice.Status, new GUIStyle(small) { alignment = TextAnchor.MiddleLeft });
+                if (GUI.Button(new Rect(vr.xMax - 78, vr.y + 6, 70, 32), voice.MuteIncoming ? "Unmute" : "Mute", new GUIStyle(button) { fontSize = 14 }))
+                    voice.MuteIncoming = !voice.MuteIncoming;
+            }
+
             if (player != null && player.Debuffed)
                 GUI.Label(new Rect(12, 126, 300, 24), $"Sluggish… {player.DebuffRemaining:0}s", new GUIStyle(label) { normal = { textColor = new Color(1f, 0.5f, 0.4f) } });
 
