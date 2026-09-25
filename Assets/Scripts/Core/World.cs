@@ -197,11 +197,13 @@ namespace EscapeOffice
             sun.type = LightType.Directional;
             // From the south and a little west, so shadows fall away from the camera.
             sun.transform.rotation = Quaternion.LookRotation(new Vector3(0.35f, 0.55f, 1f));
-            sun.color = new Color(1f, 0.96f, 0.9f);
-            sun.intensity = 0.6f;
+            // Warm key light against cool shadows: the colour contrast that keeps it from looking flat.
+            sun.color = new Color(1f, 0.9f, 0.76f);
+            sun.intensity = 0.68f;
             sun.shadows = LightShadows.Soft;
+            sun.shadowStrength = 0.75f;
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.3f, 0.32f, 0.36f);
+            RenderSettings.ambientLight = new Color(0.26f, 0.3f, 0.4f);
         }
 
         string ThemeAt(Vector2 p)

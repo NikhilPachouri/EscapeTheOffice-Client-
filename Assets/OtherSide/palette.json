@@ -7,169 +7,169 @@
  },
  "materials": {
   "M_Wall": {
-   "baseColor": "#8d97a3",
+   "baseColor": "#857f8c",
    "metallic": 0.05,
    "roughness": 0.95,
    "shader": "Lit"
   },
   "M_WallCap": {
-   "baseColor": "#aab4bf",
+   "baseColor": "#d3ccc1",
    "metallic": 0.05,
    "roughness": 0.6,
    "shader": "Lit"
   },
   "M_WallVoid": {
-   "baseColor": "#1c222a",
+   "baseColor": "#14171c",
    "metallic": 0.05,
    "roughness": 0.95,
    "shader": "Lit",
    "note": "Wall cells not touching floor (drawn low, 0.2 m)"
   },
   "M_FloorGrout": {
-   "baseColor": "#14181d",
+   "baseColor": "#101318",
    "metallic": 0.05,
    "roughness": 0.8,
    "shader": "Lit"
   },
   "M_Floor_Lobby_A": {
-   "baseColor": "#7a6250",
+   "baseColor": "#9a6a4b",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Lobby_B": {
-   "baseColor": "#735b4a",
+   "baseColor": "#8c5f43",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Office_A": {
-   "baseColor": "#3c5364",
+   "baseColor": "#3f6a8a",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Office_B": {
-   "baseColor": "#394f5f",
+   "baseColor": "#3a6180",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Archive_A": {
-   "baseColor": "#5b5243",
+   "baseColor": "#7a6a45",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Archive_B": {
-   "baseColor": "#564d3f",
+   "baseColor": "#6f603e",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Workshop_A": {
-   "baseColor": "#5b5d60",
+   "baseColor": "#4f6b6b",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Workshop_B": {
-   "baseColor": "#55575a",
+   "baseColor": "#486262",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Vault_A": {
-   "baseColor": "#464a55",
+   "baseColor": "#4d4868",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Vault_B": {
-   "baseColor": "#40444e",
+   "baseColor": "#46415f",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Lab_A": {
-   "baseColor": "#c9d2d8",
+   "baseColor": "#b8d3cd",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Lab_B": {
-   "baseColor": "#b6c0c7",
+   "baseColor": "#a8c5bf",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Server_A": {
-   "baseColor": "#2b3542",
+   "baseColor": "#24344f",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Server_B": {
-   "baseColor": "#323e4d",
+   "baseColor": "#2b3d5c",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Boiler_A": {
-   "baseColor": "#5b4636",
+   "baseColor": "#7a4630",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Boiler_B": {
-   "baseColor": "#523f31",
+   "baseColor": "#6e3f2b",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Cafe_A": {
-   "baseColor": "#b89a7c",
+   "baseColor": "#d8c3a0",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Cafe_B": {
-   "baseColor": "#6f5646",
+   "baseColor": "#a2553f",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Hallway_A": {
-   "baseColor": "#4c5158",
+   "baseColor": "#5b5a66",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Hallway_B": {
-   "baseColor": "#474c52",
+   "baseColor": "#54535e",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Final_A": {
-   "baseColor": "#3e5144",
+   "baseColor": "#2f6b4f",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Floor_Final_B": {
-   "baseColor": "#394a3e",
+   "baseColor": "#2a6047",
    "metallic": 0.05,
    "roughness": 0.85,
    "shader": "Lit"
   },
   "M_Water": {
-   "baseColor": "#2f7fb8",
+   "baseColor": "#2f8fd0",
    "metallic": 0.1,
    "roughness": 0.15,
    "opacity": 0.78,
    "shader": "Lit / Transparent",
-   "note": "Animate: UV scroll / vertex bob \u00b10.03 m. Room is impassable while flooded."
+   "note": "Animate: UV scroll / vertex bob ±0.03 m. Room is impassable while flooded."
   },
   "M_Wood": {
    "baseColor": "#9b7a5c",
@@ -494,7 +494,7 @@
    "roughness": 1,
    "opacity": 0.85,
    "shader": "Unlit / Additive (URP Particles/Unlit, Blend Additive)",
-   "note": "Flicker opacity 0.75 \u00b1 0.2 at ~6 Hz"
+   "note": "Flicker opacity 0.75 ± 0.2 at ~6 Hz"
   },
   "M_LaserHalo": {
    "baseColor": "#ff2a4a",

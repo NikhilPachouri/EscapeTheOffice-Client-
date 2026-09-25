@@ -56,6 +56,7 @@ namespace EscapeOffice
                 cam.fieldOfView = Fov;
                 cam.nearClipPlane = 0.5f;
                 cam.farClipPlane = 200f;
+                if (GetComponent<ColorGrading>() == null) gameObject.AddComponent<ColorGrading>();
             }
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = Color.black;
