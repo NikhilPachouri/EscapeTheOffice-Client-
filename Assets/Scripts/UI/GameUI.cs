@@ -92,9 +92,6 @@ namespace EscapeOffice.UI
             GUI.Label(new Rect(cx - 300, y + 60, 600, 30), "Two sides. One building. Talk to each other.", new GUIStyle(label) { alignment = TextAnchor.MiddleCenter });
 
             y += 130;
-            GUI.Label(new Rect(cx - 200, y, 400, 26), "Server", label);
-            url = GUI.TextField(new Rect(cx - 200, y + 26, 400, 36), url, field);
-            y += 80;
             if (GUI.Button(new Rect(cx - 200, y, 400, 44), "Create a room", button)) gm.Create(url);
             GUI.Label(new Rect(cx - 200, y + 46, 400, 22), "You get a code to read out to your partner.", new GUIStyle(label) { alignment = TextAnchor.MiddleCenter });
             y += 90;
