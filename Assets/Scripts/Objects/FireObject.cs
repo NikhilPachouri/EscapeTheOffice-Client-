@@ -5,7 +5,8 @@ using UnityEngine;
 namespace EscapeOffice.Objects
 {
     // Wall on its tiles while burning (key true). Placed in the level, only ever put out.
-    // Casts light beyond its tiles, so it is visible before it is inside the camera radius.
+    // Casts light beyond its tiles, so in a dark room it shows past the flashlight radius
+    // (never beyond the normal vision radius; see CameraRig).
     public class FireObject : Blocker
     {
         const float LightRadius = 2.5f;

@@ -4,7 +4,8 @@ namespace EscapeOffice
 {
     // Follows the player. A mask darkens everything beyond the vision radius, which shrinks to
     // the dark-room radius when the lights are off and further while the boss debuff lasts.
-    // Burning fire punches extra holes so it is visible from further away.
+    // Self-lit objects (fire, code panels) punch extra holes, clipped to the lights-on radius
+    // around the player so they never show through the fog from across the map.
     //
     // With the 3D asset pack the camera is the prototype's: perspective, 22 m above and 8 m
     // behind the player (scaled with the vision radius), and the mask becomes a quad hovering
@@ -29,6 +30,7 @@ namespace EscapeOffice
         static readonly int LightCountId = Shader.PropertyToID("_LightCount");
         static readonly int ColorId = Shader.PropertyToID("_Color");
         static readonly int ProjectId = Shader.PropertyToID("_Project");
+        static readonly int ReachId = Shader.PropertyToID("_Reach");
 
         bool perspective;
         // Level editor zoom; 1 = the prototype's framing.
@@ -134,6 +136,7 @@ namespace EscapeOffice
             }
 
             maskMaterial.SetVector(CenterId, new Vector4(p.x, p.y, radius, softness));
+            maskMaterial.SetFloat(ReachId, settings.Radius);
             int n = 0;
             foreach (var l in world.Lights)
             {
@@ -165,5 +168,7 @@ namespace EscapeOffice
         }
 
         public Camera Camera => cam;
+        // Current (lerped) vision radius on the floor, in tiles.
+        public float VisionRadius => radius;
     }
 }

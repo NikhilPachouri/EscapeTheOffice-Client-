@@ -64,6 +64,7 @@ namespace EscapeOffice.Objects
         Animator animator;
         float pendingUntil = -1f;
         float glowPhase;
+        bool inSight = true;
 
         public void Init(World world, ObjectDef def)
         {
@@ -142,11 +143,13 @@ namespace EscapeOffice.Objects
 
         protected virtual void OnValue(JToken value) { }
 
-        // Glows are hidden in dark rooms so players find interactables with the flashlight.
+        // Glows are hidden in dark rooms so players find interactables with the flashlight, and
+        // beyond the vision radius: they are the brightest thing in the scene and would otherwise
+        // show through the fog (which is not fully opaque) from across the map.
         public void RefreshGlow()
         {
             if (glow == null) return;
-            bool visible = ShowGlow && !World.IsDarkAt(this);
+            bool visible = ShowGlow && !World.IsDarkAt(this) && inSight;
             glow.enabled = visible;
             if (icon != null) icon.enabled = visible;
             if (ring != null) ring.SetActive(visible);
@@ -157,6 +160,14 @@ namespace EscapeOffice.Objects
         protected void Predict(float seconds = 0.6f) => pendingUntil = Time.time + seconds;
         protected bool IsPending => pendingUntil > 0f;
 
+        // Is any part of the object inside the player's vision circle? True when there is no fog.
+        bool InSight()
+        {
+            var gm = GameManager.Instance;
+            if (gm == null || gm.Player == null || gm.CameraRig == null || gm.DebugNoFog) return true;
+            return DistanceTo(gm.Player.Position) <= gm.CameraRig.VisionRadius;
+        }
+
         protected virtual void Update()
         {
             if (pendingUntil > 0f && Time.time > pendingUntil)
@@ -164,6 +175,16 @@ namespace EscapeOffice.Objects
                 pendingUntil = -1f;
                 OnValue(Value);
                 RefreshGlow();
+            }
+
+            if (glow != null)
+            {
+                bool now = InSight();
+                if (now != inSight)
+                {
+                    inSight = now;
+                    RefreshGlow();
+                }
             }
 
             if (glow != null && glow.enabled)
