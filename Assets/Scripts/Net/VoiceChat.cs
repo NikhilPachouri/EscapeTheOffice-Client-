@@ -31,7 +31,7 @@ namespace EscapeOffice.Net
         public bool Talking { get; private set; }
         public bool MuteIncoming { get; set; }
         /// <summary>Linear gain on the partner's voice. 1 = as encoded. Peaks are clamped, not wrapped.</summary>
-        public float PlaybackGain = 1.4f;
+        public float PlaybackGain = 1.8f;
         public bool PartnerSpeaking => DateTime.UtcNow.Ticks - Interlocked.Read(ref lastReceived) < SpeakingWindow;
         public string Status { get; private set; } = "";
 
