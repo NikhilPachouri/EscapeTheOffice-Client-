@@ -72,7 +72,9 @@ namespace EscapeOffice.Objects
         System.Collections.IEnumerator PickUp()
         {
             var start = item.localPosition;
-            Fx3D.Burst(item.position, Type == "bomb" ? new Color(1f, 0.7f, 0.3f) : new Color(1f, 0.88f, 0.4f), count: 18, speed: 1.6f, size: 0.15f, life: 0.6f);
+            var gold = Type == "bomb" ? new Color(1f, 0.7f, 0.3f) : new Color(1f, 0.88f, 0.4f);
+            Fx3D.Burst(item.position, gold, count: 7, speed: 1.3f, size: 0.14f, life: 0.5f);
+            Fx3D.Ring(FxPoint(0.02f), new Color(gold.r, gold.g, gold.b, 0.6f), 0.3f, 1.3f, 0.4f);
             for (float t = 0f; t < 0.33f; t += Time.deltaTime)
             {
                 float k = t / 0.33f;

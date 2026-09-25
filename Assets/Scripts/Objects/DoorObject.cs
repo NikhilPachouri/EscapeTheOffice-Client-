@@ -59,9 +59,10 @@ namespace EscapeOffice.Objects
         // Dust kicked up at the threshold, and a flash of the lamp's new colour.
         protected virtual void OnDoorMoved(bool opened)
         {
-            Fx3D.Puff(FxPoint(0.1f), new Color(0.75f, 0.72f, 0.68f, 0.45f), count: 8, radius: 0.4f, size: 0.35f, life: 0.9f, rise: 0.4f);
+            Fx3D.Puff(FxPoint(0.1f), new Color(0.62f, 0.6f, 0.57f, 0.35f), count: 5, radius: 0.4f, size: 0.4f, life: 0.9f, rise: 0.3f);
+            Fx3D.Debris(FxPoint(0.3f), 5, 0.06f, "M_Wall", speed: 1.8f);
             if (lamp != null)
-                Fx3D.Burst(lamp.transform.position, opened ? new Color(0.35f, 1f, 0.5f) : new Color(1f, 0.3f, 0.25f), count: 8, speed: 1.2f, size: 0.13f, life: 0.4f);
+                Fx3D.Shell(lamp.transform, opened ? new Color(0.35f, 1f, 0.5f) : new Color(1f, 0.3f, 0.25f), 0.9f);
         }
 
         protected override void Update()

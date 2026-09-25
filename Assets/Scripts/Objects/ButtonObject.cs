@@ -31,6 +31,8 @@ namespace EscapeOffice.Objects
             "valve" or "drain" => "Valve",
             _ => "Button",
         };
+        // Final buttons are the shared goal: purple (both) unless the server colours them.
+        protected override Palette.Tag DefaultTag => ModelName == "FinalButton" ? Palette.Tag.Both : Palette.Tag.None;
         bool WallMounted => ModelName != "Button" && ModelName != "FinalButton";
         protected override float ModelYaw => WallMounted ? Art.WallYaw(World, Def.X, Def.Y) : 0f;
 
@@ -105,10 +107,19 @@ namespace EscapeOffice.Objects
         public override void Interact()
         {
             GameManager.Instance.PlayLocal("click", transform.position);
-            // Sparks in the object's glow colour; the final button gets a bigger, golden one.
-            var at = cap != null ? cap.position : lever != null ? lever.position : wheel != null ? wheel.position : FxPoint(0.5f);
-            bool final = ModelName == "FinalButton";
-            Fx3D.Burst(at, final ? new Color(1f, 0.85f, 0.35f) : GlowColor, count: final ? 24 : 10, speed: final ? 2.5f : 1.5f, size: 0.15f, life: 0.5f);
+            // Energy in the object's side colour, now (the patch's own pulse is skipped as a repeat).
+            Pulse();
+            if (lever != null)
+            {
+                // A short streak in the direction of the throw.
+                bool turningOn = !WorldState.Truthy(Value);
+                var up = model.transform.TransformDirection(Vector3.up) * 0.45f;
+                var fwd = model.transform.TransformDirection(Vector3.forward) * 0.45f * (turningOn ? 1f : -1f);
+                var from = lever.position + up - fwd;
+                Fx3D.Streak(from, lever.position + up * 0.6f + fwd, GlowColor);
+            }
+            if (wheel != null)
+                Fx3D.Ring(wheel.position, new Color(GlowColor.r, GlowColor.g, GlowColor.b, 0.6f), 0.3f, 1.1f, 0.4f, delay: 0.12f);
             Show(!WorldState.Truthy(Value));
             Predict();
             SendInteract();

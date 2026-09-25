@@ -48,6 +48,17 @@ namespace EscapeOffice
             return go;
         }
 
+        // A pack prefab inside something already tilted onto the game plane (hero parts):
+        // model space as authored, no extra tilt, 3D colliders stripped.
+        public static GameObject SpawnRaw(string prefab, Transform parent)
+        {
+            var source = Catalog != null ? Catalog.Prefab(prefab) : null;
+            if (source == null) return null;
+            var go = Object.Instantiate(source, parent, false);
+            foreach (var c in go.GetComponentsInChildren<Collider>(true)) Object.Destroy(c);
+            return go;
+        }
+
         public static Material Material(string name) => Catalog != null ? Catalog.Material(name) : null;
         public static Sprite Sprite(string name) => Catalog != null ? Catalog.Sprite(name) : null;
 

@@ -79,6 +79,7 @@ MonoBehaviour:
   materials:
   - {fileID: 2100000, guid: 654bcaf6a5dec4eb69fc8725fe6f0300, type: 2}
   - {fileID: 2100000, guid: 1a8a61811e57c4fff8e76810e8d29879, type: 2}
+  - {fileID: 2100000, guid: 2cbb3abe7e1a640868f1d4015f8fa677, type: 2}
   - {fileID: 2100000, guid: 0b0ac3d7988784db7b3fc769de181f7d, type: 2}
   - {fileID: 2100000, guid: f68542c948a0a4dd9b92a16996db9213, type: 2}
   - {fileID: 2100000, guid: a85bc36aba048481995803a2b69fa954, type: 2}
@@ -259,3 +260,5 @@ MonoBehaviour:
     prefabs:
     - Decor_Crate
   codeFont: {fileID: 12800000, guid: d7e9983403692455ab46fad2d627226d, type: 3}
+  titleFont: {fileID: 12800000, guid: 828c4559dde86487ba981f7bc8d6715e, type: 3}
+  uiFont: {fileID: 12800000, guid: b63372a7f211945b79d235973015fbaf, type: 3}

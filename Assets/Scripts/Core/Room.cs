@@ -134,10 +134,12 @@ namespace EscapeOffice
             if (waterSeen && IsFlooded && !flooded)
                 foreach (var r in Rects)
                 {
-                    var c = new Vector3(r.center.x, r.center.y, -0.2f);
-                    int n = Mathf.Clamp(Mathf.RoundToInt(r.width * r.height * 0.6f), 12, 60);
-                    Fx3D.Burst(c, new Color(0.45f, 0.75f, 1f), count: n, speed: Mathf.Max(r.width, r.height) * 0.6f, size: 0.2f, life: 0.9f);
-                    Fx3D.Puff(c, new Color(0.8f, 0.9f, 1f, 0.35f), count: n / 2, radius: Mathf.Min(r.width, r.height) * 0.4f, size: 0.8f, life: 1.5f, rise: 0.6f);
+                    int n = Mathf.Clamp(Mathf.RoundToInt(r.width * r.height / 6f), 4, 14);
+                    for (int i = 0; i < n; i++)
+                    {
+                        var at = new Vector3(UnityEngine.Random.Range(r.xMin + 0.5f, r.xMax - 0.5f), UnityEngine.Random.Range(r.yMin + 0.5f, r.yMax - 0.5f), -0.02f);
+                        Fx3D.Ring(at, new Color(0.55f, 0.8f, 1f, 0.55f), 0.2f, UnityEngine.Random.Range(1.2f, 2.2f), 0.9f, delay: i * 0.08f);
+                    }
                 }
             waterSeen = true;
             IsFlooded = flooded;

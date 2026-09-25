@@ -1,0 +1,1529 @@
+{
+  "_comment": "Presentation layer for the 3D view (EscapeOffice.ArtDirection). Colours are hex; distances in tiles/metres. Gameplay never reads this file.",
+  "world": {
+    "sunColor": "#ffd6a0",
+    "sunIntensity": 0.62,
+    "ambient": "#2b3345",
+    "fog": "#04050a",
+    "fogAlpha": 0.965
+  },
+  "camera": {
+    "height": 20,
+    "behind": 9,
+    "fov": 40
+  },
+  "grading": {
+    "saturation": 1.0,
+    "contrast": 1.12,
+    "exposure": 1.02,
+    "splitTone": 0.45,
+    "highlights": "#ffe9cc",
+    "shadows": "#bcd0ff",
+    "bloomThreshold": 0.9,
+    "bloomKnee": 0.08,
+    "bloom": 0.55,
+    "vignette": 0.55,
+    "vignetteStart": 0.35,
+    "tiltShift": 0.75,
+    "tiltFocus": 0.28
+  },
+  "interaction": {
+    "nearDistance": 3.2,
+    "idlePool": 0.1,
+    "nearPool": 0.28,
+    "focusPool": 0.55,
+    "poolSize": 1.5,
+    "react": 0.05,
+    "focusRing": 0.55
+  },
+  "objectScale": {
+    "Button": 1.35,
+    "FinalButton": 1.25,
+    "LeverSwitch": 1.3,
+    "LightSwitch": 1.25,
+    "Valve": 1.4,
+    "Keypad": 1.15,
+    "CodePanel": 1.1,
+    "Pickup_Key": 1.35,
+    "Pickup_Bomb": 1.3
+  },
+  "players": {
+    "A": {
+      "lamp": "#ffcf9a",
+      "lampIntensity": 0.65,
+      "width": 1.12,
+      "height": 0.9,
+      "hop": 0.09,
+      "stepRate": 12,
+      "lean": 10,
+      "sway": 2,
+      "accessory": "backpack"
+    },
+    "B": {
+      "lamp": "#c2e8ff",
+      "lampIntensity": 0.65,
+      "width": 0.9,
+      "height": 1.12,
+      "hop": 0.025,
+      "stepRate": 8,
+      "lean": 6,
+      "sway": 6,
+      "accessory": "crest"
+    }
+  },
+  "rooms": {
+    "lobby": {
+      "light": "#ffcf99",
+      "pool": 0.38,
+      "props": [
+        "Decor_Plant",
+        "Decor_Couch",
+        "Decor_Plant"
+      ],
+      "density": 0.14,
+      "hero": "lobby"
+    },
+    "office": {
+      "light": "#ffe0b8",
+      "pool": 0.36,
+      "props": [
+        "Decor_Desk",
+        "Decor_Cabinet",
+        "Decor_Desk",
+        "Decor_Plant"
+      ],
+      "density": 0.2,
+      "hero": "office"
+    },
+    "archive": {
+      "light": "#ffd08a",
+      "pool": 0.38,
+      "props": [
+        "Decor_Bookshelf",
+        "Decor_Bookshelf",
+        "Decor_Cabinet"
+      ],
+      "density": 0.32,
+      "hero": "archive"
+    },
+    "workshop": {
+      "light": "#ffc27a",
+      "pool": 0.36,
+      "props": [
+        "Decor_Crate",
+        "Decor_LabBench",
+        "Decor_Crate"
+      ],
+      "density": 0.18,
+      "hero": "workshop"
+    },
+    "vault": {
+      "light": "#b8c8ff",
+      "pool": 0.34,
+      "props": [
+        "Decor_Crate",
+        "Decor_Cabinet"
+      ],
+      "density": 0.14,
+      "hero": "vault"
+    },
+    "lab": {
+      "light": "#c8fff0",
+      "pool": 0.38,
+      "props": [
+        "Decor_LabBench",
+        "Decor_Cabinet",
+        "Decor_LabBench"
+      ],
+      "density": 0.2,
+      "hero": "lab"
+    },
+    "server": {
+      "light": "#8fc4ff",
+      "pool": 0.38,
+      "props": [
+        "Decor_ServerRack"
+      ],
+      "density": 0.34,
+      "hero": "server"
+    },
+    "boiler": {
+      "light": "#ffae6b",
+      "pool": 0.4,
+      "props": [
+        "Decor_Pipes",
+        "Decor_Tank",
+        "Decor_Pipes"
+      ],
+      "density": 0.22,
+      "hero": "boiler"
+    },
+    "cafe": {
+      "light": "#ffd9a0",
+      "pool": 0.4,
+      "props": [
+        "Decor_Vending",
+        "Decor_Plant"
+      ],
+      "density": 0.12,
+      "hero": "cafe"
+    },
+    "hallway": {
+      "light": "#e0e4ff",
+      "pool": 0.28,
+      "props": [
+        "Decor_Plant",
+        "Decor_Crate"
+      ],
+      "density": 0.06
+    },
+    "final": {
+      "light": "#d9c2ff",
+      "pool": 0.42,
+      "props": [
+        "Decor_Plant"
+      ],
+      "density": 0.08,
+      "hero": "final"
+    }
+  },
+  "_heroes": "Built against a wall, facing into the room; 2x2 tiles, only where no path or object is affected. Parts: prefab (pack) or shape (cube, cylinder, sphere, empty); pos/rot/scale in model space (y up, +z = into the room, back wall at z = -1); spin = deg/s about the part's own up; children are parented to the part. Unity's cylinder is 2 m tall at scale 1.",
+  "heroes": {
+    "server": {
+      "name": "Server core",
+      "parts": [
+        {
+          "shape": "cylinder",
+          "material": "M_MetalDark",
+          "pos": [
+            0,
+            0.05,
+            -0.1
+          ],
+          "scale": [
+            1.4,
+            0.05,
+            1.4
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_RackBody",
+          "pos": [
+            0,
+            0.95,
+            -0.1
+          ],
+          "scale": [
+            0.72,
+            0.85,
+            0.72
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_LED_Blue",
+          "pos": [
+            0,
+            0.55,
+            -0.1
+          ],
+          "scale": [
+            0.76,
+            0.025,
+            0.76
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_LED_Blue",
+          "pos": [
+            0,
+            0.95,
+            -0.1
+          ],
+          "scale": [
+            0.76,
+            0.025,
+            0.76
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_LED_Blue",
+          "pos": [
+            0,
+            1.35,
+            -0.1
+          ],
+          "scale": [
+            0.76,
+            0.025,
+            0.76
+          ]
+        },
+        {
+          "shape": "sphere",
+          "material": "M_MetalGrey",
+          "pos": [
+            0,
+            1.8,
+            -0.1
+          ],
+          "scale": [
+            0.74,
+            0.3,
+            0.74
+          ]
+        },
+        {
+          "prefab": "Decor_ServerRack",
+          "pos": [
+            -0.78,
+            0,
+            -0.35
+          ],
+          "rot": [
+            0,
+            25,
+            0
+          ]
+        },
+        {
+          "prefab": "Decor_ServerRack",
+          "pos": [
+            0.78,
+            0,
+            -0.35
+          ],
+          "rot": [
+            0,
+            -25,
+            0
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_MetalDark",
+          "pos": [
+            -0.42,
+            0.05,
+            0.15
+          ],
+          "rot": [
+            0,
+            0,
+            90
+          ],
+          "scale": [
+            0.07,
+            0.35,
+            0.07
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_MetalDark",
+          "pos": [
+            0.42,
+            0.05,
+            0.2
+          ],
+          "rot": [
+            0,
+            30,
+            90
+          ],
+          "scale": [
+            0.07,
+            0.35,
+            0.07
+          ]
+        }
+      ]
+    },
+    "boiler": {
+      "name": "Pressure reactor",
+      "parts": [
+        {
+          "prefab": "Decor_Tank",
+          "pos": [
+            0,
+            0,
+            -0.15
+          ],
+          "scale": [
+            1.7,
+            1.7,
+            1.7
+          ]
+        },
+        {
+          "prefab": "Decor_Pipes",
+          "pos": [
+            -0.8,
+            0,
+            -0.65
+          ],
+          "scale": [
+            1.15,
+            1.3,
+            1.15
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_Copper",
+          "pos": [
+            0.72,
+            1.05,
+            -0.62
+          ],
+          "scale": [
+            0.16,
+            1.05,
+            0.16
+          ]
+        },
+        {
+          "shape": "sphere",
+          "material": "M_Copper",
+          "pos": [
+            0.72,
+            2.1,
+            -0.62
+          ],
+          "scale": [
+            0.22,
+            0.22,
+            0.22
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_Brass",
+          "pos": [
+            0,
+            1.15,
+            0.62
+          ],
+          "rot": [
+            90,
+            0,
+            0
+          ],
+          "scale": [
+            0.42,
+            0.03,
+            0.42
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_TableTop",
+          "pos": [
+            0,
+            1.15,
+            0.65
+          ],
+          "rot": [
+            90,
+            0,
+            0
+          ],
+          "scale": [
+            0.34,
+            0.03,
+            0.34
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_LED_Amber",
+          "pos": [
+            0,
+            0.28,
+            0.66
+          ],
+          "scale": [
+            1.3,
+            0.09,
+            0.03
+          ]
+        }
+      ]
+    },
+    "archive": {
+      "name": "Archive stacks",
+      "parts": [
+        {
+          "prefab": "Decor_Bookshelf",
+          "pos": [
+            -0.5,
+            0,
+            -0.6
+          ],
+          "scale": [
+            1,
+            1.6,
+            1
+          ]
+        },
+        {
+          "prefab": "Decor_Bookshelf",
+          "pos": [
+            0.5,
+            0,
+            -0.6
+          ],
+          "scale": [
+            1,
+            1.6,
+            1
+          ]
+        },
+        {
+          "prefab": "Decor_Bookshelf",
+          "pos": [
+            -0.8,
+            0,
+            0.25
+          ],
+          "rot": [
+            0,
+            90,
+            0
+          ],
+          "scale": [
+            1,
+            1.25,
+            1
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_WoodDark",
+          "pos": [
+            0.22,
+            0.85,
+            -0.1
+          ],
+          "rot": [
+            -14,
+            0,
+            0
+          ],
+          "scale": [
+            0.04,
+            1.75,
+            0.04
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_WoodDark",
+          "pos": [
+            0.52,
+            0.85,
+            -0.1
+          ],
+          "rot": [
+            -14,
+            0,
+            0
+          ],
+          "scale": [
+            0.04,
+            1.75,
+            0.04
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_WoodDark",
+          "pos": [
+            0.37,
+            0.45,
+            0.0
+          ],
+          "scale": [
+            0.3,
+            0.03,
+            0.04
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_WoodDark",
+          "pos": [
+            0.37,
+            0.9,
+            -0.11
+          ],
+          "scale": [
+            0.3,
+            0.03,
+            0.04
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_WoodDark",
+          "pos": [
+            0.37,
+            1.35,
+            -0.22
+          ],
+          "scale": [
+            0.3,
+            0.03,
+            0.04
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_MetalDark",
+          "pos": [
+            0.78,
+            0.55,
+            0.55
+          ],
+          "scale": [
+            0.04,
+            0.55,
+            0.04
+          ]
+        },
+        {
+          "shape": "sphere",
+          "material": "M_VendingGlass",
+          "pos": [
+            0.78,
+            1.15,
+            0.55
+          ],
+          "scale": [
+            0.26,
+            0.2,
+            0.26
+          ]
+        }
+      ]
+    },
+    "lab": {
+      "name": "Containment tube",
+      "parts": [
+        {
+          "shape": "cylinder",
+          "material": "M_MetalTrim",
+          "pos": [
+            0,
+            0.1,
+            -0.2
+          ],
+          "scale": [
+            1.25,
+            0.1,
+            1.25
+          ]
+        },
+        {
+          "shape": "sphere",
+          "material": "M_LED_Green",
+          "pos": [
+            0,
+            0.95,
+            -0.2
+          ],
+          "scale": [
+            0.42,
+            0.42,
+            0.42
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_Steam",
+          "pos": [
+            0,
+            0.95,
+            -0.2
+          ],
+          "scale": [
+            0.85,
+            0.75,
+            0.85
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_MetalTrim",
+          "pos": [
+            0,
+            1.78,
+            -0.2
+          ],
+          "scale": [
+            1.0,
+            0.08,
+            1.0
+          ]
+        },
+        {
+          "shape": "empty",
+          "pos": [
+            0,
+            0.95,
+            -0.2
+          ],
+          "spin": 40,
+          "children": [
+            {
+              "shape": "cube",
+              "material": "M_MetalGrey",
+              "pos": [
+                0.55,
+                0,
+                0
+              ],
+              "scale": [
+                0.08,
+                0.5,
+                0.08
+              ]
+            },
+            {
+              "shape": "cube",
+              "material": "M_MetalGrey",
+              "pos": [
+                -0.55,
+                0,
+                0
+              ],
+              "scale": [
+                0.08,
+                0.5,
+                0.08
+              ]
+            }
+          ]
+        },
+        {
+          "prefab": "Decor_LabBench",
+          "pos": [
+            0.75,
+            0,
+            0.45
+          ],
+          "rot": [
+            0,
+            -90,
+            0
+          ],
+          "scale": [
+            0.8,
+            1,
+            0.8
+          ]
+        }
+      ]
+    },
+    "office": {
+      "name": "Comms console",
+      "parts": [
+        {
+          "prefab": "Decor_Desk",
+          "pos": [
+            0,
+            0,
+            -0.25
+          ],
+          "scale": [
+            1.8,
+            1,
+            1
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_MonitorBody",
+          "pos": [
+            -0.55,
+            1.1,
+            -0.62
+          ],
+          "rot": [
+            0,
+            18,
+            0
+          ],
+          "scale": [
+            0.5,
+            0.36,
+            0.05
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_MonitorBody",
+          "pos": [
+            0,
+            1.14,
+            -0.68
+          ],
+          "scale": [
+            0.56,
+            0.4,
+            0.05
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_MonitorBody",
+          "pos": [
+            0.55,
+            1.1,
+            -0.62
+          ],
+          "rot": [
+            0,
+            -18,
+            0
+          ],
+          "scale": [
+            0.5,
+            0.36,
+            0.05
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_MonitorScreen",
+          "pos": [
+            -0.54,
+            1.1,
+            -0.59
+          ],
+          "rot": [
+            0,
+            18,
+            0
+          ],
+          "scale": [
+            0.44,
+            0.3,
+            0.02
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_MonitorScreen",
+          "pos": [
+            0,
+            1.14,
+            -0.65
+          ],
+          "scale": [
+            0.5,
+            0.34,
+            0.02
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_MonitorScreen",
+          "pos": [
+            0.54,
+            1.1,
+            -0.59
+          ],
+          "rot": [
+            0,
+            -18,
+            0
+          ],
+          "scale": [
+            0.44,
+            0.3,
+            0.02
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_MetalGrey",
+          "pos": [
+            0.88,
+            0.95,
+            -0.85
+          ],
+          "scale": [
+            0.05,
+            0.95,
+            0.05
+          ]
+        },
+        {
+          "shape": "empty",
+          "pos": [
+            0.88,
+            1.95,
+            -0.85
+          ],
+          "spin": 25,
+          "children": [
+            {
+              "shape": "sphere",
+              "material": "M_MetalTrim",
+              "rot": [
+                35,
+                0,
+                0
+              ],
+              "scale": [
+                0.42,
+                0.1,
+                0.42
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "workshop": {
+      "name": "Assembly rig",
+      "parts": [
+        {
+          "shape": "cube",
+          "material": "M_MetalDark",
+          "pos": [
+            -0.62,
+            0.55,
+            -0.72
+          ],
+          "scale": [
+            0.12,
+            1.1,
+            0.12
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_MetalDark",
+          "pos": [
+            0.62,
+            0.55,
+            -0.72
+          ],
+          "scale": [
+            0.12,
+            1.1,
+            0.12
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_MetalDark",
+          "pos": [
+            0,
+            1.12,
+            -0.72
+          ],
+          "scale": [
+            1.36,
+            0.1,
+            0.12
+          ]
+        },
+        {
+          "shape": "empty",
+          "pos": [
+            0,
+            0.95,
+            -0.6
+          ],
+          "rot": [
+            55,
+            0,
+            0
+          ],
+          "spin": 30,
+          "children": [
+            {
+              "shape": "cylinder",
+              "material": "M_MetalGrey",
+              "scale": [
+                1.05,
+                0.05,
+                1.05
+              ]
+            },
+            {
+              "shape": "cylinder",
+              "material": "M_Copper",
+              "scale": [
+                0.3,
+                0.08,
+                0.3
+              ]
+            },
+            {
+              "shape": "cube",
+              "material": "M_MetalGrey",
+              "scale": [
+                1.2,
+                0.07,
+                0.14
+              ]
+            },
+            {
+              "shape": "cube",
+              "material": "M_MetalGrey",
+              "rot": [
+                0,
+                60,
+                0
+              ],
+              "scale": [
+                1.2,
+                0.07,
+                0.14
+              ]
+            },
+            {
+              "shape": "cube",
+              "material": "M_MetalGrey",
+              "rot": [
+                0,
+                120,
+                0
+              ],
+              "scale": [
+                1.2,
+                0.07,
+                0.14
+              ]
+            }
+          ]
+        },
+        {
+          "prefab": "Decor_Crate",
+          "pos": [
+            0.7,
+            0,
+            0.45
+          ],
+          "scale": [
+            0.6,
+            0.6,
+            0.6
+          ]
+        },
+        {
+          "prefab": "Decor_Crate",
+          "pos": [
+            -0.65,
+            0,
+            0.5
+          ],
+          "rot": [
+            0,
+            20,
+            0
+          ],
+          "scale": [
+            0.5,
+            0.5,
+            0.5
+          ]
+        }
+      ]
+    },
+    "vault": {
+      "name": "Lock mechanism",
+      "parts": [
+        {
+          "shape": "cube",
+          "material": "M_MetalDark",
+          "pos": [
+            -0.88,
+            1.0,
+            -0.85
+          ],
+          "scale": [
+            0.22,
+            2.0,
+            0.22
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_MetalDark",
+          "pos": [
+            0.88,
+            1.0,
+            -0.85
+          ],
+          "scale": [
+            0.22,
+            2.0,
+            0.22
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_MetalDark",
+          "pos": [
+            0,
+            1.95,
+            -0.85
+          ],
+          "scale": [
+            1.98,
+            0.2,
+            0.22
+          ]
+        },
+        {
+          "shape": "empty",
+          "pos": [
+            0,
+            1.0,
+            -0.7
+          ],
+          "rot": [
+            58,
+            0,
+            0
+          ],
+          "spin": 10,
+          "children": [
+            {
+              "shape": "cylinder",
+              "material": "M_MetalGrey",
+              "scale": [
+                1.45,
+                0.06,
+                1.45
+              ]
+            },
+            {
+              "shape": "cylinder",
+              "material": "M_MetalDark",
+              "pos": [
+                0,
+                0.02,
+                0
+              ],
+              "scale": [
+                1.15,
+                0.06,
+                1.15
+              ]
+            },
+            {
+              "shape": "cube",
+              "material": "M_Brass",
+              "pos": [
+                0,
+                0.07,
+                0
+              ],
+              "scale": [
+                1.35,
+                0.05,
+                0.1
+              ]
+            },
+            {
+              "shape": "cube",
+              "material": "M_Brass",
+              "pos": [
+                0,
+                0.07,
+                0
+              ],
+              "rot": [
+                0,
+                60,
+                0
+              ],
+              "scale": [
+                1.35,
+                0.05,
+                0.1
+              ]
+            },
+            {
+              "shape": "cube",
+              "material": "M_Brass",
+              "pos": [
+                0,
+                0.07,
+                0
+              ],
+              "rot": [
+                0,
+                120,
+                0
+              ],
+              "scale": [
+                1.35,
+                0.05,
+                0.1
+              ]
+            },
+            {
+              "shape": "cylinder",
+              "material": "M_Brass",
+              "pos": [
+                0,
+                0.1,
+                0
+              ],
+              "scale": [
+                0.32,
+                0.08,
+                0.32
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "cafe": {
+      "name": "Espresso counter",
+      "parts": [
+        {
+          "shape": "cube",
+          "material": "M_WoodDark",
+          "pos": [
+            0,
+            0.45,
+            -0.55
+          ],
+          "scale": [
+            1.9,
+            0.9,
+            0.6
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_TableTop",
+          "pos": [
+            0,
+            0.93,
+            -0.55
+          ],
+          "scale": [
+            2.0,
+            0.06,
+            0.7
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_MetalTrim",
+          "pos": [
+            0.45,
+            1.22,
+            -0.68
+          ],
+          "scale": [
+            0.55,
+            0.52,
+            0.36
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_MetalDark",
+          "pos": [
+            0.35,
+            1.02,
+            -0.45
+          ],
+          "scale": [
+            0.06,
+            0.06,
+            0.06
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_MetalDark",
+          "pos": [
+            0.55,
+            1.02,
+            -0.45
+          ],
+          "scale": [
+            0.06,
+            0.06,
+            0.06
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_VendingGlass",
+          "pos": [
+            -0.3,
+            1.75,
+            -0.95
+          ],
+          "scale": [
+            1.1,
+            0.34,
+            0.04
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_Stool",
+          "pos": [
+            -0.55,
+            0.36,
+            0.2
+          ],
+          "scale": [
+            0.36,
+            0.36,
+            0.36
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_Stool",
+          "pos": [
+            0.25,
+            0.36,
+            0.25
+          ],
+          "scale": [
+            0.36,
+            0.36,
+            0.36
+          ]
+        }
+      ]
+    },
+    "lobby": {
+      "name": "Reception desk",
+      "parts": [
+        {
+          "shape": "cube",
+          "material": "M_Wood",
+          "pos": [
+            0,
+            1.0,
+            -0.95
+          ],
+          "scale": [
+            1.9,
+            1.4,
+            0.08
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_Brass",
+          "pos": [
+            0,
+            1.25,
+            -0.9
+          ],
+          "rot": [
+            90,
+            0,
+            0
+          ],
+          "scale": [
+            0.55,
+            0.02,
+            0.55
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_WoodDark",
+          "pos": [
+            0,
+            0.42,
+            0.05
+          ],
+          "scale": [
+            1.8,
+            0.42,
+            1.1
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_TableTop",
+          "pos": [
+            0,
+            0.86,
+            0.05
+          ],
+          "scale": [
+            1.9,
+            0.03,
+            1.2
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_MonitorBody",
+          "pos": [
+            0.3,
+            1.05,
+            -0.12
+          ],
+          "rot": [
+            0,
+            -20,
+            0
+          ],
+          "scale": [
+            0.42,
+            0.3,
+            0.04
+          ]
+        },
+        {
+          "shape": "cube",
+          "material": "M_MonitorScreen",
+          "pos": [
+            0.3,
+            1.05,
+            -0.095
+          ],
+          "rot": [
+            0,
+            -20,
+            0
+          ],
+          "scale": [
+            0.36,
+            0.24,
+            0.02
+          ]
+        },
+        {
+          "prefab": "Decor_Plant",
+          "pos": [
+            -0.82,
+            0,
+            -0.62
+          ],
+          "scale": [
+            0.8,
+            0.8,
+            0.8
+          ]
+        }
+      ]
+    },
+    "final": {
+      "name": "Cooperation engine",
+      "parts": [
+        {
+          "shape": "cylinder",
+          "material": "M_MetalDark",
+          "pos": [
+            0,
+            0.35,
+            -0.2
+          ],
+          "scale": [
+            1.0,
+            0.35,
+            1.0
+          ]
+        },
+        {
+          "shape": "cylinder",
+          "material": "M_MetalTrim",
+          "pos": [
+            0,
+            0.72,
+            -0.2
+          ],
+          "scale": [
+            0.8,
+            0.03,
+            0.8
+          ]
+        },
+        {
+          "shape": "sphere",
+          "material": "M_Glow_Both",
+          "pos": [
+            0,
+            1.35,
+            -0.2
+          ],
+          "scale": [
+            0.32,
+            0.32,
+            0.32
+          ]
+        },
+        {
+          "shape": "empty",
+          "pos": [
+            0,
+            1.35,
+            -0.2
+          ],
+          "spin": 35,
+          "children": [
+            {
+              "prefab": "GlowRing_A",
+              "rot": [
+                90,
+                0,
+                0
+              ],
+              "scale": [
+                0.75,
+                0.75,
+                0.75
+              ]
+            }
+          ]
+        },
+        {
+          "shape": "empty",
+          "pos": [
+            0,
+            1.35,
+            -0.2
+          ],
+          "rot": [
+            0,
+            90,
+            0
+          ],
+          "spin": -35,
+          "children": [
+            {
+              "prefab": "GlowRing_B",
+              "rot": [
+                90,
+                0,
+                0
+              ],
+              "scale": [
+                0.75,
+                0.75,
+                0.75
+              ]
+            }
+          ]
+        }
+      ],
+      "scale": 1.4
+    }
+  }
+}

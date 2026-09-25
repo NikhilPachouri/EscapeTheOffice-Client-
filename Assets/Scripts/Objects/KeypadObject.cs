@@ -42,7 +42,7 @@ namespace EscapeOffice.Objects
             var mat = Art.Material(solved ? "M_Keypad_Unlocked" : "M_Keypad_Locked");
             if (screen != null && mat != null) screen.sharedMaterial = mat;
             if (seen && solved && !wasSolved && Settled && screen != null)
-                Fx3D.Burst(screen.bounds.center, new Color(0.4f, 1f, 0.55f), count: 16, speed: 1.8f, size: 0.13f, life: 0.6f);
+                Fx3D.Shell(screen.transform, new Color(0.4f, 1f, 0.55f), 0.8f); // the screen itself flashes green
             seen = true;
             wasSolved = solved;
         }

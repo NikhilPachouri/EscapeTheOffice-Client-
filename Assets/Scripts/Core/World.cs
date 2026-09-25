@@ -108,6 +108,8 @@ namespace EscapeOffice
 
         void OnRoomChanged(Room room)
         {
+            if (pools.TryGetValue(room, out var list))
+                foreach (var r in list) r.enabled = !room.IsDark;
             foreach (var o in Objects.Values)
                 if (o.Rooms.Contains(room)) o.RefreshGlow();
         }
@@ -192,18 +194,48 @@ namespace EscapeOffice
             BuildDecor(data, tiles.transform);
             StaticBatchingUtility.Combine(tiles);
 
+            var look = ArtDirection.Current.world;
             var sun = new GameObject("Sun").AddComponent<Light>();
             sun.transform.SetParent(root, false);
             sun.type = LightType.Directional;
             // From the south and a little west, so shadows fall away from the camera.
             sun.transform.rotation = Quaternion.LookRotation(new Vector3(0.35f, 0.55f, 1f));
-            // Warm key light against cool shadows: the colour contrast that keeps it from looking flat.
-            sun.color = new Color(1f, 0.9f, 0.76f);
-            sun.intensity = 0.68f;
+            // Warm key light against cool, dark shadows; rooms get their own light pools below.
+            sun.color = ArtDirection.Hex(look.sunColor, new Color(1f, 0.84f, 0.63f));
+            sun.intensity = look.sunIntensity;
             sun.shadows = LightShadows.Soft;
-            sun.shadowStrength = 0.75f;
+            sun.shadowStrength = 0.8f;
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.26f, 0.3f, 0.4f);
+            RenderSettings.ambientLight = ArtDirection.Hex(look.ambient, new Color(0.14f, 0.16f, 0.22f));
+
+            BuildLightPools(data);
+        }
+
+        // A soft pool of the room's own light on its floor (additive), off while the room is dark.
+        // Cheap stand-in for many real lights on a level that is built at runtime.
+        readonly Dictionary<Room, List<Renderer>> pools = new Dictionary<Room, List<Renderer>>();
+
+        void BuildLightPools(WorldData data)
+        {
+            pools.Clear();
+            var mat = Art.Material("FX_Additive");
+            if (mat == null) return;
+            var parent = new GameObject("LightPools").transform;
+            parent.SetParent(root, false);
+            foreach (var def in data.Rooms ?? new List<RoomDef>())
+            {
+                if (!Rooms.TryGetValue(def.Id ?? "", out var room)) continue;
+                var look = ArtDirection.Current.Room(room.Theme);
+                if (look.pool <= 0f) continue;
+                var rect = TileRect(def.X, def.Y, def.W, def.H);
+                var light = ArtDirection.Hex(look.light, Color.white);
+                var sr = SpriteFactory.Child(parent, $"Pool {room.Id}", SpriteFactory.Glow,
+                    new Color(light.r, light.g, light.b, look.pool), Layers.Glow - 1, rect.center, rect.size * 1.2f);
+                sr.transform.localPosition = new Vector3(rect.center.x, rect.center.y, -0.012f);
+                sr.sharedMaterial = mat;
+                if (!pools.TryGetValue(room, out var list)) pools[room] = list = new List<Renderer>();
+                list.Add(sr);
+            }
         }
 
         string ThemeAt(Vector2 p)
@@ -226,9 +258,10 @@ namespace EscapeOffice
             return false;
         }
 
-        // One themed prop in each free corner of every room big enough to spare it. A corner
-        // cell never cuts a room in two, and corners near objects, doorways or the spawn stay
-        // empty so no puzzle is ever blocked.
+        // Dresses each room with its prop vocabulary (ArtDirection.json "rooms"): a hero object
+        // against a wall, props in free corners and along the walls. Nothing goes near objects,
+        // doorways or the spawn, and every placement must leave all reachable floor reachable,
+        // so no puzzle is ever blocked.
         void BuildDecor(WorldData data, Transform parent)
         {
             var taken = new HashSet<Vector2Int>();
@@ -241,31 +274,158 @@ namespace EscapeOffice
                 for (int dy = -1; dy <= 1; dy++)
                     taken.Add(new Vector2Int(data.Spawn[0] + dx, data.Spawn[1] + dy));
 
+            var start = data.Spawn != null && data.Spawn.Length >= 2 ? new Vector2Int(data.Spawn[0], data.Spawn[1]) : FirstFloor();
+            var blocked = new HashSet<Vector2Int>();
+            int reachable = Reach(start, blocked);
+
+            // True (and the cells claimed) when blocking them keeps every other reachable cell reachable.
+            bool Claim(List<Vector2Int> cells)
+            {
+                foreach (var c in cells)
+                    if (taken.Contains(c) || blocked.Contains(c) || !IsFloor(c.x, c.y)) return false;
+                foreach (var c in cells) blocked.Add(c);
+                bool ok = Reach(start, blocked) == reachable - cells.Count;
+                if (!ok) { foreach (var c in cells) blocked.Remove(c); return false; }
+                reachable -= cells.Count;
+                foreach (var c in cells) taken.Add(c);
+                return true;
+            }
+
             foreach (var def in data.Rooms ?? new List<RoomDef>())
             {
-                if (def.W < 4 || def.H < 4 || !Rooms.TryGetValue(def.Id ?? "", out var room)) continue;
-                var props = Art.Catalog.DecorFor(room.Theme);
+                if (def.W < 3 || def.H < 3 || !Rooms.TryGetValue(def.Id ?? "", out var room)) continue;
+                var look = ArtDirection.Current.Room(room.Theme);
+                var props = look.props.Count > 0 ? look.props : Art.Catalog.DecorFor(room.Theme);
+
+                if (look.hero != null && def.W >= 5 && def.H >= 4 && ArtDirection.Current.heroes.TryGetValue(look.hero, out var hero))
+                    PlaceHero(hero, def, parent, Claim);
                 if (props == null || props.Count == 0) continue;
 
-                var corners = new[]
+                // Corners first (they never split a room), then along the walls by density.
+                var cells = new List<Vector2Int>
                 {
                     new Vector2Int(def.X, def.Y), new Vector2Int(def.X + def.W - 1, def.Y),
                     new Vector2Int(def.X, def.Y + def.H - 1), new Vector2Int(def.X + def.W - 1, def.Y + def.H - 1),
                 };
-                foreach (var c in corners)
+                for (int x = def.X + 1; x < def.X + def.W - 1; x++) { cells.Add(new Vector2Int(x, def.Y)); cells.Add(new Vector2Int(x, def.Y + def.H - 1)); }
+                for (int y = def.Y + 1; y < def.Y + def.H - 1; y++) { cells.Add(new Vector2Int(def.X, y)); cells.Add(new Vector2Int(def.X + def.W - 1, y)); }
+
+                for (int i = 0; i < cells.Count; i++)
                 {
-                    if (taken.Contains(c) || IsWall(c.x, c.y) || NearDoorway(c, def)) continue;
-                    string prefab = props[Mathf.Abs(c.x * 73856093 ^ c.y * 19349663) % props.Count];
+                    var c = cells[i];
+                    int hash = Mathf.Abs(c.x * 73856093 ^ c.y * 19349663);
+                    bool corner = i < 4;
+                    if (!corner && hash % 1000 >= look.density * 1000f) continue;
+                    if (NearDoorway(c, def) || !TouchesWall(c)) continue;
+                    string prefab = props[hash % props.Count];
+                    if (prefab == "Decor_CafeTable") continue; // free-standing, never against a wall
+                    if (!Claim(new List<Vector2Int> { c })) continue;
                     var p = TileCenter(c.x, c.y);
                     if (Art.Spawn(prefab, parent, p, Art.WallYaw(this, c.x, c.y)) == null) continue;
-                    taken.Add(c);
-                    if (prefab == "Decor_CafeTable") continue; // walkable around, per the pack
-                    var block = new GameObject($"DecorBlock {c.x},{c.y}");
-                    block.transform.SetParent(root, false);
-                    block.transform.position = p;
-                    block.AddComponent<BoxCollider2D>().size = Vector2.one * 0.9f;
+                    Block(p, Vector2.one * 0.9f, $"DecorBlock {c.x},{c.y}");
                 }
             }
+        }
+
+        // A hero object on a 2x2 against a wall of the room: north wall first (it faces the
+        // camera), nearest the wall's middle first.
+        void PlaceHero(ArtDirection.HeroDef hero, RoomDef def, Transform parent, System.Func<List<Vector2Int>, bool> claim)
+        {
+            var options = new List<(List<Vector2Int> cells, float yaw, float score)>();
+            float cx = def.X + def.W * 0.5f - 1f, cy = def.Y + def.H * 0.5f - 1f;
+            for (int x = def.X; x <= def.X + def.W - 2; x++)
+            {
+                if (IsWall(x, def.Y - 1) && IsWall(x + 1, def.Y - 1)) options.Add((Square(x, def.Y), 180f, Mathf.Abs(x - cx)));
+                int by = def.Y + def.H - 2;
+                if (IsWall(x, by + 2) && IsWall(x + 1, by + 2)) options.Add((Square(x, by), 0f, 300f + Mathf.Abs(x - cx)));
+            }
+            for (int y = def.Y; y <= def.Y + def.H - 2; y++)
+            {
+                if (IsWall(def.X - 1, y) && IsWall(def.X - 1, y + 1)) options.Add((Square(def.X, y), 90f, 100f + Mathf.Abs(y - cy)));
+                int rx = def.X + def.W - 2;
+                if (IsWall(rx + 2, y) && IsWall(rx + 2, y + 1)) options.Add((Square(rx, y), -90f, 200f + Mathf.Abs(y - cy)));
+            }
+            foreach (var (cells, yaw, _) in options.OrderBy(o => o.score))
+            {
+                if (cells.Any(c => NearDoorway(c, def)) || !claim(cells)) continue;
+                var center = cells.Aggregate(Vector2.zero, (a, c) => a + TileCenter(c.x, c.y)) / cells.Count;
+                var go = new GameObject("Hero " + (hero.name ?? ""));
+                go.transform.SetParent(parent, false);
+                go.transform.localPosition = center;
+                go.transform.localRotation = Art.Rotation(yaw);
+                go.transform.localScale = Vector3.one * hero.scale;
+                foreach (var part in hero.parts) BuildPart(part, go.transform);
+                Block(center, Vector2.one * 1.9f, "HeroBlock " + hero.name);
+                return;
+            }
+        }
+
+        static List<Vector2Int> Square(int x, int y) =>
+            new List<Vector2Int> { new Vector2Int(x, y), new Vector2Int(x + 1, y), new Vector2Int(x, y + 1), new Vector2Int(x + 1, y + 1) };
+
+        static void BuildPart(ArtDirection.HeroPart part, Transform parent)
+        {
+            GameObject go;
+            if (!string.IsNullOrEmpty(part.prefab)) go = Art.SpawnRaw(part.prefab, parent);
+            else
+            {
+                switch (part.shape)
+                {
+                    case "cube": go = GameObject.CreatePrimitive(PrimitiveType.Cube); break;
+                    case "cylinder": go = GameObject.CreatePrimitive(PrimitiveType.Cylinder); break;
+                    case "sphere": go = GameObject.CreatePrimitive(PrimitiveType.Sphere); break;
+                    default: go = new GameObject(); break;
+                }
+                var col = go.GetComponent<Collider>();
+                if (col != null) Destroy(col);
+                var mr = go.GetComponent<MeshRenderer>();
+                var mat = Art.Material(part.material);
+                if (mr != null && mat != null) mr.sharedMaterial = mat;
+                go.transform.SetParent(parent, false);
+            }
+            if (go == null) return;
+            go.name = part.prefab ?? part.shape ?? "part";
+            go.transform.localPosition = ArtDirection.V(part.pos, Vector3.zero);
+            go.transform.localRotation = Quaternion.Euler(ArtDirection.V(part.rot, Vector3.zero));
+            go.transform.localScale = ArtDirection.V(part.scale, Vector3.one);
+            if (Mathf.Abs(part.spin) > 0.01f) go.AddComponent<Spinner>().degreesPerSecond = part.spin;
+            if (part.children != null)
+                foreach (var child in part.children) BuildPart(child, go.transform);
+        }
+
+        void Block(Vector2 at, Vector2 size, string name)
+        {
+            var block = new GameObject(name);
+            block.transform.SetParent(root, false);
+            block.transform.position = at;
+            block.AddComponent<BoxCollider2D>().size = size;
+        }
+
+        bool TouchesWall(Vector2Int c) =>
+            IsWall(c.x + 1, c.y) || IsWall(c.x - 1, c.y) || IsWall(c.x, c.y + 1) || IsWall(c.x, c.y - 1);
+
+        Vector2Int FirstFloor()
+        {
+            for (int y = 0; y < Height; y++)
+            for (int x = 0; x < Width; x++)
+                if (IsFloor(x, y)) return new Vector2Int(x, y);
+            return Vector2Int.zero;
+        }
+
+        // Floor cells reachable from start, 4-connected, avoiding blocked cells.
+        int Reach(Vector2Int start, HashSet<Vector2Int> blocked)
+        {
+            if (!IsFloor(start.x, start.y)) return 0;
+            var seen = new HashSet<Vector2Int> { start };
+            var queue = new Queue<Vector2Int>();
+            queue.Enqueue(start);
+            while (queue.Count > 0)
+            {
+                var c = queue.Dequeue();
+                foreach (var n in new[] { new Vector2Int(c.x + 1, c.y), new Vector2Int(c.x - 1, c.y), new Vector2Int(c.x, c.y + 1), new Vector2Int(c.x, c.y - 1) })
+                    if (!seen.Contains(n) && !blocked.Contains(n) && IsFloor(n.x, n.y)) { seen.Add(n); queue.Enqueue(n); }
+            }
+            return seen.Count;
         }
 
         // Any floor next to the corner that lies outside the room is a doorway.

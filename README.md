@@ -12,6 +12,12 @@ objects from `patch` messages. It bundles no map data. Movement is never synced.
    to use a local one, change `GameManager.DefaultServerUrl` (e.g. `ws://localhost:8080/ws`).
 3. **Offline test** loads `Assets/Resources/FakeWorld.json` and runs a tiny fake server
    (rules / inventory / codes / `exit_open`) so the client can be tested without Go.
+4. **Tutorial** plays `Assets/Resources/TutorialWorld.json` offline (maps in
+   `Resources/Maps/tutorial_a.txt` / `tutorial_b.txt`; client only, the server never loads it):
+   one small room per mechanic on each side. Tips beside what's in your current room and its
+   doorways say what each thing does and how to get past it (changing with its state), hints
+   on the controls show until you've used them, and a banner gives the goal. **Tips** in the
+   HUD shows the object tips in any game.
 
 Two clients side by side: build a standalone player and run it next to the editor
 (`runInBackground` is on).
@@ -39,6 +45,7 @@ Two clients side by side: build a standalone player and run it next to the edito
 | `Scripts/Objects/*` | One class per object type, each with `Apply(value)` |
 | `Scripts/Player/*` | Rigidbody2D controller, room tracking, camera + vision mask |
 | `Scripts/UI/*` | IMGUI screens and debug overlay |
+| `Resources/Tutorial.json` | Tutorial tip text (`TutorialTips`): per object type and state, control hints, goal |
 
 ## Level editor
 

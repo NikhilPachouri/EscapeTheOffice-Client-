@@ -26,6 +26,7 @@ namespace EscapeOffice
         Transform facing;
         // 3D: Player_A / Player_B from the asset pack, turned toward the walking direction.
         Transform model;
+        ArtDirection.PlayerLook look = new ArtDirection.PlayerLook();
         float yaw, walkPhase, lean;
         int lastStep;
 
@@ -58,7 +59,8 @@ namespace EscapeOffice
                 pc.model = model.transform;
                 pc.bodyRenderer.enabled = false;
                 pc.facing.GetComponent<SpriteRenderer>().enabled = false;
-                Fx3D.Motes(go.transform)?.Play(); // dust hanging in the air around you
+                pc.look = ArtDirection.Current.Player(side);
+                pc.Dress(side);
             }
             return pc;
         }
@@ -113,30 +115,75 @@ namespace EscapeOffice
                 : Palette.ForSide(gm.Side);
         }
 
-        // Walk cycle for the pack's static character: hop, lean into the move, dust at each step.
+        // Side identity beyond colour (ArtDirection.json "players"): proportions, an accessory and
+        // a lamp in the side's temperature. Accessories hang off the model so they move with it.
+        void Dress(string side)
+        {
+            var lamp = GetComponentInChildren<Light>();
+            if (lamp != null)
+            {
+                lamp.color = ArtDirection.Hex(look.lamp, lamp.color);
+                lamp.intensity = look.lampIntensity;
+            }
+            var suit = side == "B" ? "M_PlayerB_Suit" : "M_PlayerA_Suit";
+            var glow = side == "B" ? "M_Glow_B" : "M_Glow_A";
+            switch (look.accessory)
+            {
+                case "backpack": // A: sturdy, a pack on the back and a little antenna
+                    Part(PrimitiveType.Cube, "M_MetalDark", new Vector3(0f, 0.56f, -0.27f), Vector3.zero, new Vector3(0.36f, 0.42f, 0.2f));
+                    Part(PrimitiveType.Cube, suit, new Vector3(0f, 0.64f, -0.38f), Vector3.zero, new Vector3(0.28f, 0.08f, 0.03f));
+                    Part(PrimitiveType.Cylinder, "M_MetalDark", new Vector3(0.1f, 0.95f, -0.3f), Vector3.zero, new Vector3(0.03f, 0.16f, 0.03f));
+                    Part(PrimitiveType.Sphere, glow, new Vector3(0.1f, 1.13f, -0.3f), Vector3.zero, Vector3.one * 0.08f);
+                    break;
+                case "crest": // B: sleek, a fin along the head and a light strip across the visor
+                    Part(PrimitiveType.Sphere, suit, new Vector3(0f, 1.08f, -0.06f), Vector3.zero, new Vector3(0.09f, 0.26f, 0.46f));
+                    Part(PrimitiveType.Cube, glow, new Vector3(0f, 0.92f, 0.235f), Vector3.zero, new Vector3(0.3f, 0.035f, 0.02f));
+                    break;
+            }
+            // The floor ring is identity, not a spotlight: smaller than the pack's.
+            var ring = Art.Find(model.gameObject, "SideRing");
+            if (ring != null) ring.localScale = Vector3.one * 0.75f;
+        }
+
+        void Part(PrimitiveType type, string material, Vector3 pos, Vector3 rot, Vector3 scale)
+        {
+            var go = GameObject.CreatePrimitive(type);
+            Destroy(go.GetComponent<Collider>());
+            var mat = Art.Material(material);
+            if (mat != null) go.GetComponent<MeshRenderer>().sharedMaterial = mat;
+            go.transform.SetParent(model, false);
+            go.transform.localPosition = pos;
+            go.transform.localRotation = Quaternion.Euler(rot);
+            go.transform.localScale = scale;
+        }
+
+        // Walk cycle for the pack's static character, with each side's personality: A hops and
+        // leans hard, B glides low and sways. Dust at each step.
         void AnimateModel()
         {
             bool moving = rb.linearVelocity.sqrMagnitude > 0.3f;
             if (input.sqrMagnitude > 0.01f) yaw = Mathf.LerpAngle(yaw, Art.YawFor(input), Art.Smooth(14f));
 
             var world = GameManager.Instance.World;
-            float stepRate = 11f * (Debuffed && world != null ? world.Debuff.Speed : 1f);
+            float stepRate = look.stepRate * (Debuffed && world != null ? world.Debuff.Speed : 1f);
             if (moving) walkPhase += Time.deltaTime * stepRate;
             else walkPhase = Mathf.Lerp(walkPhase, Mathf.Round(walkPhase / Mathf.PI) * Mathf.PI, Art.Smooth(12f));
-            lean = Mathf.Lerp(lean, moving ? 9f : 0f, Art.Smooth(8f));
+            lean = Mathf.Lerp(lean, moving ? look.lean : 0f, Art.Smooth(8f));
 
-            float hop = Mathf.Abs(Mathf.Sin(walkPhase)) * 0.07f;
+            float idle = moving ? 0f : Mathf.Sin(Time.time * 2.2f) * 0.012f; // breathing
+            float hop = Mathf.Abs(Mathf.Sin(walkPhase)) * look.hop + idle;
             model.localPosition = new Vector3(0f, 0f, -hop); // up is -Z
-            model.localRotation = Art.Rotation(yaw) * Quaternion.Euler(lean, 0f, Mathf.Sin(walkPhase) * 3f);
+            model.localRotation = Art.Rotation(yaw) * Quaternion.Euler(lean, 0f, Mathf.Sin(walkPhase) * look.sway);
 
-            // Debuffed: a sluggish wobble instead of the sprite tint.
+            // Debuffed: a sluggish wobble instead of the sprite tint. Landing squash on each hop.
             float wobble = Debuffed ? Mathf.Sin(Time.time * 8f) * 0.06f : 0f;
-            model.localScale = new Vector3(1f + wobble, 1f - wobble, 1f + wobble);
+            float squash = moving ? (1f - Mathf.Abs(Mathf.Sin(walkPhase))) * look.hop * 0.8f : 0f;
+            model.localScale = new Vector3(look.width * (1f + wobble + squash), look.height * (1f - wobble - squash), look.width * (1f + wobble + squash));
 
             int step = Mathf.FloorToInt(walkPhase / Mathf.PI);
             if (moving && step != lastStep)
-                Fx3D.Puff(new Vector3(rb.position.x, rb.position.y, -0.05f), new Color(0.7f, 0.68f, 0.64f, 0.3f),
-                    count: 2, radius: 0.08f, size: 0.22f, life: 0.5f, rise: 0.15f);
+                Fx3D.Puff(new Vector3(rb.position.x, rb.position.y, -0.05f), new Color(0.62f, 0.6f, 0.57f, 0.22f),
+                    count: 1, radius: 0.06f, size: 0.22f, life: 0.45f, rise: 0.12f);
             lastStep = step;
         }
 

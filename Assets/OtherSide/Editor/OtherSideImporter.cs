@@ -65,6 +65,12 @@ public class OtherSideImporter : AssetPostprocessor
     [MenuItem("Tools/Other Side/Build Assets")]
     public static void BuildAll()
     {
+        // Play mode forbids reading the source meshes, and a failed bake would save un-baked meshes.
+        if (EditorApplication.isPlayingOrWillChangePlaymode)
+        {
+            Debug.LogWarning("[OtherSide] Leave Play mode before running Build Assets.");
+            return;
+        }
         var palette = JObject.Parse(File.ReadAllText(Root + "/palette.json"));
         var manifest = JObject.Parse(File.ReadAllText(Root + "/manifest.json"));
 
@@ -106,7 +112,7 @@ public class OtherSideImporter : AssetPostprocessor
     static void BuildFxMaterials()
     {
         var dot = AssetDatabase.LoadAssetAtPath<Texture2D>(Root + "/Textures/FX_SoftDot.png");
-        foreach (var (name, shader) in new[] { ("FX_Additive", "Legacy Shaders/Particles/Additive"), ("FX_Alpha", "Legacy Shaders/Particles/Alpha Blended") })
+        foreach (var (name, shader) in new[] { ("FX_Additive", "Legacy Shaders/Particles/Additive"), ("FX_Alpha", "Legacy Shaders/Particles/Alpha Blended"), ("FX_Energy", "Legacy Shaders/Particles/Additive") })
         {
             var path = $"{MaterialsDir}/{name}.mat";
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
@@ -116,7 +122,7 @@ public class OtherSideImporter : AssetPostprocessor
                 AssetDatabase.CreateAsset(mat, path);
             }
             mat.shader = Shader.Find(shader);
-            mat.mainTexture = dot;
+            mat.mainTexture = name == "FX_Energy" ? null : dot; // FX_Energy: solid colour for lines and shells
             mat.SetColor("_TintColor", new Color(0.5f, 0.5f, 0.5f, 0.5f)); // 2 × tint = particle colour as-is
             EditorUtility.SetDirty(mat);
         }
@@ -316,6 +322,8 @@ public class OtherSideImporter : AssetPostprocessor
         catalog.sprites = Load<Sprite>("t:Sprite", Root + "/Textures");
         catalog.clips = Load<AudioClip>("t:AudioClip", Root + "/Audio");
         catalog.codeFont = AssetDatabase.LoadAssetAtPath<Font>(Root + "/Fonts/ChakraPetch-Bold.ttf");
+        catalog.titleFont = AssetDatabase.LoadAssetAtPath<Font>(Root + "/Fonts/ChakraPetch-SemiBold.ttf");
+        catalog.uiFont = AssetDatabase.LoadAssetAtPath<Font>(Root + "/Fonts/Barlow-SemiBold.ttf");
 
         var byTheme = new SortedDictionary<string, List<string>>();
         foreach (JObject a in assets)

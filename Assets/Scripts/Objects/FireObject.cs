@@ -109,7 +109,8 @@ namespace EscapeOffice.Objects
                 var puff = Art.Spawn("FX_SteamPuff", transform, (Vector2)g.parent.localPosition);
                 if (puff != null) StartCoroutine(Rise(puff.transform));
                 var at = transform.position + (Vector3)(Vector2)g.parent.localPosition + new Vector3(0f, 0f, -0.3f);
-                Fx3D.Puff(at, new Color(0.9f, 0.93f, 0.95f, 0.55f), count: 6, radius: 0.35f, size: 0.7f, life: 1.6f, rise: 1.2f);
+                Fx3D.Puff(at, new Color(0.9f, 0.93f, 0.95f, 0.5f), count: 4, radius: 0.35f, size: 0.8f, life: 1.6f, rise: 1.2f);
+                Fx3D.Ring(new Vector3(at.x, at.y, -0.02f), new Color(0.85f, 0.92f, 1f, 0.45f), 0.3f, 1.4f, 0.6f);
             }
         }
 

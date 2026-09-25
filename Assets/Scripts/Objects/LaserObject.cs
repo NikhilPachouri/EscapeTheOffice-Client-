@@ -17,6 +17,7 @@ namespace EscapeOffice.Objects
         Color beamTint;
         ParticleSystem[] sparks = new ParticleSystem[0];
         bool wasOn, seen;
+        Vector3 runStart, runEnd;
 
         protected override bool SolidFor(JToken value) => WorldState.Truthy(value);
 
@@ -55,12 +56,8 @@ namespace EscapeOffice.Objects
                     foreach (var l in beamModels[i].GetComponentsInChildren<Light>(true)) l.enabled = false;
             }
             for (int i = 0; i <= cells; i++) Art.Spawn("Laser_Post", transform, start + step * i, yaw);
-            var red = new Color(1f, 0.25f, 0.3f);
-            sparks = new[]
-            {
-                Fx3D.Sparks(transform, (Vector3)(start) + new Vector3(0f, 0f, -0.55f), red),
-                Fx3D.Sparks(transform, (Vector3)(start + step * cells) + new Vector3(0f, 0f, -0.55f), red),
-            }.Where(s => s != null).ToArray();
+            runStart = (Vector3)start;
+            runEnd = (Vector3)(start + step * cells);
 
             body.enabled = false;
             beamRenderers = GetComponentsInChildren<Renderer>(true);
@@ -83,8 +80,15 @@ namespace EscapeOffice.Objects
                 else if (!isSolid) s.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             }
             // Switched off: a zap along the run.
-            if (seen && wasOn && !isSolid && Settled && sparks.Length > 0)
-                Fx3D.Burst(FxPoint(0.55f), new Color(1f, 0.3f, 0.35f), count: 10 + 4 * Mathf.Max(Def.W, Def.H), speed: 2.5f, size: 0.15f, life: 0.45f);
+            if (seen && wasOn != isSolid && Settled && beamModels != null)
+            {
+                var red = new Color(1f, 0.3f, 0.38f);
+                for (int i = 0; i < 3; i++)
+                {
+                    var h = new Vector3(0f, 0f, -0.3f - 0.25f * i);
+                    Fx3D.Arc(transform.position + runStart + h, transform.position + runEnd + h, red, 0.28f + 0.06f * i, 0.045f);
+                }
+            }
             seen = true;
             wasOn = isSolid;
         }

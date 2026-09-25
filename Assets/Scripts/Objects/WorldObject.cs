@@ -66,6 +66,14 @@ namespace EscapeOffice.Objects
         float glowPhase;
         bool inSight = true;
 
+        // 3D presence: 0 idle, 0.5 player nearby, 1 the player's interaction target.
+        float presence;
+        float modelScale = 1f;
+        float lastPulse = -10f;
+        MaterialPropertyBlock ringBlock;
+        Color ringTint;
+        static readonly int TintId = Shader.PropertyToID("_TintColor");
+
         public void Init(World world, ObjectDef def)
         {
             World = world;
@@ -85,7 +93,13 @@ namespace EscapeOffice.Objects
             if (Art.Available && ModelName != null)
             {
                 model = Art.Spawn(ModelName, transform, Vector3.zero, ModelYaw);
-                if (model != null) body.enabled = false;
+                if (model != null)
+                {
+                    body.enabled = false;
+                    // Exaggerated silhouettes for small interactables (ArtDirection.json "objectScale").
+                    modelScale = ArtDirection.Current.ScaleFor(ModelName);
+                    model.transform.localScale = Vector3.one * modelScale;
+                }
             }
             Build();
             if (Interactable) BuildGlow();
@@ -109,8 +123,12 @@ namespace EscapeOffice.Objects
             }
             if (!Art.Available) return;
 
-            // 3D: a glow ring on the floor and the icon floating 1.55 m above the object.
+            // 3D: a restrained light pool on the floor, a focus ring and an icon that appear as
+            // the player comes close (see UpdatePresence).
             glow.transform.localPosition = new Vector3(0, 0, -0.01f);
+            glow.transform.localScale = Vector3.one * Mathf.Max(Bounds.width, Bounds.height) * ArtDirection.Current.interaction.poolSize;
+            var poolMat = Art.Material("FX_Additive");
+            if (poolMat != null) glow.sharedMaterial = poolMat;
             string ringName = Tag switch
             {
                 Palette.Tag.A => "GlowRing_A",
@@ -122,7 +140,10 @@ namespace EscapeOffice.Objects
             if (ringName != null)
             {
                 ring = Art.Spawn(ringName, transform, new Vector3(0, 0, -0.005f));
-                if (ring != null) ring.transform.localScale = Vector3.one * Mathf.Max(Bounds.width, Bounds.height);
+                if (ring != null) ring.transform.localScale = Vector3.one * Mathf.Max(Bounds.width, Bounds.height) * 0.8f;
+                ringBlock = new MaterialPropertyBlock();
+                var ringMat = ring != null ? ring.GetComponentInChildren<Renderer>()?.sharedMaterial : null;
+                ringTint = ringMat != null && ringMat.HasProperty(TintId) ? ringMat.GetColor(TintId) : new Color(0.5f, 0.5f, 0.5f, 0.3f);
             }
             if (icon != null)
             {
@@ -134,6 +155,7 @@ namespace EscapeOffice.Objects
 
         public void Apply(JToken value)
         {
+            if (Settled && !JToken.DeepEquals(Value, value)) Pulse();
             Value = value;
             pendingUntil = -1f;
             OnValue(value);
@@ -153,6 +175,15 @@ namespace EscapeOffice.Objects
             glow.enabled = visible;
             if (icon != null) icon.enabled = visible;
             if (ring != null) ring.SetActive(visible);
+        }
+
+        // The side-colour energy pulse through the object (once per change, however it arrives).
+        protected void Pulse()
+        {
+            if (Time.time - lastPulse < 0.8f || !Art.Available) return;
+            lastPulse = Time.time;
+            Fx3D.Energy(model != null ? model.transform : transform, new Vector3(Bounds.center.x, Bounds.center.y, -0.02f),
+                Mathf.Max(Bounds.width, Bounds.height), Tag);
         }
 
         // Responsive feel: play the cosmetic part now; OnValue(Value) snaps it back if no patch
@@ -187,20 +218,54 @@ namespace EscapeOffice.Objects
                 }
             }
 
-            if (glow != null && glow.enabled)
+            if (Art.Available) UpdatePresence();
+            else if (glow != null && glow.enabled)
             {
                 float pulse = 0.75f + 0.25f * Mathf.Sin((Time.time + glowPhase) * 3f);
                 var c = glow.color;
                 c.a = (IsDim ? 0.25f : 0.8f) * pulse;
                 glow.color = c;
             }
+        }
 
-            // Glow ring: slow turn and breathe.
+        // Idle: a faint pool of its colour. Player nearby: brighter, icon fades in. Target: the
+        // focus ring shows and the object swells a little.
+        void UpdatePresence()
+        {
+            var look = ArtDirection.Current.interaction;
+            var player = GameManager.Instance != null ? GameManager.Instance.Player : null;
+            float target = 0f;
+            if (player != null && glow != null && glow.enabled)
+                target = player.Focus == this ? 1f : DistanceTo(player.Position) < look.nearDistance ? 0.5f : 0f;
+            presence = Mathf.MoveTowards(presence, target, Time.deltaTime * 3f);
+            float t = Time.time + glowPhase;
+
+            if (glow != null && glow.enabled)
+            {
+                float a = presence < 0.5f ? Mathf.Lerp(look.idlePool, look.nearPool, presence * 2f)
+                                          : Mathf.Lerp(look.nearPool, look.focusPool, (presence - 0.5f) * 2f);
+                var c = glow.color;
+                c.a = a * (IsDim ? 0.4f : 1f) * (0.9f + 0.1f * Mathf.Sin(t * 2f));
+                glow.color = c;
+            }
+            if (icon != null && icon.enabled)
+            {
+                float show = Mathf.SmoothStep(0f, 1f, presence * 2f);
+                var c = icon.color; c.a = show; icon.color = c;
+                icon.transform.localPosition = new Vector3(0f, 0f, -1.35f - 0.2f * show + Mathf.Sin(t * 2f) * 0.03f);
+            }
             if (ring != null && ring.activeSelf)
             {
-                float t = Time.time + glowPhase;
+                float focus = Mathf.Clamp01((presence - 0.5f) * 2f);
                 ring.transform.localRotation = Art.Rotation(t * 25f);
-                ring.transform.localScale = Vector3.one * Mathf.Max(Bounds.width, Bounds.height) * (1f + Mathf.Sin(t * 2.5f) * 0.05f);
+                ring.transform.localScale = Vector3.one * Mathf.Max(Bounds.width, Bounds.height) * (0.75f + 0.1f * focus);
+                ringBlock.SetColor(TintId, new Color(ringTint.r, ringTint.g, ringTint.b, look.focusRing * focus));
+                foreach (var r in ring.GetComponentsInChildren<Renderer>()) r.SetPropertyBlock(ringBlock);
+            }
+            if (model != null)
+            {
+                float swell = 1f + look.react * Mathf.Clamp01((presence - 0.5f) * 2f) * (0.8f + 0.2f * Mathf.Sin(t * 5f));
+                model.transform.localScale = Vector3.one * modelScale * swell;
             }
         }
 

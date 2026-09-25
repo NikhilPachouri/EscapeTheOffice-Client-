@@ -14,7 +14,11 @@ namespace EscapeOffice
     public class CameraRig : MonoBehaviour
     {
         const int MaxLights = 16;
-        const float Height = 22f, Behind = 8f, Fov = 40f, MaskHeight = 3f;
+        const float MaskHeight = 3f;
+        // Framing from ArtDirection.json "camera" (the prototype used 22 m up, 8 m behind).
+        static float Height => ArtDirection.Current.camera.height;
+        static float Behind => ArtDirection.Current.camera.behind;
+        static float Fov => ArtDirection.Current.camera.fov;
         public float follow = 10f;
         public float radiusLerp = 4f;
         public float softness = 1.2f;
@@ -58,7 +62,9 @@ namespace EscapeOffice
                 cam.fieldOfView = Fov;
                 cam.nearClipPlane = 0.5f;
                 cam.farClipPlane = 200f;
-                if (GetComponent<ColorGrading>() == null) gameObject.AddComponent<ColorGrading>();
+                var grading = GetComponent<ColorGrading>();
+                if (grading == null) grading = gameObject.AddComponent<ColorGrading>();
+                grading.Apply(ArtDirection.Current.grading);
             }
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = Color.black;
@@ -70,7 +76,10 @@ namespace EscapeOffice
                 return;
             }
             maskMaterial = new Material(shader);
-            maskMaterial.SetColor(ColorId, Palette.Darkness);
+            var look = ArtDirection.Current.world;
+            var fog = perspective ? ArtDirection.Hex(look.fog, Palette.Darkness) : Palette.Darkness;
+            if (perspective) fog.a = look.fogAlpha;
+            maskMaterial.SetColor(ColorId, fog);
             maskMaterial.SetFloat(ProjectId, perspective ? 1f : 0f);
             mask = SpriteFactory.Child(transform, "VisionMask", SpriteFactory.Square, Color.white, Layers.Vision);
             mask.transform.localPosition = new Vector3(0, 0, 1f); // just past the near plane
@@ -168,7 +177,7 @@ namespace EscapeOffice
         }
 
         public Camera Camera => cam;
-        // Current (lerped) vision radius on the floor, in tiles.
+        // How far the player can see right now, in tiles (smaller in dark rooms and when debuffed).
         public float VisionRadius => radius;
     }
 }
