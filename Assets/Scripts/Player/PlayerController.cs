@@ -119,7 +119,8 @@ namespace EscapeOffice
             bool moving = rb.linearVelocity.sqrMagnitude > 0.3f;
             if (input.sqrMagnitude > 0.01f) yaw = Mathf.LerpAngle(yaw, Art.YawFor(input), Art.Smooth(14f));
 
-            float stepRate = 11f * (Debuffed ? debuffSpeedFactor : 1f);
+            var world = GameManager.Instance.World;
+            float stepRate = 11f * (Debuffed && world != null ? world.Debuff.Speed : 1f);
             if (moving) walkPhase += Time.deltaTime * stepRate;
             else walkPhase = Mathf.Lerp(walkPhase, Mathf.Round(walkPhase / Mathf.PI) * Mathf.PI, Art.Smooth(12f));
             lean = Mathf.Lerp(lean, moving ? 9f : 0f, Art.Smooth(8f));
