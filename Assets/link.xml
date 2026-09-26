@@ -1,0 +1,14 @@
+<!--
+  Keep engine classes that are only created indirectly, so "Strip Engine Code" does not remove them.
+  GameObject.CreatePrimitive (player model parts, hero props, Fx3D cube mesh) adds a collider natively:
+  Sphere -> SphereCollider, Cube -> BoxCollider, Cylinder/Capsule -> CapsuleCollider. No script names
+  these types, so without this file device builds log "Can't add component ... class SphereCollider
+  doesn't exist". The colliders are destroyed right after creation; only the meshes are used.
+-->
+<linker>
+  <assembly fullname="UnityEngine.PhysicsModule">
+    <type fullname="UnityEngine.SphereCollider" preserve="all" />
+    <type fullname="UnityEngine.BoxCollider" preserve="all" />
+    <type fullname="UnityEngine.CapsuleCollider" preserve="all" />
+  </assembly>
+</linker>
