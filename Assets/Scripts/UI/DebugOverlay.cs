@@ -5,16 +5,20 @@ using UnityEngine;
 
 namespace EscapeOffice.UI
 {
-    // Three-finger tap (F1): state keys and the last few messages. Four-finger tap (F2): vision mask.
+    // Dev-only: state keys and the last few messages (F1 / three-finger tap), vision mask (F2 /
+    // four-finger tap). Off in the shipped game; set DebugOverlay.Enabled = true from code to use it.
     // Offline, clicking a boolean key flips it locally (online the server owns state).
     public class DebugOverlay : MonoBehaviour
     {
+        public static bool Enabled = false;
+
         bool visible;
         Vector2 scroll;
         GUIStyle mono;
 
         void Update()
         {
+            if (!Enabled) { visible = false; return; }
             // Phones: three-finger tap toggles the overlay, four-finger tap the vision mask.
             if (Input.touchCount == 3 && Input.GetTouch(2).phase == TouchPhase.Began) visible = !visible;
             if (Input.touchCount == 4 && Input.GetTouch(3).phase == TouchPhase.Began) GameManager.Instance.DebugNoFog = !GameManager.Instance.DebugNoFog;
